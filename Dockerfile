@@ -11,7 +11,9 @@ RUN apt-get update \
         build-essential \
         gettext \
         libjpeg62-turbo \
+        mc \
         sqlite3 \
+        vim \
         zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
