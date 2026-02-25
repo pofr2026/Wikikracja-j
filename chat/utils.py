@@ -1,14 +1,14 @@
+import datetime
 import inspect
+import logging
+
 from typing import Union
 from channels.db import database_sync_to_async
 from .exceptions import ClientError
-import datetime
 from django.utils import timezone
 from .models import Room, Message
-import logging
 
-logger = logging.getLogger(__name__)
-
+log = logging.getLogger(__name__)
 
 # This decorator turns this function from a synchronous function into an async
 # one we can call from our async consumers, that handles Django DBs correctly.
@@ -54,7 +54,7 @@ class OnlineUserRegistry:
         except KeyError:
             pass  # User already removed from registry, this is normal
         except Exception as e:
-            logger.error(f"utils.py: Exception {str(e)} for user {user.id}")
+            log.error(f"utils.py: Exception {str(e)} for user {user.id}")
 
     def is_online(self, user):
         if user is not None:
@@ -201,7 +201,7 @@ def send_message_to_room(room_title, message_text, sender=None, anonymous=True):
             room=room,
             anonymous=anonymous
         )
-        logger.info(f"Message sent to room '{room_title}': {message_text[:50]}...")
+        log.info(f"Message sent to room '{room_title}': {message_text[:50]}...")
         
         # Mark the room as unseen for all users except the sender
         users_to_mark_unseen = room.allowed.all()
@@ -265,8 +265,8 @@ def send_message_to_room(room_title, message_text, sender=None, anonymous=True):
         
         return message
     except Room.DoesNotExist:
-        logger.error(f"Room '{room_title}' not found")
+        log.error(f"Room '{room_title}' not found")
         return None
     except Exception as e:
-        logger.error(f"Error sending message to room '{room_title}': {str(e)}")
+        log.error(f"Error sending message to room '{room_title}': {str(e)}")
         return None

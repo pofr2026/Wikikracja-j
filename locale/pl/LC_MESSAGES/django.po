@@ -1802,7 +1802,7 @@ msgid "Send message to developer"
 msgstr "Wyślij wiadomość do developera"
 
 #: .\home\templates\home\home.html:32
-msgid "Ongoing referenda"
+msgid "Ongoing referendums"
 msgstr "Trwające referenda"
 
 #: .\home\templates\home\home.html:35
@@ -1810,7 +1810,7 @@ msgid "End"
 msgstr "Koniec"
 
 #: .\home\templates\home\home.html:43
-msgid "Upcoming referenda"
+msgid "Upcoming referendums"
 msgstr "Nadchodzące referenda"
 
 #: .\home\templates\home\home.html:54

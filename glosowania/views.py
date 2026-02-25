@@ -19,7 +19,7 @@ import random
 from chat.models import Room
 from zzz.utils import build_site_url, get_site_domain
 
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 HOST = get_site_domain()
 
@@ -39,7 +39,7 @@ def dodaj(request: HttpRequest):
             form.save()
             # signed = ZebranePodpisy.objects.create(projekt=form, podpis_uzytkownika = request.user)
             
-            l.info(f"New proposal {form.id} added by {form.author}")
+            log.info(f"New proposal {form.id} added by {form.author}")
             message = _("New proposal has been saved.")
             messages.success(request, (message))
 
@@ -286,7 +286,7 @@ def add_argument(request: HttpRequest, pk: int):
             message = _("Your {type} argument has been added.").format(type=arg_type.lower())
             messages.success(request, message)
             
-            l.info(f"User {request.user} added {argument.argument_type} argument to decision #{pk}")
+            log.info(f"User {request.user} added {argument.argument_type} argument to decision #{pk}")
         else:
             messages.error(request, _("There was an error with your argument. Please try again."))
     
@@ -313,7 +313,7 @@ def edit_argument(request: HttpRequest, argument_id: int):
         if form.is_valid():
             form.save()
             messages.success(request, _("Your argument has been updated."))
-            l.info(f"User {request.user} edited argument #{argument_id}")
+            log.info(f"User {request.user} edited argument #{argument_id}")
             return redirect('glosowania:details', argument.decyzja.pk)
     else:
         form = ArgumentForm(instance=argument)
@@ -342,7 +342,7 @@ def delete_argument(request: HttpRequest, argument_id: int):
         return redirect('glosowania:details', decyzja_pk)
     
     if request.method == 'POST':
-        l.info(f"User {request.user} deleted argument #{argument_id} from decision #{decyzja_pk}")
+        log.info(f"User {request.user} deleted argument #{argument_id} from decision #{decyzja_pk}")
         argument.delete()
         messages.success(request, _("Your argument has been deleted."))
         return redirect('glosowania:details', decyzja_pk)

@@ -104,7 +104,8 @@ def main():
         run(manage + ["collectstatic", "-v", "0", "--no-input", "-c"])
 
     print("\nDevelopment instance started\n")
-    run(["daphne", "zzz.asgi:application"])
+    # run(["daphne", "zzz.asgi:application"])
+    run(manage + ["runserver"]) 
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
-import os
 import logging
-logger = logging.getLogger(__name__)
+import os
 
 from django.conf import settings
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -11,9 +10,9 @@ from datetime import datetime as dt
 from django.contrib.auth.models import User
 from channels.db import database_sync_to_async
 from django.utils.html import escape
-
 from .group_messages import format_chat_message
 
+log = logging.getLogger(__name__)
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     """
@@ -604,12 +603,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def get_user_by_id(self, id):
         if id is None:
-            logger.debug("Attempted to fetch user with ID None; returning None")
+            log.debug("Attempted to fetch user with ID None; returning None")
             return None
         try:
             return User.objects.get(id=id)
         except User.DoesNotExist:
-            logger.error(f"User with ID {id} does not exist")
+            log.error(f"User with ID {id} does not exist")
             return None
 
     @database_sync_to_async

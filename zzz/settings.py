@@ -150,6 +150,7 @@ MIDDLEWARE = (
     # X_FRAME_OPTIONS = 'ALLOW'
     # XS_SHARING_ALLOWED_METHODS = ['POST','GET','OPTIONS', 'PUT', 'DELETE']
     'allauth.account.middleware.AccountMiddleware',
+    'django_browser_reload.middleware.BrowserReloadMiddleware',
 )
 
 TEMPLATES = [
@@ -179,6 +180,7 @@ AUTHENTICATION_BACKENDS = [
 
 INSTALLED_APPS = (
     'zzz.apps.SchedulerConfig',
+    'daphne',
     'channels',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -211,6 +213,8 @@ INSTALLED_APPS = (
     'tasks',
     'crispy_bootstrap4',
     'captcha',
+    'django_browser_reload',
+    "django_watchfiles",
 )
 
 

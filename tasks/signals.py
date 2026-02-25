@@ -7,7 +7,7 @@ import logging
 
 from .models import Task
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=Task)
@@ -22,7 +22,7 @@ def create_task_chat_room(sender, instance, created, **kwargs):
         
         # Check if room already exists
         if Room.objects.filter(title=room_title).exists():
-            logger.info(f"Chat room '{room_title}' already exists")
+            log.info(f"Chat room '{room_title}' already exists")
             return
         
         # Create new public room
@@ -37,7 +37,7 @@ def create_task_chat_room(sender, instance, created, **kwargs):
         active_users = User.objects.filter(is_active=True)
         room.allowed.set(active_users)
         
-        logger.info(f"Created chat room '{room_title}' for task #{instance.id}")
+        log.info(f"Created chat room '{room_title}' for task #{instance.id}")
         
         # Send initial message with link back to the task
         from django.contrib.sites.models import Site
@@ -60,4 +60,4 @@ def create_task_chat_room(sender, instance, created, **kwargs):
             anonymous=False
         )
         
-        logger.info(f"Sent initial message to chat room '{room_title}'")
+        log.info(f"Sent initial message to chat room '{room_title}'")

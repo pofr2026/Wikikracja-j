@@ -12,10 +12,10 @@ from obywatele.views import required_reputation, password_generator, SendEmailTo
 from django.db.models import Sum
 from chat import signals
 from zzz.utils import get_site_domain
-import logging
 import time
 
-l = logging.getLogger('django')
+import logging
+log = logging.getLogger('django')
 
 class Command(BaseCommand):
     help = 'Count citizens\' reputation and activate/deactivate users based on reputation thresholds'
@@ -59,7 +59,7 @@ class Command(BaseCommand):
                 i.data_przyjecia = now()
                 i.uid.save()
                 i.save()
-                l.info(f'Activating user {i.uid}')
+                log.info(f'Activating user {i.uid}')
 
                 # Create one2one chat rooms for new person with Signals
                 signals.user_accepted.send(sender='user_accepted', user=i)
@@ -100,7 +100,7 @@ class Command(BaseCommand):
                 i.uid.is_active = False
                 i.uid.save()
                 i.save()
-                l.info(f'Blocking user {i.uid}')
+                log.info(f'Blocking user {i.uid}')
 
                 # Banned person resets other people's reputation to Neutral
                 Rate.objects.filter(obywatel=i.id).update(rate=0)

@@ -1,9 +1,8 @@
 from home import views as hv
 from obywatele import views as ov
-from django.urls import path
+from django.urls import include, path
 from django.conf import settings
 from django.contrib import admin
-from django.conf.urls import include
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from filebrowser.sites import site
@@ -35,6 +34,7 @@ urlpatterns: List[URLPattern | URLResolver] = [
     path('board/',          include('board.urls', namespace='board')),
     path('events/',         include('events.urls', namespace='events')),
     path('tasks/',          include('tasks.urls', namespace='tasks')),
+    path("__reload__/",     include("django_browser_reload.urls")),
 ]
 
 # Serve static files only in DEBUG mode (WhiteNoise handles this in production)

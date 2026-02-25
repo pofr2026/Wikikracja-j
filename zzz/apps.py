@@ -17,7 +17,7 @@ or when RUN_MAIN=true (Django development server reload detection).
 import logging
 from django.apps import AppConfig
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class SchedulerConfig(AppConfig):
@@ -37,6 +37,6 @@ class SchedulerConfig(AppConfig):
             try:
                 from zzz.scheduler import start_scheduler
                 start_scheduler()
-                logger.info("APScheduler initialized from SchedulerConfig.ready()")
+                log.info("APScheduler initialized from SchedulerConfig.ready()")
             except Exception as e:
-                logger.error(f"Failed to start APScheduler: {e}", exc_info=True)
+                log.error(f"Failed to start APScheduler: {e}", exc_info=True)

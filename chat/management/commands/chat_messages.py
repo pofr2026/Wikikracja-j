@@ -1,12 +1,9 @@
-import threading
 import logging
-logger = logging.getLogger(__name__)
+import pytz
+import threading
 
 from datetime import datetime as dt
-import datetime
 from time import sleep
-import pytz
-
 from django.utils import timezone, translation
 from django.core.management.base import BaseCommand
 from django.core.mail import EmailMessage
@@ -17,6 +14,7 @@ from django.contrib.auth.models import User
 from obywatele.models import Uzytkownik
 from zzz.utils import get_site_domain
 
+log = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     args = ''
@@ -50,7 +48,7 @@ class Command(BaseCommand):
                 from_email = str(s.DEFAULT_FROM_EMAIL),
                 bcc = recipients,
                 )
-            logger.info(f'SENDING - Subject: {email_message.subject}; TO: {email_message.bcc};')
+            log.info(f'SENDING - Subject: {email_message.subject}; TO: {email_message.bcc};')
 
             def _send_with_delay():
                 sleep(s.EMAIL_SEND_DELAY_SECONDS)
@@ -65,7 +63,7 @@ class Command(BaseCommand):
             room_allowed = Room.objects.filter(allowed=u.uid, archived=False).exclude(muted_by=u.uid, seen_by=u.uid)
             message_list = Message.objects.filter(time__gte=u.last_broadcast, room__in=room_allowed).exclude(sender=u.uid)
             if not message_list:
-                logger.info(f'No new messages for user {u.uid}')
+                log.info(f'No new messages for user {u.uid}')
                 continue
 
             # Group messages by room
@@ -84,7 +82,7 @@ class Command(BaseCommand):
                 
                 # Add messages without date/time/room
                 for m in messages:
-                    logger.info(f'Found messages for user {u.uid}: {m.text}')
+                    log.info(f'Found messages for user {u.uid}: {m.text}')
                     if m.anonymous:
                         m.sender = None
                     b.append(f'{m.sender}: {m.text}')

@@ -11,7 +11,7 @@ from django.core.mail import EmailMessage
 from django.conf import settings as s
 from django.contrib.auth.models import User
 from chat.models import Room
-import logging as l
+import logging
 import time
 from django.utils import translation
 # from django.contrib import messages
@@ -20,6 +20,8 @@ from django.utils import translation
 # from django.contrib.sites.models import Site
 import re
 from zzz.utils import get_site_domain
+
+log = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     args = ''
@@ -33,14 +35,14 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         translation.activate(s.LANGUAGE_CODE)
 
-        l.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=l.INFO)
+        logging.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=logging.INFO)
         HOST = get_site_domain()
 
         INFO_URL = "https://wikikracja.pl/powiadomienia-email/"
 
         def zliczaj_wszystko():
 
-            l.info(f'zliczaj_wszystko() run ok')
+            logging.info(f'zliczaj_wszystko() run ok')
 
             # POPRZEDNIO:
             # propozycja = 1
@@ -92,7 +94,7 @@ class Command(BaseCommand):
                             if i.data_ostatniej_modyfikacji:
                                 days_since_modification = (dzisiaj - i.data_ostatniej_modyfikacji.date()).days
                                 if days_since_modification < 2:
-                                    l.info(f"Proposition {i.id} has enough signatures but waiting for 2-day freeze period (modified {days_since_modification} days ago).")
+                                    log.info(f"Proposition {i.id} has enough signatures but waiting for 2-day freeze period (modified {days_since_modification} days ago).")
                                     continue
                             
                             i.status = discussion
@@ -106,7 +108,7 @@ class Command(BaseCommand):
                                 f"{prop_number} {i.id} {approved_for}", 
                                 f"{prop_number} {i.id} {gathered} {i.data_referendum_start} {to} {i.data_referendum_stop}\n{click}: {details_url}"
                             )
-                            l.info(f"Proposition {i.id} changed status from PROPOSITION to DISCUSSION.")
+                            log.info(f"Proposition {i.id} changed status from PROPOSITION to DISCUSSION.")
                             continue
                     # FROM PROPOSITION TO REJECTED
                         if i.data_powstania + timedelta(days=s.CZAS_NA_ZEBRANIE_PODPISOW) <= dzisiaj:
@@ -118,7 +120,7 @@ class Command(BaseCommand):
                                 f"{prop_number} {i.id} {not_gathered}",
                                 f"{prop_number} {i.id} {not_gathered} {was_removed}. {feel_free}\n{click}: {details_url}"
                             )
-                            l.info(f"Proposition {i.id} changed status from PROPOSITION to NOT_INTRESTED.")
+                            log.info(f"Proposition {i.id} changed status from PROPOSITION to NOT_INTRESTED.")
                             continue
 
                     # FROM DISCUSSION TO REFERENDUM
@@ -131,7 +133,7 @@ class Command(BaseCommand):
                             f"{ref_num} {i.id} {starting_now}",
                             f"{time_to_vote} {i.id}\n{ends_at} {i.data_referendum_stop}\n{click}: {details_url}"
                         )
-                        l.info(f"Proposition {i.id} changed status from DISCUSSION to REFERENDUM.")
+                        log.info(f"Proposition {i.id} changed status from DISCUSSION to REFERENDUM.")
                         continue
 
                     # LAST DAY OF REFERENDUM REMINDER
@@ -141,7 +143,7 @@ class Command(BaseCommand):
                             f"{last_day} {i.id}",
                             f"{last_day_reminder}\n{ref_num} {i.id} {ends_at} {i.data_referendum_stop}\n{click}: {details_url}"
                         )
-                        l.info(f"Last day reminder sent for referendum {i.id}.")
+                        log.info(f"Last day reminder sent for referendum {i.id}.")
                         continue
 
                     # FROM REFERENDUM TO APPROVED OR REJECTED
@@ -156,14 +158,14 @@ class Command(BaseCommand):
                                     abolish = Decyzja.objects.get(pk=str(z))
                                     abolish.status = rejected
                                     abolish.save()
-                                    l.info(f"Proposition {z} was rejected in {i.id}")
+                                    log.info(f"Proposition {z} was rejected in {i.id}")
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
                             SendEmail(
                                 f"{prop_number} {i.id} {in_effect}",
                                 f"{prop_number} {i.id} {became}\n{click}: {details_url}"
                             )
-                            l.info("Proposition {i.id} changed status from REFERENDUM to VALID.")
+                            log.info("Proposition {i.id} changed status from REFERENDUM to VALID.")
                             continue
                         else:
                             i.status = rejected
@@ -174,7 +176,7 @@ class Command(BaseCommand):
                                 f"{prop_number} {i.id} {was_rejected}",
                                 f"{prop_number} {i.id} {rejected_in}\n{feel_free}\n{click}: {details_url}"
                             )
-                            l.info("Proposition {i.id} changed status from REFERENDUM to REJECTED.")
+                            log.info("Proposition {i.id} changed status from REFERENDUM to REJECTED.")
                             continue
 
         def SendEmail(subject, message):
@@ -190,7 +192,7 @@ class Command(BaseCommand):
                 subject=f'[{HOST}] {subject}',
                 body=message + "\n\n" + email_footer,
                 )
-            l.warning(f"subject: {subject} \n message: {message}")
+            log.warning(f"subject: {subject} \n message: {message}")
             
             time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
             email_message.send()
@@ -220,4 +222,4 @@ class Command(BaseCommand):
                     r = Room.objects.create(title=title, public=False)
                     r.allowed.set((i, j,))
 
-        l.info(f'vote.py counted all votes')
+        log.info(f'vote.py counted all votes')

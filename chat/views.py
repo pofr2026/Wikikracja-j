@@ -1,5 +1,6 @@
 import imghdr
 import json
+import logging
 import uuid
 
 from django.shortcuts import render
@@ -7,7 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
-
 from .models import Room, Message
 from django.contrib.auth.models import User
 from chat.forms import RoomForm
@@ -16,16 +16,12 @@ from datetime import timedelta as td
 from django.utils import timezone
 from django.shortcuts import redirect
 from django.conf import settings as s
-import logging
-# import time
-# from allauth.account.signals import user_signed_up
 from django.dispatch import receiver
-# import django.dispatch
 from chat.signals import user_accepted, user_deleted
 from django.utils.translation import gettext_lazy as _
 from chat.models import Room
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 @login_required
 def add_room(request: HttpRequest):
@@ -77,14 +73,14 @@ def chat(request: HttpRequest):
             # logger.info(f'Message.DoesNotExist1 in {room}')
             continue
         if last_message.time < (timezone.now() - td(days=s.ARCHIVE_PUBLIC_CHAT_ROOM)):  # archive public after 3 months
-            logger.info(f'Chat room {room.title} archived.')
+            log.info(f'Chat room {room.title} archived.')
             room.archived = True  # archive
             room.save()
         elif last_message.time > (timezone.now() - td(days=s.ARCHIVE_PUBLIC_CHAT_ROOM)):  # unarchive
             room.archived = False  # unarchive
             room.save()
         if last_message.time < (timezone.now() - td(days=s.DELETE_PUBLIC_CHAT_ROOM)):  # delete after 1 year
-            logger.info(f'Chat room {room.title} deleted.')
+            log.info(f'Chat room {room.title} deleted.')
             room.delete()  # delete
             room.save()
 
@@ -102,7 +98,7 @@ def chat(request: HttpRequest):
                     # logger.info(f'Message.DoesNotExist2 in {room}')
                     continue
                 if last_message.time < (timezone.now() - td(days=s.DELETE_INACTIVE_USER_AFTER)):  # delete inactive users private room
-                    logger.info(f'Chat room {room.title} deleted.')
+                    log.info(f'Chat room {room.title} deleted.')
                     room.delete()  # delete
             elif user.is_active:
                 room.archived = False
@@ -237,5 +233,5 @@ def delete_one2one_rooms(sender, user, **kwargs):
     private_rooms = Room.objects.filter(public=False)
     for room in private_rooms:
         if user.username in room.title:  # TODO: If Public room have name of the user in it - it will be deleted
-            logger.info(f'Room {room} deleted.')
+            log.info(f'Room {room} deleted.')
             room.delete()

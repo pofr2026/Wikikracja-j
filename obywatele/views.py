@@ -37,8 +37,9 @@ from zzz.utils import build_site_url, get_site_domain
 
 HOST = get_site_domain()
 
-# l.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=l.INFO)
-l = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+# logging.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=logging.INFO)
+
 signer = TimestampSigner()
 
 

@@ -10,10 +10,11 @@ from django.core.mail import EmailMessage
 import threading
 import time
 from captcha.fields import CaptchaField
-import logging as l
 from zzz.utils import build_site_url, get_site_domain
 
-l.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=l.INFO)
+import logging
+log = logging.getLogger(__name__)
+logging.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=logging.INFO)
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -186,7 +187,7 @@ def SendEmailToAll(subject, message):
         subject=f'[{HOST}] {subject}',
         body=f"{message}\n\n{email_footer}",
         )
-    l.info(f'subject: {subject} message: {message}')
+    log.info(f'subject: {subject} message: {message}')
     
     def _send_with_delay():
         time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
