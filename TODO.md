@@ -1,4 +1,5 @@
 # PILNE
+- 'Dlaczego chcesz należeć do grupy?' jest w formularzu ale nie wyświetla się w profilu użytwkonika
 - Dodać opcję wyłączania powiadomień email (Unsubscribe)
 - Osoby, które głosują Za zadaniem mogą zostać poproszone o pomoc
 - Dodać opcję likwidacji własnego konta
