@@ -118,7 +118,7 @@
       {% endif %}
     {% endif %}
 
-    {% if task.created_by == request.user %}
+    {% if task.created_by == request.user and task.is_active %}
       <button type="button"
         class="btn btn-outline-danger"
         data-toggle="modal"
