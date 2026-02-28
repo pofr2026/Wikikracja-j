@@ -12,16 +12,18 @@ User = settings.AUTH_USER_MODEL
 class TaskQuerySet(models.QuerySet):
     def with_metrics(self):
         return self.annotate(
-            votes_up=Count("votes", filter=Q(votes__value=TaskVote.Value.UP)),
-            votes_down=Count("votes", filter=Q(votes__value=TaskVote.Value.DOWN)),
+            votes_up=Count("votes", filter=Q(votes__value=TaskVote.Value.UP), distinct=True),
+            votes_down=Count("votes", filter=Q(votes__value=TaskVote.Value.DOWN), distinct=True),
             votes_score=Coalesce(Sum("votes__value"), 0),
             eval_success=Count(
                 "evaluations",
                 filter=Q(evaluations__value=TaskEvaluation.Value.SUCCESS),
+                distinct=True,
             ),
             eval_failure=Count(
                 "evaluations",
                 filter=Q(evaluations__value=TaskEvaluation.Value.FAILURE),
+                distinct=True,
             ),
         )
 
