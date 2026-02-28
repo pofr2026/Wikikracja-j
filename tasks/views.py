@@ -318,14 +318,16 @@ def evaluate_task(request: HttpRequest, pk: int) -> HttpResponse:
     ):
         return redirect(request.POST.get("next") or "tasks:list")
 
-    evaluation, created = TaskEvaluation.objects.get_or_create(
-        task=task,
-        user=request.user,
-        defaults={"value": value},
-    )
-    if not created:
-        evaluation.value = value
-        evaluation.save(update_fields=["value", "updated_at"])
+    evaluation = TaskEvaluation.objects.filter(task=task, user=request.user).first()
+    if evaluation and evaluation.value == value:
+        evaluation.delete()
+    else:
+        if not evaluation:
+            evaluation = TaskEvaluation(task=task, user=request.user, value=value)
+            evaluation.save()
+        else:
+            evaluation.value = value
+            evaluation.save(update_fields=["value", "updated_at"])
     return redirect(request.POST.get("next") or "tasks:list")
 
 
@@ -334,6 +336,9 @@ def evaluate_task(request: HttpRequest, pk: int) -> HttpResponse:
 def delete_task(request: HttpRequest, pk: int) -> HttpResponse:
     task = get_object_or_404(Task, pk=pk)
     if task.created_by != request.user:
+        return redirect("tasks:detail", pk=pk)
+    
+    if task.status == Task.Status.COMPLETED:
         return redirect("tasks:detail", pk=pk)
     
     # Delete associated chat room if it exists
