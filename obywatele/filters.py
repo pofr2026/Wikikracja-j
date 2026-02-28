@@ -21,11 +21,12 @@ class UzytkownikFilter(django_filters.FilterSet):
     business = django_filters.CharFilter(lookup_expr='icontains')
     job = django_filters.CharFilter(lookup_expr='icontains')
     other = django_filters.CharFilter(lookup_expr='icontains')
+    why = django_filters.CharFilter(lookup_expr='icontains')
 
 
     class Meta:
         model = Uzytkownik
-        fields = ['city', 'responsibilities', 'hobby', 'to_give_away', 'to_borrow', 'for_sale', 'i_need', 'skills', 'knowledge', 'want_to_learn', 'business', 'job', 'other']
+        fields = ['city', 'responsibilities', 'hobby', 'to_give_away', 'to_borrow', 'for_sale', 'i_need', 'skills', 'knowledge', 'want_to_learn', 'business', 'job', 'other', 'why']
 
     # def custom_filter(self, queryset, value):
     #     return queryset.filter(**{

@@ -6,7 +6,7 @@ from obywatele.models import Uzytkownik
 class UzytkownikTable(tables.Table):
     class Meta:
         model = Uzytkownik
-        fields = ('uid', 'city', 'responsibilities', 'hobby', 'to_give_away', 'to_borrow', 'for_sale', 'i_need', 'skills', 'knowledge', 'want_to_learn', 'business', 'job', 'other')
+        fields = ('uid', 'city', 'responsibilities', 'hobby', 'to_give_away', 'to_borrow', 'for_sale', 'i_need', 'skills', 'knowledge', 'want_to_learn', 'business', 'job', 'other', 'why')
         # template_name = "django_tables2/bootstrap.html"
         # template_name = "django_tables2/bootstrap-responsive.html"
         # export_formats = ['csv', 'xlsx']
