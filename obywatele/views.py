@@ -75,7 +75,7 @@ def population():
         population = User.objects.filter(is_active=True).count()
         return population
     except:
-        l.error(f"Population zero, I don't know what to do.")
+        log.error(f"Population zero, I don't know what to do.")
 
 
 def required_reputation():
@@ -642,11 +642,11 @@ def zliczaj_obywateli(request: HttpRequest):  # TODO: Remove this function if ev
         # Run the management command with the current request host for context
         call_command('count_citizens', stdout=stdout, stderr=stderr)
         if stdout.getvalue():
-            l.info(stdout.getvalue())
+            log.info(stdout.getvalue())
         if stderr.getvalue():
-            l.error(stderr.getvalue())
+            log.error(stderr.getvalue())
     except Exception as e:
-        l.error(f"Error running count_citizens command: {str(e)}")
+        log.error(f"Error running count_citizens command: {str(e)}")
     
     return redirect('obywatele:poczekalnia')
 
@@ -687,7 +687,7 @@ def SendEmailToAll(subject, message):
         subject=f'[{HOST}] {subject}',
         body=message + "\n\n" + email_footer,
         )
-    # l.info(f'subject: {subject} \n message: {message}')
+    # log.info(f'subject: {subject} \n message: {message}')
     
     def _send_with_delay():
         time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
@@ -725,4 +725,4 @@ def set_onboarding_email_confirmed(sender, request, email_address, **kwargs):
         time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
         send_mail(subject, message, s.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
     except Exception as e:
-        l.error(f'Failed sending onboarding email after confirmation: {e}')
+        log.error(f'Failed sending onboarding email after confirmation: {e}')

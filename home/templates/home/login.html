@@ -10,26 +10,26 @@
         <form id="login-form" class="form" action="" method="post">
           {% csrf_token %}
           <h3 class="text-center text-info m-2">{% trans 'Login' %}</h3>
-          <div class="form-group">
+          <div class="mb-3">
             <label for="{{form.username.name}}" class="text-info">{% trans 'Email' %}</label><br>
             <input type="text" name="{{form.username.name}}" class="form-control" id="{{form.username.auto_id}}">
           </div>
-          <div class="form-group">
+          <div class="mb-3">
             <label for="{{form.password.name}}" class="text-info"> {{form.password.label}}</label><br>
             <input type="password" name="{{form.password.name}}" class="form-control" id="{{form.password.auto_id}}">
           </div>
-          <div class="form-group form-check">
+          <div class="form-check m-1 mb-3">
             <input type="checkbox"
                    name="{{ form.remember_me.name }}"
                    class="form-check-input"
                    id="{{ form.remember_me.auto_id }}"
                    {% if form.remember_me.value %}checked{% endif %}>
-            <label class="form-check-label text-info" style="margin-left: 0.45rem;" for="{{ form.remember_me.auto_id }}">
+            <label class="form-check-label text-info ms-2" for="{{ form.remember_me.auto_id }}">
               {{ form.remember_me.label }}
             </label>
           </div>
           <div class="text-center">
-            <div class="d-inline-flex flex-wrap justify-content-center" style="gap: 8px;">
+            <div class="d-inline-flex flex-wrap justify-content-center gap-3">
               <input type="submit" name="submit" class="btn btn-info" value={% trans 'Login' %}>
               <a href="{% url 'account_signup' %}" class="btn btn-primary">{% trans 'Sign Up' %}</a>
               <a href="{% url 'password_reset' %}" class="btn btn-warning">{% trans 'Reset password' %}</a>

@@ -1,6 +1,7 @@
 import WsApi from './wsapi.js';
 import DomApi from './domapi.js';
 import { makeNotification, formatDate, formatTime, Lock, parseParms, _ } from './utility.js';
+import { MessageHistory } from './templates.js';
 
 let WS_API;
 let DOM_API;
@@ -123,7 +124,7 @@ export async function onRoomTryJoin(room_id) {
         current_room, title, is_public, has_notifs);
 
     // Put cursor into inout field
-    document.querySelector("#c7").focus();
+    document.querySelector("#message-input").focus();
 }
 
 export async function onRoomTryLeave(sync_with_server) {
@@ -202,7 +203,7 @@ export async function onReceiveMessages(messages) {
     if (shouldStickToBottom) {
         msgdiv.scrollTop(msgdiv.prop("scrollHeight"));
     }
-    $("#room > div.chat-controls > div > input").focus();
+    document.querySelector("#message-input").focus();
 }
 
 export async function onReceiveVotes(event) {
@@ -265,8 +266,9 @@ export async function onToggleNotifications(room_id, is_enabled) {
 }
 
 export async function onMessageHistory(message_id) {
-    let history = await WS_API.getMessageHistory(message_id);
-    let html = MessageHistory({ history });
+    let data = await WS_API.getMessageHistory(message_id);
+    let history = data?.message_history || []
+    let html = MessageHistory( {history} );
     $("#message-history-modal .modal-body").html(html);
     $("#message-history-modal").modal('show');
 }

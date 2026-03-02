@@ -15,8 +15,6 @@ import {
     copyMessageLink,
 } from './chat.js';
 
-import { _ } from './utility.js';
-
 import DomApi from './domapi.js';
 
 const DOM_API = new DomApi();
@@ -53,7 +51,7 @@ $(document).on("click", ".send-message", function() {
     onSubmitMessage(message, edit_message_id);
 });
 
-$(document).on("keydown", ".message-input", function(e) {
+$(document).on("keydown", "#message-input", function(e) {
     if (e.keyCode == 13) {
         let edit_message_id = DOM_API.getEditedMessageId();
         let message = DOM_API.getEnteredText();
@@ -95,9 +93,9 @@ $(document).on('keydown', function(e) {
     DOM_API.stopEditing();
 });
 
-$(document).on('click', ".stop-editing", function(e) {
-    DOM_API.stopEditing();
-});
+// $(document).on('click', ".stop-editing", function(e) {
+//     DOM_API.stopEditing();
+// });
 
 $(document).on('click', ".delete-images-preview", function(e) {
     let room_id = $(this).data("room-id");

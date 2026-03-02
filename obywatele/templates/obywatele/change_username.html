@@ -6,7 +6,7 @@
 {% block content %}
 <h3>{% trans 'Change your username' %}</h3>
 
-<p class="font-weight-bold">{% trans "Username" %}: {{ request.user.username }}</p>
+<p class="fw-bold">{% trans "Username" %}: {{ request.user.username }}</p>
 
 <form class="post-form" method="post" action="{% url 'obywatele:change_username' %}">{% csrf_token %}
   <div class="row">

@@ -27,7 +27,7 @@ Try the live demo: **https://demo.wikikracja.pl/**
 ## Tech Stack
 
 - **Backend**: Django 5.1, Django Channels, Python 3.11.x (both Docker and local dev)
-- **Frontend**: Bootstrap 4, TinyMCE, Crispy Forms
+- **Frontend**: Bootstrap 5, TinyMCE, Crispy Forms
 - **Database**: SQLite (development), PostgreSQL (production ready)
 - **Cache/Channels**: Redis
 - **Deployment**: Docker, Linux

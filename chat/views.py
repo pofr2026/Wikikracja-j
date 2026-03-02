@@ -152,26 +152,6 @@ def upload_image(request: HttpRequest):
 
 
 def get_translations():
-    _("Click here to enable notifications"),
-    _("Today"),
-    _("Yesterday"),
-    _("Anonymous"),
-    _("Enable Notifications"),
-    _("Chat works better with notifications. You can allow them to see new messages even beyond chat room."),
-    _("Do you want to receive notifications?"),
-    _("If nothing happens, you may have ignored permission prompt too many times. Check your browser settings to enable them."),
-    _("Yes"),
-    _("No, don't show again"),
-    _("edit"),
-    _("edited"),
-    _("Changes History"),
-    _("Close"),
-    _("This room is empty, be the first one to write something."),
-    _("editing: "),
-    _("Loading..."),
-    _("Sunday"), _("Monday"), _("Tuesday"), _("Wednesday"), _("Thursday"), _("Friday"), _("Saturday"),
-    _("Jan"), _("Feb"), _("Mar"), _("Apr"), _("May"), _("Jun"), _("Jul"), _("Aug"), _("Sep"), _("Oct"), _("Nov"), _("Dec"),
-
     strings = [
         "Click here to enable notifications",
         "Today",
@@ -190,6 +170,10 @@ def get_translations():
         "This room is empty, be the first one to write something.",
         "editing: ",
         "Loading...",
+        "Copy link",
+        "Copy message link",
+        "Link copied",
+        "Could not copy link",
         "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
     ]

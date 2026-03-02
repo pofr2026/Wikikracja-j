@@ -6,10 +6,10 @@
 <div class="container mt-12">
   <div class="row mb-12">
     <div>
-      <a href="{% url 'bookkeeping:transaction_list' %}" class="btn btn-sm mr-1 mb-1 btn-primary">{% trans 'Transactions' %}</a>
-      <a href="{% url 'bookkeeping:partner_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Partners' %}</a>
-      <a href="{% url 'bookkeeping:category_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Categories' %}</a>
-      <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Reports' %}</a>
+      <a href="{% url 'bookkeeping:transaction_list' %}" class="btn btn-sm me-1 mb-1 btn-primary">{% trans 'Transactions' %}</a>
+      <a href="{% url 'bookkeeping:partner_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Partners' %}</a>
+      <a href="{% url 'bookkeeping:category_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Categories' %}</a>
+      <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Reports' %}</a>
     </div>
   </div>
 
@@ -52,8 +52,8 @@
           </div>
         </div>
         
-        <div class="form-group d-flex">
-          <button type="submit" class="btn btn-primary mr-2">{% trans "Save Transaction" %}</button>
+        <div class="mb-3 d-flex">
+          <button type="submit" class="btn btn-primary me-2">{% trans "Save Transaction" %}</button>
           <a href="{% url 'bookkeeping:transaction_list' %}" class="btn btn-secondary"> {% trans "Cancel" %}</a>
         </div>
       </form>

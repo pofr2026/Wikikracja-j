@@ -76,6 +76,10 @@ msgstr ""
 msgid "Archived"
 msgstr ""
 
+#: .\chat\templates\chat\chat.html:132
+msgid "Private Archived"
+msgstr ""
+
 #: .\board\models.py:14 .\tasks\views.py:22
 msgid "Important"
 msgstr ""
@@ -630,6 +634,18 @@ msgstr ""
 
 #: .\chat\templates\chat\room_icon.html:21
 msgid "Copy link"
+msgstr ""
+
+#: .\chat\templates\chat\room_icon.html:21
+msgid "Copy message link"
+msgstr ""
+
+#: .\chat\templates\chat\room_icon.html:21
+msgid "Link copied"
+msgstr ""
+
+#: .\chat\templates\chat\room_icon.html:21
+msgid "Could not copy link"
 msgstr ""
 
 #: .\chat\templates\chat\room_icon.html:22

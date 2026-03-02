@@ -1,6 +1,6 @@
 {% extends "home/base.html" %}
 {% load i18n %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 
 {% block content %}
 <div class="row">
@@ -61,26 +61,26 @@
                 <div class="row">
                     <div class="col-md-4">
                         <h6>{% trans "Frequency" %}</h6>
-                        <span class="badge badge-{% if event.frequency == 'once' %}secondary{% else %}info{% endif %} badge-lg">
+                        <span class="badge text-bg-{% if event.frequency == 'once' %}secondary{% else %}info{% endif %}">
                             {{ event.get_frequency_display }}
                         </span>
                     </div>
                     <div class="col-md-4">
                         <h6>{% trans "Status" %}</h6>
                         {% if event.is_active %}
-                            <span class="badge badge-success badge-lg">{% trans "Active" %}</span>
+                            <span class="badge text-bg-success">{% trans "Active" %}</span>
                         {% else %}
-                            <span class="badge badge-secondary badge-lg">{% trans "Inactive" %}</span>
+                            <span class="badge text-bg-secondary">{% trans "Inactive" %}</span>
                         {% endif %}
                     </div>
                     <div class="col-md-4">
                         <h6>{% trans "Visibility" %}</h6>
                         {% if event.is_public %}
-                            <span class="badge badge-primary badge-lg" title="{% trans 'Visible to everyone' %}">
+                            <span class="badge text-bg-primary" title="{% trans 'Visible to everyone' %}">
                                 <i class="fas fa-globe"></i> {% trans "Public" %}
                             </span>
                         {% else %}
-                            <span class="badge badge-warning badge-lg" title="{% trans 'Visible only to logged-in users' %}">
+                            <span class="badge text-bg-warning" title="{% trans 'Visible only to logged-in users' %}">
                                 <i class="fas fa-lock"></i> {% trans "Private" %}
                             </span>
                         {% endif %}

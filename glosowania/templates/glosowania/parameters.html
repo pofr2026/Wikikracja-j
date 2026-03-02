@@ -1,7 +1,7 @@
 {% extends 'glosowania/menu.html' %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 {% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
+{% bootstrap_javascript %}
 {% bootstrap_messages %}
 {% load static %}
 {% load i18n %}
@@ -16,11 +16,11 @@
 	</div>
 </div>
 
-<p>{% trans "New proposal needs to gather" %} <span class="badge badge-primary badge-pill">{{ signatures }}</span> {% trans "signatures in order to trigger referendum. This number should remain low enough for any sensible proposal to be voted on, and only high enough to filter out obvious spam." %}</p>
-<p>{% trans "Maximum time to gather signatures is" %} <span class="badge badge-primary badge-pill">{{ signatures_span }}</span> {% trans "days. If there is not enough signatures - after this time, proposal is rejected." %}</p>
-<p>{% trans "Queue and discussion before referendum lasts" %} <span class="badge badge-primary badge-pill">{{ queue_span }}</span> {% trans "days." %}</p>
-<p>{% trans "Referendum lasts for" %} <span class="badge badge-primary badge-pill">{{ referendum_span }}</span> {% trans "days." %}</p>
-<p>{% trans "If you want to change any of" %} <span class="badge badge-primary badge-pill">{% trans "marked" %}</span> {% trans "parameters - create referendum." %}</p>
+<p>{% trans "New proposal needs to gather" %} <span class="badge text-bg-primary rounded-pill">{{ signatures }}</span> {% trans "signatures in order to trigger referendum. This number should remain low enough for any sensible proposal to be voted on, and only high enough to filter out obvious spam." %}</p>
+<p>{% trans "Maximum time to gather signatures is" %} <span class="badge text-bg-primary rounded-pill">{{ signatures_span }}</span> {% trans "days. If there is not enough signatures - after this time, proposal is rejected." %}</p>
+<p>{% trans "Queue and discussion before referendum lasts" %} <span class="badge text-bg-primary rounded-pill">{{ queue_span }}</span> {% trans "days." %}</p>
+<p>{% trans "Referendum lasts for" %} <span class="badge text-bg-primary rounded-pill">{{ referendum_span }}</span> {% trans "days." %}</p>
+<p>{% trans "If you want to change any of" %} <span class="badge text-bg-primary rounded-pill">{% trans "marked" %}</span> {% trans "parameters - create referendum." %}</p>
 
 <div class="container">
 	<div class="row justify-content-center">

@@ -6,7 +6,7 @@ A simple Django app for managing cyclical events in the Wikikracja project.
 
 - **Simple Event Management**: Create, view, edit, and delete events
 - **Cyclical Events**: Support for one-time, daily, weekly, monthly, and yearly recurring events
-- **Bootstrap UI**: Clean, responsive interface using Bootstrap 4 and django-crispy-forms
+- **Bootstrap UI**: Clean, responsive interface using Bootstrap 5 and django-crispy-forms
 - **Built-in Views**: Uses Django's built-in class-based views for simplicity
 - **No User Configuration**: Keeps things simple with no per-user settings
 - **No Participant Management**: Focus on event scheduling only

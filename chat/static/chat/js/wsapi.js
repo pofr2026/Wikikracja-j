@@ -12,7 +12,7 @@ export default class WsApi {
 
         this.socket = new ReconnectingWebSocket(ws_path);
 
-        $(window).on('unload', () => {
+        $(window).on('beforeunload', () => {
             this.socket.close();
         });
 

@@ -15,7 +15,7 @@
             <a class="text-break text-decoration-none" href="{% url 'tasks:detail' task.pk %}">{{ task.title }}</a>
             {% if task.chat_room_url %}
               <a href="{{ task.chat_room_url }}" target="_blank" class="text-decoration-none ms-3 {{ task.chat_room_pulse_class }}">
-                <i class="bi bi-chat-dots" style="font-size: 1.1em;"></i>
+                <i class="bi bi-chat-dots"></i>
               </a>
             {% endif %}
           </h3>
@@ -76,7 +76,7 @@
         </span>
         {% if task.is_active %}
           <div class="d-flex align-items-center">
-            <form method="post" action="{% url 'tasks:vote' task.pk %}" style="margin-right: 0.5rem;">
+            <form method="post" action="{% url 'tasks:vote' task.pk %}" class="list-inline-item">
               {% csrf_token %}
               <input type="hidden" name="value" value="1">
               <input type="hidden" name="next" value="{{ request.get_full_path }}">

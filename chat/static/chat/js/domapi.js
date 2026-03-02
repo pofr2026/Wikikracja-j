@@ -16,7 +16,7 @@ export default class DomApi {
 
     createRoomDiv(room_id, title, is_public, notifs_enabled) {
         let roomdiv = $(Room({ room_id, title, is_public, notifs_enabled }));
-        $("#chats").empty().append(roomdiv);
+        $(".chat-root-messages").empty().append(roomdiv);
         return roomdiv;
     }
 
@@ -64,6 +64,7 @@ export default class DomApi {
     }
 
     getMessageDiv(message_id) {
+        //return document.querySelector(`.message[data-message-id="${message_id}"]`).childNodes;
         return $(`.message[data-message-id="${message_id}"]`);
     }
 
@@ -72,17 +73,10 @@ export default class DomApi {
         if (!message.length) {
             return false;
         }
+        message[0].scrollIntoView();
 
-        let container = this.getMessagesDiv();
-        if (!container.length) {
-            return false;
-        }
-
-        let top = message.position().top + container.scrollTop();
-        container.scrollTop(Math.max(top - 40, 0));
-
-        message.addClass('message-highlight');
-        setTimeout(() => message.removeClass('message-highlight'), 2000);
+        message.addClass('msg-highlight');
+        setTimeout(() => message.removeClass('msg-highlight'), 5000);
         return true;
     }
 
@@ -106,7 +100,7 @@ export default class DomApi {
         let f = this.formatMessage(text)
         let time = formatTime(ts);
         this.getMessageTimeDiv(message_id).text(time);
-        return this.getMessageDiv(message_id).find(".text").html(f);
+        return this.getMessageDiv(message_id).find(".msg-text").html(f);
     }
 
     showHistoryButton(message_id) {
@@ -122,7 +116,7 @@ export default class DomApi {
     }
 
     getMessageText(message_id) {
-        return this.getMessageDiv(message_id).find(".text").text();
+        return this.getMessageDiv(message_id).find(".msg-text").text();
     }
 
     formatMessage(raw_message) {
@@ -174,8 +168,12 @@ export default class DomApi {
         return $(`.message-timestamp[data-message-id=${message_id}]`);
     }
 
+    getMessageInput() {
+        return $(`#message-input`);
+    }
+
     getEnteredText() {
-        return $(`.message-input`).val();
+        return this.getMessageInput().val();
     }
 
     getAnonymousValue() {
@@ -200,9 +198,6 @@ export default class DomApi {
         return this.getMessageInput().data('edit-message');
     }
 
-    getMessageInput() {
-        return $(`.message-input`);
-    }
 
     setEditing(message_id) {
         let text = this.getMessageText(message_id);
@@ -224,22 +219,17 @@ export default class DomApi {
         let pswpElement = document.querySelectorAll('.pswp')[0];
         let items = [];
         for (let src of srcs) {
-
             let size = await getImageSize(src);
-
             items.push({
                 src,
                 w: size.w,
                 h: size.h
             })
         }
-
-        let options = {
+        let gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
             index: 0, // start at first slide
             closeOnScroll: false,
-        };
-
-        let gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, options);
+        });
         gallery.init();
     }
 
@@ -257,7 +247,7 @@ export default class DomApi {
     }
 
     removeNoMessagesBanner() {
-        $('.room-empty-banner').remove();
+        $('.empty-chat-message').remove();
     }
 
     setRoomTitle(title) {
@@ -278,14 +268,9 @@ export default class DomApi {
         );
     }
 
-    showHistoryModal(title, history) {
-        let modal = $("#message-history-modal").modal('show');
-        modal.find(".modal-body").html(MessageHistory({ history }));
-        modal.find(".modal-title").html(title);
-    }
 
     addPermissionBanner() {
-        $('.room-header').append("<button type='button' class='alert alert-info p-1 mb-0' style='display: inline-block;' onclick='Notification.requestPermission().then(() => location.reload())'><i class='far fa-bell-slash'></i>" + " " + _("Click here to enable notifications") + " " + "<i class ='far fa-bell-slash'></i></button>")
+        $('.chat-page-header').append("<button type='button' class='alert alert-info p-1 m-1' onclick='Notification.requestPermission().then(() => location.reload())'><i class='far fa-bell-slash'></i> " + _("Click here to enable notifications") + " <i class ='far fa-bell-slash'></i></button>")
     }
 
     showCopyFeedback(button, message, success) {
@@ -296,12 +281,12 @@ export default class DomApi {
         let $button = $(button);
         let $tooltip = $('<span class="copy-feedback badge"></span>');
         $tooltip.text(message);
-        $tooltip.toggleClass('badge-success', !!success);
-        $tooltip.toggleClass('badge-danger', !success);
+        $tooltip.toggleClass('text-bg-success', !!success);
+        $tooltip.toggleClass('text-bg-danger', !success);
 
         $button.append($tooltip);
         setTimeout(() => {
-            $tooltip.fadeOut(200, function() {
+            $tooltip.fadeOut(200, function () {
                 $(this).remove();
             });
         }, 1200);

@@ -1,50 +1,43 @@
-import { _, formatTime } from './utility.js';
+import { _ } from './utility.js';
 
 const room_template = `
-<div class='room' id='room'>
+<div id='room'>
 
   <div class='messages'>
-    <div class='room-empty-banner empty-chat-message'>
+    <div class='empty-chat-message'>
       ${_("This room is empty, be the first one to write something.")}
     </div>
   </div>
 
   <div style='position: relative'>
     <div class='image-preview-container' style='display:none'>
-      <div class='preview-images'>
-      </div>
+      <div class='preview-images'></div>
       <div class='delete-images-preview'>
         <i class='fas fa fa-times'></i>
       </div>
     </div>
-  </div>
+  </div> 
 
-  <div class='chat-controls fixed-bottom'>
-    <div id='c1'>
-      <div id='c2'>
-        <% if (is_public) { %>
-          <input class='anonymous-switch' id="anonymous-switch-id" type='checkbox'
-          />
-          <label for='anonymous-switch-id'>${_("Anonymous")}</label>
-        <% } %>
-      </div>
+  <div class='chat-controls sticky-bottom'>
+    <div class='checkbox-container'>
+      <% if (is_public) { %>
+        <input class='anonymous-switch' id='anonymous-switch-id' type='checkbox' />
+        <label for='anonymous-switch-id'>${_("Anonymous")}</label>
+      <% } %>
     </div>
 
-    <div id='c4'>
-      <div id='c5'>
+    <div>
         <!-- Those two have to go one after another for some CSS trickery -->
-          <input type='file' id="file-input" style='display:none;' class='file-input' multiple='multiple'/>
-          <label class='btn btn-primary chat-control'
-            for="file-input">
-              <i class="fas fa-image"></i>
+          <input type='file' id='file-input' class='file-input' multiple='multiple'/>
+          <label class='btn btn-primary chat-control' for='file-input'>
+              <i class='fas fa-image'></i>
           </label>
         <!-- Those two-->
-      </div>
 
-      <div class='chat-controls-row id='c6''>
-        <input class='message-input' id='c7'>
-        <button class='send-message chat-control btn btn-primary id='c8''>
-          <i class="fas fa-paper-plane"></i>
+      <div class='chat-controls-row'>
+        <input id='message-input'>
+        <button class='send-message chat-control btn btn-primary'>
+          <i class='fas fa-paper-plane'></i>
         </button>
       </div>
     </div>
@@ -64,38 +57,38 @@ const message_template = `
           data-message-id='<%-message_id%>'> ${_("edited")}
         </div>
         <% if (own) { %>
-          <div class='edit-message ml-1' data-message-id="<%-message_id%>" >${_("edit")}</div>
+          <div class='edit-message ms-1' data-message-id="<%-message_id%>" >${_("edit")}</div>
         <% } %>
-        <div class='message-timestamp ml-1' data-message-id='<%-message_id%>'><%- latest_ts %></div>
+        <div class='message-timestamp ms-1' data-message-id='<%-message_id%>'><%- latest_ts %></div>
         <button type='button'
-          class='btn btn-link btn-sm p-0 ml-1 copy-link-btn copy-message-url'
+          class='btn btn-link btn-sm p-0 ms-1 copy-link-btn copy-message-url'
           data-room-id='<%-room_id%>'
           data-message-id='<%-message_id%>'
           title='${_("Copy link")}'
           aria-label='${_("Copy message link")}'>
-          <i class="fas fa-link"></i>
+          <i class='fas fa-link'></i>
         </button>
       </div>
     </div>
 
-    <div class='body'>
+    <div class='msg-body'>
       <div class='attachment-image-container'>
         <% for (let filename of attachments?.images || []) { %>
           <img class='attached-image' src='/media/uploads/<%-filename %>'>
         <% } %>
       </div>
-      <span class='text'><%-message%></span>
+      <span class='msg-text'><%-message%></span>
     </div>
 
     <div class='footer'>
       <% if (type == "public") { %>
         <div class='d-flex d-flex justify-content-end'>
-          <div data-event-name="upvote" data-message-id="<%-message_id%>" class='msg-vote vote-block'>
-            <i class="fas fa-check"></i>
+          <div data-event-name='upvote' data-message-id="<%-message_id%>" class='msg-vote'>
+            <i class='fas fa-check'></i>
           <div class='msg-upvotes'><%-upvotes%></div>
           </div>
-          <div data-event-name="downvote" data-message-id="<%-message_id%>" class='msg-vote vote-block'>
-            <i class="fas fa-times"></i>
+          <div data-event-name='downvote' data-message-id="<%-message_id%>" class='msg-vote'>
+            <i class='fas fa-times'></i>
           <div class='msg-downvotes'><%-downvotes%></div>
           </div>
         </div>

@@ -12,38 +12,38 @@
 	<div class="row mb-12">
 		<div>
 			<a {% if request.resolver_match.url_name == 'parameters' %}
-				class="btn mr-1 mb-1 btn-primary fas fa-solid fa-question" style="font-size: 16px;"
+				class="btn me-1 mb-1 btn-primary fas fa-solid fa-question"
 			{% else %}
-				class="btn mr-1 mb-1 btn-secondary fas fa-solid fa-question" style="font-size: 16px;"
+				class="btn me-1 mb-1 btn-secondary fas fa-solid fa-question"
 			{% endif %}
 			href="{% url 'obywatele:parameters' %}"> </a>
 
 			<a {% if request.resolver_match.url_name == 'obywatele' %}
-				class="btn btn-sm mr-1 mb-1 btn-primary"
+				class="btn btn-sm me-1 mb-1 btn-primary"
 			{% else %}
-				class="btn btn-sm mr-1 mb-1 btn-secondary"
+				class="btn btn-sm me-1 mb-1 btn-secondary"
 			{% endif %}
 			href="{% url 'obywatele:obywatele' %}">{% trans "Citizens" %}</a>
 		
 			<a {% if request.resolver_match.url_name == 'poczekalnia' %}
-				class="btn btn-sm mr-1 mb-1 btn-primary"
+				class="btn btn-sm me-1 mb-1 btn-primary"
 			{% else %}
-				class="btn btn-sm mr-1 mb-1 btn-secondary"
+				class="btn btn-sm me-1 mb-1 btn-secondary"
 			{% endif %}
 			href="{% url 'obywatele:poczekalnia' %}">{% trans "Candidates" %}</a>
 			
 			<a {% if request.resolver_match.url_name == 'assets' %}
-				class="btn btn-sm mr-1 mb-1 btn-primary"
+				class="btn btn-sm me-1 mb-1 btn-primary"
 			{% else %}
-				class="btn btn-sm mr-1 mb-1 btn-secondary"
+				class="btn btn-sm me-1 mb-1 btn-secondary"
 			{% endif %}
 			href="{% url 'obywatele:assets' %}">{% trans "Assets" %}</a>
 			
 			<a {% if request.resolver_match.url_name == 'zaproponuj_osobe' %}
-				class="btn btn-sm mr-1 mb-1 btn-primary float-right"
+				class="btn btn-sm me-1 mb-1 btn-primary float-end"
         href="{% url 'obywatele:zaproponuj_osobe' %}">{% trans "Clear form" %}
 			{% else %}
-				class="btn btn-sm mr-1 mb-1 btn-success float-right"
+				class="btn btn-sm me-1 mb-1 btn-success float-end"
         href="{% url 'obywatele:zaproponuj_osobe' %}">+{% trans "Invite" %}
 			{% endif %}
 			</a>

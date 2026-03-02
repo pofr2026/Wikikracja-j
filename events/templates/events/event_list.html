@@ -1,6 +1,6 @@
 {% extends "home/base.html" %}
 {% load i18n %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 
 {% block content %}
 <div class="row">
@@ -56,24 +56,24 @@
                                 {% endif %}
                                 
                                 <div class="mb-2">
-                                    <span class="badge badge-{% if event.frequency == 'once' %}secondary{% else %}info{% endif %}">
+                                    <span class="badge text-bg-{% if event.frequency == 'once' %}secondary{% else %}info{% endif %}">
                                         {{ event.get_frequency_display }}
                                     </span>
                                     {% if event.is_upcoming %}
-                                        <span class="badge badge-success">{% trans "Upcoming" %}</span>
+                                        <span class="badge text-bg-success">{% trans "Upcoming" %}</span>
                                     {% endif %}
                                     {% if event.is_public %}
-                                        <span class="badge badge-primary" title="{% trans 'Visible to everyone' %}">
+                                        <span class="badge text-bg-primary" title="{% trans 'Visible to everyone' %}">
                                             <i class="fas fa-globe"></i> {% trans "Public" %}
                                         </span>
                                     {% else %}
-                                        <span class="badge badge-warning" title="{% trans 'Visible only to logged-in users' %}">
+                                        <span class="badge text-bg-warning" title="{% trans 'Visible only to logged-in users' %}">
                                             <i class="fas fa-lock"></i> {% trans "Private" %}
                                         </span>
                                     {% endif %}
                                 </div>
                             </div>
-                            <div class="card-footer d-flex gap-2">
+                            <div class="card-footer d-flex gap-0">
                                 <a href="{% url 'events:detail' event.pk %}" class="btn btn-sm btn-outline-warning">
                                     {% trans "Details" %}
                                 </a>

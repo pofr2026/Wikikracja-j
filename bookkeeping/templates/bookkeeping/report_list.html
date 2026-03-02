@@ -6,19 +6,19 @@
 <div class="container mt-4">
   <div class="row mb-4">
     <div>
-      <a href="{% url 'bookkeeping:transaction_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Transactions' %}</a>
-      <a href="{% url 'bookkeeping:partner_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Partners' %}</a>
-      <a href="{% url 'bookkeeping:category_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Categories' %}</a>
-      <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm mr-1 mb-1 btn-primary">{% trans 'Reports' %}</a>
+      <a href="{% url 'bookkeeping:transaction_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Transactions' %}</a>
+      <a href="{% url 'bookkeeping:partner_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Partners' %}</a>
+      <a href="{% url 'bookkeeping:category_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Categories' %}</a>
+      <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm me-1 mb-1 btn-primary">{% trans 'Reports' %}</a>
     </div>
   </div>
   
   <!-- Year selector -->
   <div class="row mb-4">
     <div class="col-md-6">
-      <div class="form-group">
+      <div class="mb-3">
         <label for="yearSelect">{% trans 'Select Year' %}:</label>
-        <select id="yearSelect" class="form-control">
+        <select id="yearSelect" class="form-select">
           {% for available_year in available_years %}
             <option value="{{ available_year }}" {% if available_year == year %}selected{% endif %}>
               {{ available_year }}
@@ -50,21 +50,21 @@
               <thead>
                 <tr>
                   <th>{% trans 'Category' %}</th>
-                  <th class="text-right">{% trans 'Sum' %}</th>
+                  <th class="text-end">{% trans 'Sum' %}</th>
                 </tr>
               </thead>
               <tbody>
                 {% for category, movement in category_movements.items %}
                   <tr>
                     <td>{{ category|default:"—" }}</td>
-                    <td class="text-right {% if movement.net > 0 %}text-success{% elif movement.net < 0 %}text-danger{% endif %}">
+                    <td class="text-end {% if movement.net > 0 %}text-success{% elif movement.net < 0 %}text-danger{% endif %}">
                       {{ movement.net|floatformat:2 }}
                     </td>
                   </tr>
                 {% endfor %}
-                <tr class="font-weight-bold border-top">
+                <tr class="fw-bold border-top">
                   <td>{% trans 'Total' %}</td>
-                  <td class="text-right {% if total_net > 0 %}text-success{% elif total_net < 0 %}text-danger{% endif %}">
+                  <td class="text-end {% if total_net > 0 %}text-success{% elif total_net < 0 %}text-danger{% endif %}">
                     {{ total_net|floatformat:2 }}
                   </td>
                 </tr>
@@ -91,21 +91,21 @@
               <thead>
                 <tr>
                   <th>{% trans 'Category' %}</th>
-                  <th class="text-right">{% trans 'Sum' %}</th>
+                  <th class="text-end">{% trans 'Sum' %}</th>
                 </tr>
               </thead>
               <tbody>
                 {% for category, movement in all_years_category_movements.items %}
                   <tr>
                     <td>{{ category|default:"—" }}</td>
-                    <td class="text-right {% if movement.net > 0 %}text-success{% elif movement.net < 0 %}text-danger{% endif %}">
+                    <td class="text-end {% if movement.net > 0 %}text-success{% elif movement.net < 0 %}text-danger{% endif %}">
                       {{ movement.net|floatformat:2 }}
                     </td>
                   </tr>
                 {% endfor %}
-                <tr class="font-weight-bold border-top">
+                <tr class="fw-bold border-top">
                   <td>{% trans 'Total' %}</td>
-                  <td class="text-right {% if all_years_total_net > 0 %}text-success{% elif all_years_total_net < 0 %}text-danger{% endif %}">
+                  <td class="text-end {% if all_years_total_net > 0 %}text-success{% elif all_years_total_net < 0 %}text-danger{% endif %}">
                     {{ all_years_total_net|floatformat:2 }}
                   </td>
                 </tr>

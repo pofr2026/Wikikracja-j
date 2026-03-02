@@ -17,32 +17,32 @@
 <div class="container mt-12">
   <div class="row mb-12">
     <div>
-		<a {% if request.path_info == '/glosowania/parameters/' %} class="btn mr-1 mb-1 btn-primary fas fa-solid fa-question" style="font-size: 16px;"
-		{% else %} class="btn mr-1 mb-1 btn-secondary fas fa-solid fa-question" style="font-size: 16px;"
+		<a {% if request.path_info == '/glosowania/parameters/' %} class="btn me-1 mb-1 btn-primary fas fa-solid fa-question"
+		{% else %} class="btn me-1 mb-1 btn-secondary fas fa-solid fa-question"
 		{% endif %} href="{% url 'glosowania:parameters' %}"></a>
 
-		<a {% if request.path_info == '/glosowania/proposition/' %} class="btn btn-sm mr-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm mr-1 mb-1 btn-secondary"
+		<a {% if request.path_info == '/glosowania/proposition/' %} class="btn btn-sm me-1 mb-1 btn-primary"
+		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
 		{% endif %} href="{% url 'glosowania:proposition' %}">{% trans 'Propositions' %}</a>
 		
-		<a {% if request.path_info == '/glosowania/discussion/' %} class="btn btn-sm mr-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm mr-1 mb-1 btn-secondary"
+		<a {% if request.path_info == '/glosowania/discussion/' %} class="btn btn-sm me-1 mb-1 btn-primary"
+		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
 		{% endif %} href="{% url 'glosowania:discussion' %}">{% trans 'Discussion' %}</a>
 		
-		<a {% if request.path_info == '/glosowania/referendum/' %} class="btn btn-sm mr-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm mr-1 mb-1 btn-secondary"
+		<a {% if request.path_info == '/glosowania/referendum/' %} class="btn btn-sm me-1 mb-1 btn-primary"
+		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
 		{% endif %} href="{% url 'glosowania:referendum' %}">{% trans 'Referendum' %}</a>
 		
-		<a {% if request.path_info == '/glosowania/approved/' %} class="btn btn-sm mr-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm mr-1 mb-1 btn-secondary"
+		<a {% if request.path_info == '/glosowania/approved/' %} class="btn btn-sm me-1 mb-1 btn-primary"
+		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
 		{% endif %} href="{% url 'glosowania:approved' %}">{% trans 'Approved' %}</a>
 		
-		<a {% if request.path_info == '/glosowania/rejected/' %} class="btn mr-1 mb-1 btn-primary fas fa-regular fa-trash" style="font-size: 17px;"
-		{% else %} class="btn mr-1 mb-1 btn-secondary fas fa-regular fa-trash" style="font-size: 17px;"
+		<a {% if request.path_info == '/glosowania/rejected/' %} class="btn me-1 mb-1 btn-primary fas fa-regular fa-trash"
+		{% else %} class="btn me-1 mb-1 btn-secondary fas fa-regular fa-trash"
 		{% endif %} href="{% url 'glosowania:rejected' %}"></a>
 
 
-		<a href="{% url 'glosowania:dodaj_nowy' %}"class="btn btn-sm mr-1 mb-1 btn-success float-right">+{% trans 'Add' %}</a>
+		<a href="{% url 'glosowania:dodaj_nowy' %}"class="btn btn-sm me-1 mb-1 btn-success float-end">+{% trans 'Add' %}</a>
     </div>
   </div>
 </div>

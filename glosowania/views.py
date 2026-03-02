@@ -93,7 +93,7 @@ def edit(request: HttpRequest, pk: int):
             'znosi': decision.znosi,
         })
         
-    # l.info(f"Proposal {decision.id} modified by {request.user}") # Can't log that because it kicks in on form open (not on save)
+    # log.info(f"Proposal {decision.id} modified by {request.user}") # Can't log that because it kicks in on form open (not on save)
     return render(request, 'glosowania/edit.html', {'form': form})
 
 
@@ -368,7 +368,7 @@ def SendEmail(subject: str, message: str):
         subject=f'[{HOST}] {subject}',
         body=message + "\n\n" + email_footer,
         )
-    # l.info(f'subject: {subject} \n message: {message}')
+    # log.info(f'subject: {subject} \n message: {message}')
     
     def _send_with_delay():
         time.sleep(s.EMAIL_SEND_DELAY_SECONDS)

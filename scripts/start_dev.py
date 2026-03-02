@@ -105,7 +105,7 @@ def main():
 
     print("\nDevelopment instance started\n")
     # run(["daphne", "zzz.asgi:application"])
-    run(manage + ["runserver"]) 
+    run(manage + ["runserver", "0.0.0.0:8000"]) 
 
 
 if __name__ == "__main__":

@@ -52,7 +52,7 @@ CSRF_TRUSTED_ORIGINS = env_list(
     default=["http://localhost", "http://127.0.0.1"],
 )
 
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False if DEBUG else True
 CSRF_COOKIE_SAMESITE = "Lax"
 
 # Reverse proxy configuration (required when behind Traefik/nginx)
@@ -77,7 +77,8 @@ USE_TZ = True
 LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale'),)
 DATE_FORMAT = "Y-m-d"
 INTERNAL_IPS = '127.0.0.1'
-CRISPY_TEMPLATE_PACK = 'bootstrap4'  # TODO: template?
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = 'bootstrap5'  # TODO: template?
 ASGI_APPLICATION = 'zzz.routing.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ROOT_URLCONF = 'zzz.urls'
@@ -193,8 +194,9 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admindocs',
     'django_extensions',
+    'django_bootstrap5',
     'crispy_forms',
-    'bootstrap4',
+    'crispy_bootstrap5',
     'tinymce',
     'filebrowser',
     'django.contrib.admin',
@@ -211,7 +213,6 @@ INSTALLED_APPS = (
     'board',
     'events',
     'tasks',
-    'crispy_bootstrap4',
     'captcha',
     'django_browser_reload',
     "django_watchfiles",
@@ -221,6 +222,7 @@ INSTALLED_APPS = (
 # Just for suppressing "Using selector: EpollSelector"
 import logging
 logging.getLogger('asyncio').setLevel(logging.INFO)
+# logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
 
 LOGGING = {
     'version': 1,
@@ -249,6 +251,11 @@ LOGGING = {
         #     'level': 'INFO',
         #     'propagate': True
         # },
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['console'],
+        #     'propagate': True
+        # }
         # 'glosowania': {
         #     'handlers': ['console'],
         #     'level': 'INFO',

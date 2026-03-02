@@ -1,7 +1,7 @@
 {% extends "home/base.html" %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 {% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
+{% bootstrap_javascript %}
 {% bootstrap_messages %}
 {% load static %}
 {% load i18n %}
@@ -16,7 +16,7 @@
 <div class="row d-flex justify-content-center">
   {% if posts %}
     {% for post in posts %}
-      <div class="col-md-5 mb-2 ml-2" style="border: 1px solid gray; border-radius: 10px; margin: 10; padding: 10;">
+      <div class="col-md-5 mb-2 ms-2 board">
         <h3><a href="{% url 'board:view_post' post.pk %}" class="text-decoration-none">{{ post.title }}</a></h3>
         {% if post.subtitle %}
           <h5 class="text-muted">{{ post.subtitle }}</h5>

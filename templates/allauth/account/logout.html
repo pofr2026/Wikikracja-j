@@ -1,7 +1,7 @@
 {% extends "home/base.html" %}
 {% load i18n %}
 {% load static %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 {% bootstrap_css %}
 {% bootstrap_messages %}
 
@@ -15,9 +15,9 @@
 <form method="post" action="{% url 'account_logout' %}">
   {% csrf_token %}
   {% if redirect_field_value %}
-  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
   {% endif %}
-  <button type="submit" class="btn btn-info btn-block m-2 btn-sm">{% trans 'Sign Out' %}</button>
+  <button type="submit" class="btn btn-info d-block w-100 m-2 btn-sm">{% trans 'Sign Out' %}</button>
 </form>
 
 {% endblock %}

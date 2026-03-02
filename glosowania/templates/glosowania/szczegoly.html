@@ -31,7 +31,7 @@
 			<u><b>{% trans 'Bill title' %}</b></u> {{ id.title }}
 			{% if chat_room %}
 				<a href="{% url 'chat:chat' %}#room_id={{ chat_room.id }}" target="_blank" class="text-decoration-none ms-3 {{ chat_room_pulse_class }}">
-					<i class="bi bi-chat-dots" style="font-size: 1.1em;"></i>
+					<i class="bi bi-chat-dots"></i>
 				</a>
 			{% endif %}
 		</h5>
@@ -64,7 +64,7 @@
 								</small>
 								{% if arg.author == current_user and id.status not in "4,5"|make_list %}
 									<div class="mt-1">
-										<a href="{% url 'glosowania:edit_argument' arg.id %}" class="btn btn-sm btn-outline-secondary">{% trans 'Edit' %}</a>
+										<a href="{% url 'glosowania:edit_argument' arg.id %}" class="btn btn-sm btn-outline-primary">{% trans 'Edit' %}</a>
 										<a href="{% url 'glosowania:delete_argument' arg.id %}" class="btn btn-sm btn-outline-danger">{% trans 'Delete' %}</a>
 									</div>
 								{% endif %}
@@ -97,7 +97,7 @@
 								</small>
 								{% if arg.author == current_user and id.status not in "4,5"|make_list %}
 									<div class="mt-1">
-										<a href="{% url 'glosowania:edit_argument' arg.id %}" class="btn btn-sm btn-outline-secondary">{% trans 'Edit' %}</a>
+										<a href="{% url 'glosowania:edit_argument' arg.id %}" class="btn btn-sm btn-outline-primary">{% trans 'Edit' %}</a>
 										<a href="{% url 'glosowania:delete_argument' arg.id %}" class="btn btn-sm btn-outline-danger">{% trans 'Delete' %}</a>
 									</div>
 								{% endif %}
@@ -133,14 +133,14 @@
 	{% if id.status == 1 %}
 	<hr>
 		{% if not signed %}
-			<form action="#" method="get" style="display: inline-block;">
+			<form action="#" method="get" class="form-check-inline">
 				<p><u><h5>{% trans 'Do you want a referendum on this law?' %}</h5></u></p>
-				<input class="btn btn-primary btn-sm" type="submit" name="sign" value="{% trans "Yes, I sign" %}"/>
+				<input class="btn btn-primary btn-sm" type="submit" name="sign" value="{% trans "Yes, I sign" %}">
 			</form>
 		{% elif signed %}
 			<p><u><h5>{% trans 'You already signed this proposal.' %}</h5></u></p>
-			<form action="#" method="get" style="display: inline-block;">
-				<input class="btn btn-danger btn-sm" type="submit" name="withdraw" value="{% trans "Withdraw your sign" %}"/>
+			<form action="#" method="get" class="form-check-inline">
+				<input class="btn btn-danger btn-sm" type="submit" name="withdraw" value="{% trans "Withdraw your sign" %}">
 			</form>
 		{% endif %}
 
@@ -157,8 +157,8 @@
 		{% if not voted %}
 			<form action="#" method="get">
 				<p><u><h5>{% trans 'Do you want to implement this law?' %}</h5></u></p>
-				<input class="btn btn-primary btn-sm" type="submit" name="tak" value="{% trans 'Yes' %}"/>
-				<input class="btn btn-primary btn-sm" type="submit" name="nie" value="{% trans 'No' %}"/>
+				<input class="btn btn-primary btn-sm" type="submit" name="tak" value="{% trans 'Yes' %}">
+				<input class="btn btn-primary btn-sm" type="submit" name="nie" value="{% trans 'No' %}">
 			</form>
 		{% elif voted %}
 			<p><u><h5>{% trans 'You already voted.' %}</h5></u></p>

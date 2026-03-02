@@ -7,7 +7,7 @@
 
 <p>
   {% trans "New person will be accepted above" %}
-  <span class="badge badge-primary badge-pill">{{ acceptance }}</span>
+  <span class="badge text-bg-primary rounded-pill">{{ acceptance }}</span>
   {% trans "threshold." %}
 </p>
 
@@ -32,11 +32,11 @@
 					<td>
 						<span class="d-flex align-items-center">
 							{% if i.rating == 1 %}
-							<i class="fas fa-check-circle text-success mr-2" title="{% trans 'You accepted this candidate' %}"></i>
+							<i class="fas fa-check-circle text-success me-2" title="{% trans 'You accepted this candidate' %}"></i>
 							{% elif i.rating == -1 %}
-							<i class="fas fa-times-circle text-danger mr-2" title="{% trans 'You rejected this candidate' %}"></i>
+							<i class="fas fa-times-circle text-danger me-2" title="{% trans 'You rejected this candidate' %}"></i>
 							{% else %}
-							<i class="fas fa-circle text-secondary mr-2" title="{% trans 'You are neutral about this candidate' %}"></i>
+							<i class="fas fa-circle text-secondary me-2" title="{% trans 'You are neutral about this candidate' %}"></i>
 							{% endif %}
 							{{ i.username }}
 						</span>

@@ -6,13 +6,13 @@
 <div class="container mt-4">
   <div class="row mb-4">
     <div>
-      <a href="{% url 'bookkeeping:transaction_create' %}" class="btn btn-sm mr-1 mb-1 btn-success float-right">
+      <a href="{% url 'bookkeeping:transaction_create' %}" class="btn btn-sm me-1 mb-1 btn-success float-end">
         <i class="fas fa-plus-circle"></i> {% trans 'Add Transaction' %}
       </a>
-      <a href="{% url 'bookkeeping:transaction_list' %}" class="btn btn-sm mr-1 mb-1 btn-primary">{% trans 'Transactions' %}</a>
-      <a href="{% url 'bookkeeping:partner_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Partners' %}</a>
-      <a href="{% url 'bookkeeping:category_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Categories' %}</a>
-      <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm mr-1 mb-1 btn-secondary">{% trans 'Reports' %}</a>
+      <a href="{% url 'bookkeeping:transaction_list' %}" class="btn btn-sm me-1 mb-1 btn-primary">{% trans 'Transactions' %}</a>
+      <a href="{% url 'bookkeeping:partner_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Partners' %}</a>
+      <a href="{% url 'bookkeeping:category_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Categories' %}</a>
+      <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm me-1 mb-1 btn-secondary">{% trans 'Reports' %}</a>
     </div>
   </div>
 
@@ -24,7 +24,7 @@
         <th>{% trans "Partner" %}</th>
         <th>{% trans "Category" %}</th>
         <th>{% trans "Amount" %}</th>
-        <th class="text-right">{% trans "Actions" %}</th>
+        <th class="text-end">{% trans "Actions" %}</th>
       </tr>
     </thead>
     <tbody>
@@ -33,7 +33,7 @@
           <td>
             <a
               href="#transaction-details-{{ transaction.id }}"
-              data-toggle="collapse"
+              data-bs-toggle="collapse"
               role="button"
               aria-expanded="false"
               aria-controls="transaction-details-{{ transaction.id }}"
@@ -51,9 +51,9 @@
           <td>{{ transaction.category|default:"-" }}</td>
           <td>{{ transaction.amount }}</td>
           <td>
-            <div class="btn-group float-right" role="group">
-              <a href="{% url 'bookkeeping:transaction_update' transaction.id %}" class="btn btn-sm mr-1 mb-1 btn-primary">{% trans "Edit" %}</a>
-              <a href="{% url 'bookkeeping:transaction_delete' transaction.id %}" class="btn btn-sm mr-1 mb-1 btn-danger">{% trans "Delete" %}</a>
+            <div class="btn-group float-end" role="group">
+              <a href="{% url 'bookkeeping:transaction_update' transaction.id %}" class="btn btn-sm me-1 mb-1 btn-primary">{% trans "Edit" %}</a>
+              <a href="{% url 'bookkeeping:transaction_delete' transaction.id %}" class="btn btn-sm me-1 mb-1 btn-danger">{% trans "Delete" %}</a>
             </div>
           </td>
         </tr>

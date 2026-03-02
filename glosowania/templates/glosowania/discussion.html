@@ -1,7 +1,7 @@
 {% extends 'glosowania/menu.html' %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 {% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
+{% bootstrap_javascript %}
 {% bootstrap_messages %}
 {% load static %}
 {% load i18n %}
@@ -32,7 +32,7 @@
 					{{ i.pk }}. <a href="{% url 'glosowania:details' pk=i.pk %}">{{ i.title }}</a>
 					{% if i.chat_room %}
 						<a href="{% url 'chat:chat' %}#room_id={{ i.chat_room.id }}" target="_blank" class="text-decoration-none ms-3 {{ i.chat_room_pulse_class }}">
-							<i class="bi bi-chat-dots" style="font-size: 1.1em;"></i>
+							<i class="bi bi-chat-dots"></i>
 						</a>
 					{% endif %}
 				</h5>

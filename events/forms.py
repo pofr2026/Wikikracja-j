@@ -81,23 +81,23 @@ class EventForm(forms.ModelForm):
             Field('title', css_class='form-control'),
             Field('description', css_class='form-control'),
             Row(
-                Column('link', css_class='form-group col-md-6'),
-                Column('place', css_class='form-group col-md-6'),
+                Column('link', css_class='mb-3 col-md-6'),
+                Column('place', css_class='mb-3 col-md-6'),
             ),
             Row(
-                Column('start_date', css_class='form-group col-md-6'),
-                Column('end_date', css_class='form-group col-md-6'),
+                Column('start_date', css_class='mb-3 col-md-6'),
+                Column('end_date', css_class='mb-3 col-md-6'),
             ),
             Field('frequency', css_class='form-control', wrapper_class='mb-3'),
             Row(
-                Column('ordinal', css_class='form-group col-md-6'),
-                Column('weekday', css_class='form-group col-md-6'),
+                Column('ordinal', css_class='mb-3 col-md-6'),
+                Column('weekday', css_class='mb-3 col-md-6'),
                 css_id='ordinal-fields-row',
                 css_class='ordinal-fields-row'
             ),
             Row(
-                Column('is_active', css_class='form-group col-md-6'),
-                Column('is_public', css_class='form-group col-md-6'),
+                Column('is_active', css_class='mb-3 col-md-6'),
+                Column('is_public', css_class='mb-3 col-md-6'),
             ),
             Submit('submit', _('Save Event'), css_class='btn btn-primary')
         )

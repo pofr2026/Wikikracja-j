@@ -75,6 +75,10 @@ msgstr "Publiczne"
 msgid "Archived"
 msgstr "Zarchiwizowane"
 
+#: .\chat\templates\chat\chat.html:132
+msgid "Private Archived"
+msgstr "Prywatne zarchiwizowane"
+
 #: .\board\models.py:14 .\tasks\views.py:22
 msgid "Important"
 msgstr "Ważne"
@@ -628,6 +632,18 @@ msgstr "Uprawnienie"
 #: .\chat\templates\chat\room_icon.html:21
 msgid "Copy link"
 msgstr "Skopiuj link"
+
+#: .\chat\templates\chat\room_icon.html:21
+msgid "Copy message link"
+msgstr "Skopiuj link wiadomości"
+
+#: .\chat\templates\chat\room_icon.html:21
+msgid "Link copied"
+msgstr "Link skopiowany"
+
+#: .\chat\templates\chat\room_icon.html:21
+msgid "Could not copy link"
+msgstr "Nie można skopiować wiadomości"
 
 #: .\chat\templates\chat\room_icon.html:22
 #, python-format

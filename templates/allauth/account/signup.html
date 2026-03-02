@@ -2,14 +2,14 @@
 {% load i18n %}
 {% load static %}
 {% load crispy_forms_tags %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 {% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
+{% bootstrap_javascript %}
 {% bootstrap_messages %}
 
 
 {% block content %}
-<div class="font-weight-bold">
+<div class="fw-bold">
 <p>{% blocktrans %}Account is created in 4 steps:{% endblocktrans %}</p>
 <p>1. {% blocktrans %}Enter your email and solve captcha.{% endblocktrans %}</p>
 <p>2. {% blocktrans %}Confirm your email by clicking the link sent to your inbox.{% endblocktrans %}</p>
@@ -23,8 +23,8 @@
   {{ form.captcha }}
 
   {% if redirect_field_value %}
-  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" >
   {% endif %}
-  <button type="submit" class="btn btn-info btn-block m-2 btn-sm">{% trans "Sign Up" %}</button>
+  <button type="submit" class="btn btn-info d-block w-100 m-2 btn-sm">{% trans "Sign Up" %}</button>
 </form>
 {% endblock %}
