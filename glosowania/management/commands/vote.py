@@ -85,7 +85,7 @@ class Command(BaseCommand):
             
             for i in decyzje:
                 # Nie ma sensu procesowoać zatwierdzonych i odrzuconych więc odrzućmy je na starcie:
-                if i.status != rejected or i.status != approved:
+                if i.status == proposition or i.status == discussion or i.status == referendum:
 
                     # FROM PROPOSITION TO DISCUSSION
                     if i.status == proposition:

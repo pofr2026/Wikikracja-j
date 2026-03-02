@@ -103,6 +103,10 @@
               <th scope="col">{% trans "Other" %}</th>
               <td scope="col">{{ b.other|default:"-" }}</td>
             </tr>
+            <tr>
+              <th scope="col">{% trans "Why do you want to join?" %}</th>
+              <td scope="col">{{ b.why|default:"-" }}</td>
+            </tr>
           </tbody>
         </table>
       </p>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-28 19:46+0100\n"
+"POT-Creation-Date: 2026-03-02 10:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -989,7 +989,7 @@ msgid "For monthly ordinal events: which day of the week? (e.g., Monday, Tuesday
 msgstr ""
 
 #: .\events\models.py:92 .\events\templates\events\event_detail.html:71
-#: .\tasks\models.py:31
+#: .\tasks\models.py:33
 msgid "Active"
 msgstr "Active"
 
@@ -1232,7 +1232,7 @@ msgid "Approved"
 msgstr ""
 
 #: .\glosowania\management\commands\vote.py:172 .\glosowania\views.py:204
-#: .\tasks\models.py:34 .\tasks\views.py:24
+#: .\tasks\models.py:36 .\tasks\views.py:24
 msgid "Rejected"
 msgstr ""
 
@@ -1593,12 +1593,12 @@ msgstr ""
 msgid "Result"
 msgstr ""
 
-#: .\glosowania\templates\glosowania\szczegoly.html:182 .\tasks\models.py:100
+#: .\glosowania\templates\glosowania\szczegoly.html:182 .\tasks\models.py:102
 #: .\tasks\templates\tasks\_task_cards.html:83
 msgid "For"
 msgstr ""
 
-#: .\glosowania\templates\glosowania\szczegoly.html:182 .\tasks\models.py:99
+#: .\glosowania\templates\glosowania\szczegoly.html:182 .\tasks\models.py:101
 #: .\tasks\templates\tasks\_task_cards.html:89
 msgid "Against"
 msgstr ""
@@ -2470,22 +2470,22 @@ msgstr ""
 msgid "Invalid closing status."
 msgstr ""
 
-#: .\tasks\models.py:32
+#: .\tasks\models.py:34
 msgid "Completed"
 msgstr ""
 
-#: .\tasks\models.py:33
+#: .\tasks\models.py:35
 #, fuzzy
 #| msgid "Cancel"
 msgid "Cancelled"
 msgstr "Cancel"
 
-#: .\tasks\models.py:124 .\tasks\templates\tasks\task_detail.html:74
+#: .\tasks\models.py:126 .\tasks\templates\tasks\task_detail.html:74
 #: .\tasks\templates\tasks\task_detail.html:147
 msgid "Success"
 msgstr ""
 
-#: .\tasks\models.py:125 .\tasks\templates\tasks\task_detail.html:75
+#: .\tasks\models.py:127 .\tasks\templates\tasks\task_detail.html:75
 #: .\tasks\templates\tasks\task_detail.html:153
 msgid "Failure"
 msgstr ""

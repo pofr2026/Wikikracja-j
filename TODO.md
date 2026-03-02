@@ -4,6 +4,7 @@
 - Dodać opcję likwidacji własnego konta
 - Wersjonowanie Ogłoszeń i Przepisów. Wydaje się, że to skomplikuje kod.
 
+- Ludzie piszą do grupy. Grupy piszą do siebie.
 - backup kontaktów, przepisów, ogłoszeń, itd. Każdy powinien móc zrobić w postaci fixtures i md.
 - okres próbny: wszystkie głosowania są zablokowane, finanse i emaile do ludzi nie są widoczne
 - Powinna być możliwość samodzielnego usunięcie z grupy ale też powinien być okres karencji po którym potwierdza się chęć odejścia. W okresie karencji będziemy mieli szansę zapytać co jest nie tak.
