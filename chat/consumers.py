@@ -35,18 +35,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
         Called when the websocket is handshaking as part of initial connection.
         """
-        # Debug logging for WebSocket connection issues
-        user = self.scope.get("user")
-        session = self.scope.get("session", {})
-        cookies = self.scope.get("cookies", {})
-        log.info(f"[WS DEBUG] User: {user}, is_anonymous: {getattr(user, 'is_anonymous', 'N/A')}")
-        log.info(f"[WS DEBUG] Session keys: {list(session.keys()) if session else 'NO SESSION'}")
-        log.info(f"[WS DEBUG] Cookies: {list(cookies.keys()) if cookies else 'NO COOKIES'}")
-        
         # Are they logged in?
         if self.scope["user"].is_anonymous:
             # Reject the connection
-            log.warning(f"[WS DEBUG] Rejecting anonymous user. Headers: {dict(self.scope.get('headers', []))}")
             await self.close()
         else:
             # Accept the connection

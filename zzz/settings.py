@@ -59,6 +59,10 @@ CSRF_TRUSTED_ORIGINS = env_list(
 CSRF_COOKIE_SECURE = False if DEBUG else True
 CSRF_COOKIE_SAMESITE = "Lax"
 
+# Session cookie settings - must match CSRF settings for WebSocket to work
+SESSION_COOKIE_SECURE = False if DEBUG else True
+SESSION_COOKIE_SAMESITE = "Lax"
+
 # Reverse proxy configuration (required when behind Traefik/nginx)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
