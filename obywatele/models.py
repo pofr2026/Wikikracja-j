@@ -16,6 +16,7 @@ class Uzytkownik(models.Model):
         EMAIL_CONFIRMED = 'email_confirmed', _('Email confirmed')
         FORM_COMPLETED = 'form_completed', _('Form completed')
 
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     uid = models.OneToOneField(User,
                                on_delete=models.CASCADE,
                                editable=False,
@@ -69,6 +70,7 @@ class Uzytkownik(models.Model):
 
 
 class Rate(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     kandydat = models.ForeignKey(Uzytkownik,
                                  on_delete=models.CASCADE,
                                  related_name='kandydat')

@@ -35,6 +35,7 @@ class Event(models.Model):
         (6, _('Sunday')),
     ]
     
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     title = models.CharField(
         max_length=200,
         verbose_name=_('Title'),

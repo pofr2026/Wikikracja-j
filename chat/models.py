@@ -7,6 +7,8 @@ class Room(models.Model):
     """
     A room for people to chat in.
     """
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
+
     # Allowed users
     allowed = models.ManyToManyField(User, related_name="rooms")
 
@@ -86,6 +88,7 @@ class Room(models.Model):
 
 
 class Message(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     # 'sender' must be 'null=True' for anonymouse messages in email (search for 'if m.anonymous:').
     sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     time = models.DateTimeField(auto_now=True)
@@ -99,6 +102,7 @@ class Message(models.Model):
 
 
 class MessageVote(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     user = models.ForeignKey(User, related_name="votes", on_delete=models.CASCADE)
     message = models.ForeignKey(Message, related_name="votes", on_delete=models.CASCADE)
 
@@ -117,17 +121,20 @@ class MessageHistory(models.Model):
     All states of given message will be associated with this object.
     They can be easily retrieved like MessageHistory#entries.
     """
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     message = models.OneToOneField(Message, on_delete=models.CASCADE)
 
 
 class MessageHistoryEntry(models.Model):
     """ Stores state of message that is no longer relevant """
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     history = models.ForeignKey(MessageHistory, on_delete=models.CASCADE, related_name="entries")
     text = models.TextField()
     time = models.DateTimeField(auto_now=True)
 
 
 class MessageAttachment(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     type = models.CharField(max_length=255)
     filename = models.CharField(max_length=255)
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="attachments")

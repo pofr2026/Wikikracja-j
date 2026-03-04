@@ -35,6 +35,7 @@ class Task(models.Model):
         CANCELLED = "cancelled", _("Cancelled")
         REJECTED = "rejected", _("Rejected")
 
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     title = models.CharField(max_length=200)
     description = models.TextField()
     status = models.CharField(
@@ -101,6 +102,7 @@ class TaskVote(models.Model):
         DOWN = -1, _("Against")
         UP = 1, _("For")
 
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     task = models.ForeignKey(
         Task,
         related_name="votes",
@@ -126,6 +128,7 @@ class TaskEvaluation(models.Model):
         SUCCESS = "success", _("Success")
         FAILURE = "failure", _("Failure")
 
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     task = models.ForeignKey(
         Task,
         related_name="evaluations",

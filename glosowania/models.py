@@ -19,6 +19,7 @@ def does_it_exist(value):
     return True
 
 class Decyzja(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     author = models.ForeignKey(
         'auth.User',
         on_delete=models.SET_NULL,
@@ -95,6 +96,7 @@ class Argument(models.Model):
         ('AGAINST', _('Negative')),
     ]
     
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     decyzja = models.ForeignKey(
         Decyzja,
         on_delete=models.CASCADE,
@@ -139,6 +141,7 @@ class Argument(models.Model):
 
 class ZebranePodpisy(models.Model):
     '''Lista podpisów pod wnioskiem o referendum'''
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     projekt = models.ForeignKey(Decyzja, on_delete=models.SET_NULL, null=True)
 
     # Lets note who signed proposal:
@@ -149,6 +152,7 @@ class ZebranePodpisy(models.Model):
 
 
 class KtoJuzGlosowal(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     projekt = models.ForeignKey(Decyzja, on_delete=models.CASCADE)
     ktory_uzytkownik_juz_zaglosowal = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -163,6 +167,7 @@ class VoteCode(models.Model):
     - Jednorazowy kod
     - Tak/Nie
     '''
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     project = models.ForeignKey(Decyzja, on_delete=models.CASCADE)
     code = models.CharField(editable=False, null=True, max_length=20)
     vote = models.BooleanField(editable=False, null=True)

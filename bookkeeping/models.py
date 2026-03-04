@@ -3,13 +3,15 @@ from datetime import datetime
 from django.utils.translation import gettext_lazy as _
 
 class Category(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     name = models.CharField(max_length=50, unique=True, verbose_name=_("Name"))
     
     def __str__(self):
         return self.name
 
 
-class Partner(models.Model):  
+class Partner(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     name = models.CharField(max_length=200, unique=True, verbose_name=_("Name"))
     email = models.EmailField(null=True, blank=True, verbose_name=_("email"))
     phone = models.CharField(max_length=200, null=True, blank=True, verbose_name=_("Phone"))
@@ -23,6 +25,7 @@ class Partner(models.Model):
 
 
 class Transaction(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     INCOMING = 'I'
     OUTGOING = 'O'
     TYPES = [
