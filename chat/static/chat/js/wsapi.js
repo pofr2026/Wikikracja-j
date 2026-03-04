@@ -108,12 +108,28 @@ export default class WsApi {
         });
     }
 
-    editMessage(message_id, message) {
-        this.sendJson({
+    editMessage(message_id, message, attachments = {}, removed_attachments = [], original_message = null) {
+        let payload = {
             command: "edit-message",
-            message_id: message_id,
-            new_message: message
-        });
+            message_id: message_id
+        };
+        
+        // Only include new_message if it changed
+        if (original_message === null || message !== original_message) {
+            payload.new_message = message;
+        }
+        
+        // Add attachments if provided
+        if (attachments && Object.keys(attachments).length > 0) {
+            payload.attachments = attachments;
+        }
+        
+        // Add removed attachments if provided
+        if (removed_attachments && removed_attachments.length > 0) {
+            payload.removed_attachments = removed_attachments;
+        }
+        
+        this.sendJson(payload);
     }
 
     addVote(vote, message_id) {

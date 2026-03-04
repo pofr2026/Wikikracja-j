@@ -120,17 +120,30 @@ $(document).on('click', '.copy-message-url', function(e) {
 $(document).on("change", ".file-input", function(e) {
     let files = this.files;
     let preview_container = DOM_API.getPreviewDiv();
-    preview_container.empty();
+    
+    // If editing, keep existing attachments and append new ones
+    if (!DOM_API.isEditing()) {
+        preview_container.empty();
+    }
 
-    DOM_API.getPreviewContainer().show();
+    if (files.length > 0) {
+        DOM_API.getPreviewContainer().show();
+    }
 
     for (let i = 0; i < files.length; ++i) {
         let file = files.item(i);
         let fr = new FileReader();
 
-        let preview_id = `preview-id-${i}`;
+        let preview_id = `preview-new-${i}-${Date.now()}`;
 
-        preview_container.append("<img class='image-preview' id='" + preview_id + "'>");
+        let img_html = `<div class="image-preview-wrapper" style="position: relative; display: inline-block;">
+            <img class='image-preview new-attachment' id='${preview_id}'>
+            <button class="btn btn-sm btn-danger remove-new-attachment" 
+                style="position: absolute; top: 2px; right: 2px; padding: 0 4px; font-size: 12px;"
+                data-preview-id="${preview_id}" type="button">×</button>
+        </div>`;
+        preview_container.append(img_html);
+        
         fr.onload = function(e) {
             $(`#${preview_id}`)[0].src = this.result;
         };
@@ -160,6 +173,37 @@ $(document).on("click", ".show-history", async function() {
 $(document).on("click", ".edit-message", function() {
     let message_id = $(this).data("message-id");
     DOM_API.setEditing(message_id);
+});
+
+// Remove existing attachment during editing
+$(document).on("click", ".remove-existing-attachment", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    let filename = $(this).data("filename");
+    DOM_API.addRemovedAttachment(filename);
+    $(this).closest('.image-preview-wrapper').remove();
+    
+    // Hide preview container if no images left
+    if (DOM_API.getPreviewDiv().children().length === 0) {
+        DOM_API.getPreviewContainer().hide();
+    }
+});
+
+// Remove new attachment during editing (before upload)
+$(document).on("click", ".remove-new-attachment", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $(this).closest('.image-preview-wrapper').remove();
+    
+    // Clear file input if no new attachments left
+    if (DOM_API.getPreviewDiv().find('.new-attachment').length === 0) {
+        DOM_API.getFileInput().val("");
+    }
+    
+    // Hide preview container if no images left
+    if (DOM_API.getPreviewDiv().children().length === 0) {
+        DOM_API.getPreviewContainer().hide();
+    }
 });
 
 // Room join/leave

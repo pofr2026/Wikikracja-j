@@ -142,10 +142,24 @@ class Handlers:
             positional = x.args
             args = x.varargs
             kwargs = x.varkw
+            defaults = x.defaults or ()
             assert positional[1] == "proxy"
             assert args is None
             assert kwargs is None
-            self.map[command] = {'handler': func, 'args': positional[2:]}
+            
+            # Calculate which parameters are required (no default value)
+            all_params = positional[2:]  # Skip 'self' and 'proxy'
+            num_defaults = len(defaults)
+            num_required = len(all_params) - num_defaults
+            required_params = all_params[:num_required]
+            optional_params = all_params[num_required:]
+            
+            self.map[command] = {
+                'handler': func, 
+                'args': all_params,
+                'required': required_params,
+                'optional': optional_params
+            }
             return func
         return inner
 

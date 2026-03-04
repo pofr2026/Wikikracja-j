@@ -1,6 +1,6 @@
 import WsApi from './wsapi.js';
 import DomApi from './domapi.js';
-import { makeNotification, formatDate, formatTime, Lock, parseParms, _ } from './utility.js';
+import { makeNotification, formatDate, formatTime, formatDateTime, Lock, parseParms, _ } from './utility.js';
 import { MessageHistory } from './templates.js';
 
 let WS_API;
@@ -232,6 +232,12 @@ export async function onReceiveVotes(event) {
 export async function onReceiveEdit(edit_info) {
     // update text of message
     DOM_API.editMessageText(edit_info.message_id, edit_info.text, edit_info.timestamp);
+    
+    // update attachments if provided
+    if (edit_info.attachments !== undefined) {
+        DOM_API.updateMessageAttachments(edit_info.message_id, edit_info.attachments);
+    }
+    
     //show history button
     DOM_API.showHistoryButton(edit_info.message_id);
 }
@@ -268,6 +274,13 @@ export async function onToggleNotifications(room_id, is_enabled) {
 export async function onMessageHistory(message_id) {
     let data = await WS_API.getMessageHistory(message_id);
     let history = data?.message_history || []
+    
+    // Format timestamps to readable dates with time
+    history = history.map(entry => ({
+        ...entry,
+        formattedTime: formatDateTime(entry.timestamp)
+    }));
+    
     let html = MessageHistory( {history} );
     $("#message-history-modal .modal-body").html(html);
     $("#message-history-modal").modal('show');
@@ -340,7 +353,18 @@ function buildMessageUrl(room_id, message_id) {
 export async function onSubmitMessage(message, editing_message_id) {
     // message being edited
     if (editing_message_id) {
-        WS_API.editMessage(editing_message_id, message);
+        let files = DOM_API.getFiles();
+        let attachments = {};
+        let removed_attachments = DOM_API.getRemovedAttachments();
+        let original_message = DOM_API.getOriginalMessageText(editing_message_id);
+
+        // Upload new files if any
+        if (files.length) {
+            let response = await WS_API.uploadFiles(files);
+            attachments.images = response.filenames;
+        }
+
+        WS_API.editMessage(editing_message_id, message, attachments, removed_attachments, original_message);
         DOM_API.stopEditing();
         return;
     }

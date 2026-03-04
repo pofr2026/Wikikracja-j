@@ -97,14 +97,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         handler = handler_data.get('handler')
         arg_names = handler_data.get('args')
+        required_args = handler_data.get('required', [])
         args = {}
 
-        for arg_name in arg_names:
+        # Check required parameters
+        for arg_name in required_args:
             arg = content.get(arg_name)
             if arg is None:
                 return await self.send_json({"error": "DATA_MISSING"})
-
             args[arg_name] = arg
+        
+        # Add optional parameters if provided
+        for arg_name in arg_names:
+            if arg_name not in args:
+                arg = content.get(arg_name)
+                if arg is not None:
+                    args[arg_name] = arg
 
         try:
             result = HandledMessage()
@@ -396,24 +404,57 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
     @handlers.register("edit-message")
-    async def handle_edit_message(self, proxy: HandledMessage, message_id: int, new_message: str):
-        # escape HTML
-        new_message = escape(new_message)
-
+    async def handle_edit_message(self, proxy: HandledMessage, message_id: int, new_message: str = None, attachments: dict = None, removed_attachments: list = None):
         message = await self.get_message(message_id)
 
         # only sender can edit own message
         if await self.get_message_sender(message) != self.scope['user']:
             return
 
-        # if new message is same don't save it
-        if message.text == new_message:
+        # If new_message is not provided, use the current message text
+        if new_message is None:
+            new_message = message.text
+        else:
+            # escape HTML only if new message was provided
+            new_message = escape(new_message)
+
+        # verify that all new attachments are valid
+        if attachments:
+            for key, value in attachments.items():
+                if key not in ('images',):
+                    raise ClientError("BAD_ATTACHMENT_TYPE")
+                for filename in value:
+                    if not os.path.exists(f"{settings.BASE_DIR}/media/uploads/{filename}"):
+                        raise ClientError("FILE_NOT_FOUND")
+
+        # Remove specified attachments
+        if removed_attachments:
+            await self.remove_attachments(message_id, removed_attachments)
+
+        # Add new attachments
+        if attachments:
+            await self.save_attachments(message_id, attachments)
+
+        # Get updated attachments list
+        updated_attachments = await self.load_attachments(message_id)
+
+        # Check if anything changed
+        text_changed = message.text != new_message
+        attachments_changed = bool(attachments) or bool(removed_attachments)
+
+        if not text_changed and not attachments_changed:
             return
 
         room = await self.get_room_by_message(message_id)
 
-        # Save old state and update current state in database
-        state = await self.edit_message_and_history(message_id, new_message)
+        # Save old state and update current state in database (only if text changed)
+        if text_changed:
+            state = await self.edit_message_and_history(message_id, new_message)
+            timestamp = int(state.time.timestamp()) * 1000
+        else:
+            # If only attachments changed, use current timestamp
+            from datetime import datetime
+            timestamp = int(datetime.now().timestamp()) * 1000
 
         proxy.group_send(
             room.group_name,
@@ -423,7 +464,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     "message_id": message_id,
                     "user_id": self.scope['user'].id,
                     "text": new_message,
-                    "timestamp": int(state.time.timestamp()) * 1000
+                    "timestamp": timestamp,
+                    "attachments": updated_attachments
                 }
             }
         )
@@ -725,6 +767,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             attachments_of_type.append(attachment.filename)
             attachments[attachment.type] = attachments_of_type
         return attachments
+
+    @database_sync_to_async
+    def remove_attachments(self, message_id, filenames):
+        """Remove specific attachments from a message"""
+        for filename in filenames:
+            MessageAttachment.objects.filter(message_id=message_id, filename=filename).delete()
 
     @database_sync_to_async
     def get_message_history(self, message_id):

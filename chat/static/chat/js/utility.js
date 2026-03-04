@@ -65,6 +65,12 @@ export function formatTime(ts) {
     return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 }
 
+export function formatDateTime(ts) {
+    let date = formatDate(ts);
+    let time = formatTime(ts);
+    return date + ' ' + time;
+}
+
 export function escapeHtml(unsafe) {
     return unsafe
         // .replace(/&/g, "&amp;")

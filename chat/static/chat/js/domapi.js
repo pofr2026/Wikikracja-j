@@ -103,6 +103,18 @@ export default class DomApi {
         return this.getMessageDiv(message_id).find(".msg-text").html(f);
     }
 
+    updateMessageAttachments(message_id, attachments) {
+        let message_div = this.getMessageDiv(message_id);
+        let attachment_container = message_div.find('.attachment-image-container');
+        attachment_container.empty();
+        
+        if (attachments && attachments.images && attachments.images.length > 0) {
+            for (let filename of attachments.images) {
+                attachment_container.append(`<img class='attached-image' src='/media/uploads/${filename}'>`);
+            }
+        }
+    }
+
     showHistoryButton(message_id) {
         this.getMessageDiv(message_id).find(".show-history").show();
     }
@@ -192,6 +204,7 @@ export default class DomApi {
         $(`#file-input`).val("");
         this.getPreviewContainer().hide();
         this.getPreviewDiv().empty();
+        // Don't clear removed-attachments data here, it's needed for editing
     }
 
     getEditedMessageId() {
@@ -201,18 +214,27 @@ export default class DomApi {
 
     setEditing(message_id) {
         let text = this.getMessageText(message_id);
-        this.getFileInput().attr('disabled', 'disabled');
+        this.getFileInput().removeAttr('disabled');
         this.getMessageInput().data('edit-message', message_id)
+            .data('original-message-text', text)
             .val(text)
             .css('background-color', '#4a4a00');
+        
+        // Load existing attachments for editing
+        let attachments = this.getMessageAttachments(message_id);
+        this.loadEditingAttachments(message_id, attachments);
+        
         setCaretPosition(this.getMessageInput()[0], text.length);
     }
 
     stopEditing() {
         this.getFileInput().removeAttr('disabled');
         this.getMessageInput().removeData('edit-message')
+            .removeData('removed-attachments')
+            .removeData('original-message-text')
             .val("")
             .css('background-color', '#303030');
+        this.clearFiles();
     }
 
     async openBigImage(srcs) {
@@ -290,5 +312,56 @@ export default class DomApi {
                 $(this).remove();
             });
         }, 1200);
+    }
+
+    getMessageAttachments(message_id) {
+        let message_div = this.getMessageDiv(message_id);
+        let attachments = { images: [] };
+        message_div.find('.attached-image').each(function() {
+            let src = $(this).attr('src');
+            let filename = src.split('/').pop();
+            attachments.images.push(filename);
+        });
+        return attachments.images.length > 0 ? attachments : {};
+    }
+
+    loadEditingAttachments(message_id, attachments) {
+        let preview_container = this.getPreviewDiv();
+        preview_container.empty();
+        
+        if (!attachments || !attachments.images || attachments.images.length === 0) {
+            this.getPreviewContainer().hide();
+            return;
+        }
+
+        this.getPreviewContainer().show();
+        
+        for (let i = 0; i < attachments.images.length; i++) {
+            let filename = attachments.images[i];
+            let preview_id = `preview-existing-${i}`;
+            let img_html = `<div class="image-preview-wrapper" style="position: relative; display: inline-block;">
+                <img class='image-preview' id='${preview_id}' src='/media/uploads/${filename}' data-filename='${filename}'>
+                <button class="btn btn-sm btn-danger remove-existing-attachment" 
+                    style="position: absolute; top: 2px; right: 2px; padding: 0 4px; font-size: 12px;"
+                    data-filename="${filename}" type="button">×</button>
+            </div>`;
+            preview_container.append(img_html);
+        }
+    }
+
+    getRemovedAttachments() {
+        return this.getMessageInput().data('removed-attachments') || [];
+    }
+
+    addRemovedAttachment(filename) {
+        let removed = this.getRemovedAttachments();
+        if (!removed.includes(filename)) {
+            removed.push(filename);
+            this.getMessageInput().data('removed-attachments', removed);
+        }
+    }
+
+    getOriginalMessageText(message_id) {
+        return this.getMessageInput().data('original-message-text');
     }
 }

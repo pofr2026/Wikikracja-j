@@ -179,10 +179,6 @@
     }
 }
 
-#room .chat-controls {
-    display: block;
-    /* margin-bottom: .1rem; */
-
 /* Attached image inside message */
 .attachment-image-container .attached-image {
     max-width: 300px;
@@ -192,6 +188,10 @@
     object-fit: contain;
     margin: 2px;
 }
+
+#room .chat-controls {
+    display: block;
+    /* margin-bottom: .1rem; */
 
     input[type="file"] {
         display: none;
