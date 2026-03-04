@@ -1,8 +1,12 @@
 import os
 import sys
+import mimetypes
 from os import path
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
+
+# Register additional MIME types not recognized by default
+mimetypes.add_type('image/webp', '.webp')
 
 
 def env_bool(name, default=False):

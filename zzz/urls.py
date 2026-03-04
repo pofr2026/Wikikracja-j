@@ -46,33 +46,11 @@ if settings.DEBUG:
 # TODO: Consider adding nginx sidecar for better performance
 from django.views.static import serve
 from django.urls import re_path
-from django.http import HttpResponse, Http404
-import os
-import logging
-
-logger = logging.getLogger(__name__)
-
-def debug_serve_media(request, path):
-    """Serve media files with debug logging."""
-    full_path = os.path.join(settings.MEDIA_ROOT, path)
-    logger.info(f"[MEDIA DEBUG] Request path: {request.path}")
-    logger.info(f"[MEDIA DEBUG] MEDIA_ROOT: {settings.MEDIA_ROOT}")
-    logger.info(f"[MEDIA DEBUG] Full path: {full_path}")
-    logger.info(f"[MEDIA DEBUG] File exists: {os.path.exists(full_path)}")
-    
-    if os.path.exists(full_path):
-        logger.info(f"[MEDIA DEBUG] File size: {os.path.getsize(full_path)}")
-        return serve(request, path, document_root=settings.MEDIA_ROOT)
-    else:
-        logger.warning(f"[MEDIA DEBUG] File NOT FOUND: {full_path}")
-        # List directory contents for debugging
-        dir_path = os.path.dirname(full_path)
-        if os.path.exists(dir_path):
-            logger.info(f"[MEDIA DEBUG] Directory contents: {os.listdir(dir_path)[:10]}")
-        raise Http404(f"Media file not found: {path}")
 
 urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', debug_serve_media),
+    re_path(r'^media/(?P<path>.*)$', serve, {
+        'document_root': settings.MEDIA_ROOT,
+    }),
 ]
 
 '''
