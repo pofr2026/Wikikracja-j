@@ -419,7 +419,7 @@ def dodaj(request: HttpRequest):
 
                 SendEmailToAll(
                           _('New citizen has been proposed'),
-                          f'{request.user.username} ' + str(_('proposed new citizen\nYou can approve him/her here:')) + f' {build_site_url(f"/obywatele/poczekalnia/{candidate_profile.id}")}'
+                          f'{request.user.username} ' + str(_('proposed new citizen\nYou can approve him/her here:')) + f' {build_site_url(f"/obywatele/poczekalnia/{candidate.id}")}'
                 )
 
                 return redirect('obywatele:poczekalnia')
@@ -568,11 +568,11 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
     '''
     # zliczaj_obywateli(request)  # run reputation counting because a lot can change in the meanwhile
 
-    candidate_profile = get_object_or_404(Uzytkownik, pk=pk)
+    candidate_profile = get_object_or_404(Uzytkownik, uid_id=pk)
     candidate_user = User.objects.get(pk=pk)
     email_confirmed = is_email_confirmed_for_candidate(candidate_user, candidate_profile)
     form_completed = candidate_profile.onboarding_status == Uzytkownik.OnboardingStatus.FORM_COMPLETED
-    citizen_profile = Uzytkownik.objects.get(pk=request.user.id)
+    citizen_profile = request.user.uzytkownik
     citizen_reputation = citizen_profile.reputation
     polecajacy = citizen_profile.polecajacy
 

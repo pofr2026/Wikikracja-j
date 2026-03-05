@@ -10,6 +10,7 @@ from datetime import datetime
 from obywatele.models import Uzytkownik, Rate
 from obywatele.views import required_reputation, password_generator, SendEmailToAll
 from django.db.models import Sum
+from django.db import IntegrityError
 from chat import signals
 from zzz.utils import get_site_domain
 import time
@@ -46,7 +47,12 @@ class Command(BaseCommand):
             if Rate.objects.filter(kandydat=i).exists():
                 reputation = Rate.objects.filter(kandydat=i).aggregate(Sum('rate'))
                 i.reputation = list(reputation.values())[0]
-                i.save()
+                try:
+                    i.save()
+                except IntegrityError as e:
+                    log.error(
+                        f"Skipping reputation update for profile id={i.id}, uid_id={i.uid_id}: {e}"
+                    )
     
     def activate_eligible_users(self):
         """Activate users with sufficient reputation"""
