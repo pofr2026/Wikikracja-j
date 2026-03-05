@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-04 13:27+0100\n"
+"POT-Creation-Date: 2026-03-05 10:14+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1118,7 +1118,7 @@ msgid "Rejected"
 msgstr ""
 
 #: .\glosowania\management\commands\vote.py:188 .\glosowania\views.py:363
-#: .\obywatele\forms.py:182 .\obywatele\views.py:684
+#: .\obywatele\forms.py:182 .\obywatele\views.py:683
 #, python-brace-format
 msgid "Why you received this email? Here is explanation: {url}"
 msgstr ""
@@ -1315,7 +1315,7 @@ msgstr ""
 msgid "Add"
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:14
+#: .\glosowania\templates\glosowania\parameters.html:13
 msgid "Voting parameters"
 msgstr ""
 
@@ -1327,36 +1327,36 @@ msgstr ""
 msgid "signatures in order to trigger referendum. This number should remain low enough for any sensible proposal to be voted on, and only high enough to filter out obvious spam."
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:20
+#: .\glosowania\templates\glosowania\parameters.html:22
 msgid "Maximum time to gather signatures is"
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:20
+#: .\glosowania\templates\glosowania\parameters.html:22
 msgid "days. If there is not enough signatures - after this time, proposal is rejected."
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:21
+#: .\glosowania\templates\glosowania\parameters.html:25
 msgid "Queue and discussion before referendum lasts"
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:21
-#: .\glosowania\templates\glosowania\parameters.html:22
+#: .\glosowania\templates\glosowania\parameters.html:25
+#: .\glosowania\templates\glosowania\parameters.html:28
 msgid "days."
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:22
+#: .\glosowania\templates\glosowania\parameters.html:28
 msgid "Referendum lasts for"
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:23
+#: .\glosowania\templates\glosowania\parameters.html:31
 msgid "If you want to change any of"
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:23
+#: .\glosowania\templates\glosowania\parameters.html:31
 msgid "marked"
 msgstr ""
 
-#: .\glosowania\templates\glosowania\parameters.html:23
+#: .\glosowania\templates\glosowania\parameters.html:31
 msgid "parameters - create referendum."
 msgstr ""
 
@@ -2310,49 +2310,49 @@ msgstr ""
 msgid "Email already exist"
 msgstr ""
 
-#: .\obywatele\views.py:418
+#: .\obywatele\views.py:417
 msgid "The new user has been saved"
 msgstr ""
 
-#: .\obywatele\views.py:422
+#: .\obywatele\views.py:421
 msgid "New citizen has been proposed"
 msgstr ""
 
-#: .\obywatele\views.py:423
+#: .\obywatele\views.py:422
 msgid ""
 "proposed new citizen\n"
 "You can approve him/her here:"
 msgstr ""
 
-#: .\obywatele\views.py:436
+#: .\obywatele\views.py:435
 msgid "Please correct the highlighted errors."
 msgstr ""
 
-#: .\obywatele\views.py:494
+#: .\obywatele\views.py:493
 msgid "Changes was saved"
 msgstr ""
 
-#: .\obywatele\views.py:507
+#: .\obywatele\views.py:506
 msgid "Form is not valid!"
 msgstr ""
 
-#: .\obywatele\views.py:583
+#: .\obywatele\views.py:582
 msgid "positive"
 msgstr ""
 
-#: .\obywatele\views.py:590
+#: .\obywatele\views.py:589
 msgid "negative"
 msgstr ""
 
-#: .\obywatele\views.py:597
+#: .\obywatele\views.py:596
 msgid "neutral"
 msgstr ""
 
-#: .\obywatele\views.py:721
+#: .\obywatele\views.py:720
 msgid "Fill out your onboarding form"
 msgstr ""
 
-#: .\obywatele\views.py:723
+#: .\obywatele\views.py:722
 #, python-format
 msgid "Your email has been confirmed. Please fill out your onboarding form here: %(link)s"
 msgstr ""
@@ -2862,10 +2862,10 @@ msgstr ""
 msgid "<strong>Note:</strong> you can still <a href=\"%(email_url)s\">change your e-mail address</a>."
 msgstr ""
 
-#: .\zzz\settings.py:89
+#: .\zzz\settings.py:97
 msgid "English"
 msgstr ""
 
-#: .\zzz\settings.py:90
+#: .\zzz\settings.py:98
 msgid "Polish"
 msgstr ""

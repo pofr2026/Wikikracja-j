@@ -386,13 +386,12 @@ def dodaj(request: HttpRequest):
 
             else:
                 # If everything is ok
-                user_form.save()
-                candidate = User.objects.get(username=nick)
+                candidate = user_form.save()
                 candidate.is_active = False
                 candidate.save()
 
                 # CANDIDATE
-                candidate_profile = Uzytkownik.objects.get(id=candidate.id)
+                candidate_profile = candidate.uzytkownik
                 candidate_profile.polecajacy = request.user.username
                 candidate_profile.phone = profile_form.cleaned_data['phone']
                 candidate_profile.responsibilities = profile_form.cleaned_data['responsibilities']
@@ -408,7 +407,7 @@ def dodaj(request: HttpRequest):
 
                 # Since you proposed new person,
                 # you probably also want to accept him/her
-                citizen = Uzytkownik.objects.get(pk=request.user.id)
+                citizen = request.user.uzytkownik
                 rate = Rate()
                 rate.obywatel = citizen
                 rate.kandydat = candidate_profile
