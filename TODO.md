@@ -1,4 +1,6 @@
 # PILNE
+- Kolory Za i Przeciw w innym kolorze (obrazki)
+- Stopka nie jest widoczna
 - Dodać opcję wyłączania powiadomień email (Unsubscribe)
 - Osoby, które głosują Za zadaniem mogą zostać poproszone o pomoc
 - Dodać opcję likwidacji własnego konta
