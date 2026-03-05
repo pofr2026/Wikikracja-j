@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-05 10:14+0100\n"
+"POT-Creation-Date: 2026-03-05 10:47+0100\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -1639,7 +1639,7 @@ msgstr "Zadania"
 #: .\home\templates\home\base.html:65 .\home\templates\home\home.html:14
 #: .\home\templates\home\login.html:4 .\home\templates\home\login.html:12
 #: .\home\templates\home\login.html:33
-#: .\obywatele\management\commands\count_citizens.py:84
+#: .\obywatele\management\commands\count_citizens.py:90
 msgid "Login"
 msgstr "Zaloguj"
 
@@ -1671,7 +1671,7 @@ msgid "Chat"
 msgstr "Czat"
 
 #: .\home\templates\home\haslo.html:3
-#: .\obywatele\management\commands\count_citizens.py:85
+#: .\obywatele\management\commands\count_citizens.py:91
 msgid "Password"
 msgstr "Hasło"
 
@@ -1827,46 +1827,46 @@ msgstr "Nowa osoba poprosiła o dołączenie do grupy"
 msgid "User %(username)s just requested membership"
 msgstr "Użytkownik %(username)s właśnie poprosił/a o dołączenie do grupy"
 
-#: .\obywatele\management\commands\count_citizens.py:80
+#: .\obywatele\management\commands\count_citizens.py:86
 msgid "You have been accepted in our community"
 msgstr "Zostałeś/aś zaakceptowany/a w naszej społeczności"
 
-#: .\obywatele\management\commands\count_citizens.py:82
-#: .\obywatele\management\commands\count_citizens.py:116
+#: .\obywatele\management\commands\count_citizens.py:88
+#: .\obywatele\management\commands\count_citizens.py:122
 msgid "Welcome"
 msgstr "Witaj"
 
-#: .\obywatele\management\commands\count_citizens.py:83
-#: .\obywatele\management\commands\count_citizens.py:117
+#: .\obywatele\management\commands\count_citizens.py:89
+#: .\obywatele\management\commands\count_citizens.py:123
 msgid "Your account on"
 msgstr "Twoje konto na"
 
-#: .\obywatele\management\commands\count_citizens.py:83
+#: .\obywatele\management\commands\count_citizens.py:89
 msgid "is now active"
 msgstr "jest teraz aktywne"
 
-#: .\obywatele\management\commands\count_citizens.py:86
+#: .\obywatele\management\commands\count_citizens.py:92
 msgid "You may login here"
 msgstr "Możesz się zalogować tutaj"
 
-#: .\obywatele\management\commands\count_citizens.py:87
+#: .\obywatele\management\commands\count_citizens.py:93
 msgid "You may change password here"
 msgstr "Możesz zmienić hasło tutaj"
 
-#: .\obywatele\management\commands\count_citizens.py:114
+#: .\obywatele\management\commands\count_citizens.py:120
 msgid "Your account has been blocked"
 msgstr "Twoje konto zostało zablokowane"
 
-#: .\obywatele\management\commands\count_citizens.py:117
-#: .\obywatele\management\commands\count_citizens.py:128
+#: .\obywatele\management\commands\count_citizens.py:123
+#: .\obywatele\management\commands\count_citizens.py:134
 msgid "has been blocked"
 msgstr "zostało zablokowane"
 
-#: .\obywatele\management\commands\count_citizens.py:127
+#: .\obywatele\management\commands\count_citizens.py:133
 msgid "Citizen has been banned"
 msgstr "Ta osoba została zbanowana"
 
-#: .\obywatele\management\commands\count_citizens.py:128
+#: .\obywatele\management\commands\count_citizens.py:134
 msgid "User"
 msgstr "Użytkownik"
 
