@@ -45,6 +45,11 @@ class Command(BaseCommand):
     def count_reputation(self):
         """Count everyone's reputation from Rate model and update the Uzytkownik model"""
         for i in Uzytkownik.objects.all():
+            if i.uid is None:
+                log.warning(f"Deleting orphaned Uzytkownik profile id={i.id} (uid is None)")
+                i.delete()
+                continue
+            
             if Rate.objects.filter(kandydat=i).exists():
                 reputation = Rate.objects.filter(kandydat=i).aggregate(Sum('rate'))
                 i.reputation = list(reputation.values())[0]
