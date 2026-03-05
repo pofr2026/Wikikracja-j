@@ -44,9 +44,10 @@ class Room(models.Model):
             # Clip public room names to title_len characters for display
             return self.title[:title_len] if len(self.title) > title_len else self.title
         if self.get_other(user) is not None:
-            username = self.get_other(user).username
+            get_user=self.get_other(user)
+            username = get_user and get_user.username
             # Clip long usernames to match room title length
-            return username[:title_len] if len(username) > title_len else username
+            return username and (username[:title_len] if len(username) > title_len else username)
         else:
             return ("--")
 

@@ -112,7 +112,7 @@
 
             /* Attached image inside message */
             .attached-image {
-                max-height: 30dvh;
+                max-height: 15dvh;
                 height: auto;
                 max-width: 30dvh;
                 width: auto;
@@ -268,7 +268,6 @@
 }
 
 .room-link {
-    align-items: left;
     border: 2px solid var(--bs-light);
     cursor: pointer;
     display: flex;

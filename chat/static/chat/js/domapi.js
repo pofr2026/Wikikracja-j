@@ -80,10 +80,6 @@ export default class DomApi {
         return true;
     }
 
-    getRoomIcon(room_id) {
-        return $(`.room-link[data-room-id="${room_id}"]`);
-    }
-
     getMessageUpvotesCountDiv(message_id) {
         return this.getMessageDiv(message_id).find(".msg-upvotes");
     }

@@ -207,8 +207,8 @@ $(document).on("click", ".remove-new-attachment", function(e) {
 });
 
 // Room join/leave
-$(".room-link").click(function() {
-    let room_id = $(this).attr("data-room-id");
+$(".room-name").click(function() {
+    let room_id = $(this).parent().attr("data-room-id");
 
     if ($(this).hasClass("joined")) {
         // ignore second click on active room

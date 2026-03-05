@@ -573,7 +573,6 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
     email_confirmed = is_email_confirmed_for_candidate(candidate_user, candidate_profile)
     form_completed = candidate_profile.onboarding_status == Uzytkownik.OnboardingStatus.FORM_COMPLETED
     citizen_profile = request.user.uzytkownik
-    citizen_reputation = citizen_profile.reputation
     polecajacy = citizen_profile.polecajacy
 
     rate = Rate.objects.get_or_create(kandydat=candidate_profile, obywatel=citizen_profile)[0]
@@ -612,7 +611,6 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
         {
             'b': candidate_profile,
             'd': citizen_profile,
-            'tr': citizen_reputation,
             'wr': required_reputation(),
             'rate': r1,
             'p': polecajacy,

@@ -25,6 +25,7 @@ def get_room_or_error(room_id, user):
     # Find the room they requested (by ID)
     try:
         room = Room.objects.get(pk=room_id)
+        # room = Room.objects.filter(pk=room_id, allowed=user.id).first()
     except Room.DoesNotExist:
         # raise ClientError("ROOM_INVALID")  # Blocks user from clicking on different room so not the best approach
         room = Room.objects.first()

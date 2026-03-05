@@ -228,7 +228,8 @@
                   console.debug('ReconnectingWebSocket', 'connection-timeout', self.url);
               }
               timedOut = true;
-              localWs.close();
+              if (localWs.readyState === ws.OPEN)
+                localWs.close();
               timedOut = false;
           }, self.timeoutInterval);
 

@@ -1,6 +1,18 @@
 import { makeNotification } from '../js/utility.js';
 
 $(document).ready( ()=> {
+   if (window.location.pathname !== "/chat/") {
+
+      if (!Notification) {
+          // console.log("Connecting aborted in !Notification");
+          return;
+      }
+      if (Notification.permission !== 'granted' && localStorage.notifications !== "No") {
+          // console.log("Connecting aborted in permission !==granted");
+          return;
+      }
+   }
+      
   let ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
   let ws_path = ws_scheme + '://' + window.location.host + "/chat/stream/";
   console.log("Connecting to " + ws_path);

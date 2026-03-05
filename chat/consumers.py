@@ -187,29 +187,35 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         messages = await self.get_messages(room_id)
         to_send = []
         for message in messages:
-            latest_message_version = None
-            history = await self.get_message_history(message['id'])
-            if history:
-                latest_message_version = history[-1]
-
-            u = await self.get_user_by_id(message['sender_id'])
-            upvotes, downvotes = await self.count_votes(message['id'])
-            # message: id, sender_id, time, text, room_id
+            # latest_message_version = None
+            # history = await self.get_message_history(message['id'])
+            # if history:
+            #     latest_message_version = history[-1]
+ 
+            # sender = await self.get_user_by_id(message["sender_id"])
+            upvotes = 1 if message["votes__vote"] == "upvote" else 0
+            downvotes = 1 if message["votes__vote"] == "downvote" else 0
+            edited = False if message["messagehistory__id"] is None else True
             # t=str(message['time'])[0:19]
-            data = format_chat_message(
-                room_id=room_id,
-                user_id=u.id if u else None,
-                anonymous=message['anonymous'],
-                message=message['text'],
-                message_id=message['id'],
-                new=False,
-                upvotes=upvotes,
-                downvotes=downvotes,
-                edited=await self.was_message_edited(message['id']),
-                date=message['time'],
-                latest_date=latest_message_version.time if latest_message_version else message['time'],
-                attachments=await self.load_attachments(message['id']),
+            try:
+                data = format_chat_message(
+                    room_id=room_id,
+                    user_id=message["sender_id"], # sender.id if sender else None,
+                    anonymous=message['anonymous'],
+                    message=message['text'],
+                    message_id=message['id'],
+                    new=False,
+                    upvotes=upvotes,
+                    downvotes=downvotes,
+                    edited=edited,
+                    date=message['time'],
+                    latest_date=message['time'], # latest_message_version.time if latest_message_version else message['time'],
+                    attachments=await self.load_attachments(message['id']),
             )
+            except TypeError:
+                data = None
+                continue
+
             to_send.append(await self.format_chat_message_data(data))
 
         if to_send:
@@ -622,10 +628,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     ###########################
 
     @database_sync_to_async
-    def get_messages(self, room):
-        m = list(Message.objects.filter(room=room).values().order_by('time'))
+    def get_messages(self, room_id):
+        m = list(Message.objects.filter(room=room_id).values("id", "sender_id", "time", "text", "room_id", "anonymous", "votes__vote", "messagehistory__id").order_by('time'))
         return m
-
+    
     @database_sync_to_async
     def get_room(self, room_id):
         r = Room.objects.get(id=room_id)
@@ -698,11 +704,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return m.votes.filter(vote="upvote").count(), m.votes.filter(vote="downvote").count()
 
     @database_sync_to_async
-    def count_votes(self, message_id):
-        m = Message.objects.get(pk=message_id)
-        return m.votes.filter(vote="upvote").count(), m.votes.filter(vote="downvote").count()
-
-    @database_sync_to_async
     def get_vote(self, message_id: int):
         return MessageVote.objects.filter(message_id=message_id, user=self.scope['user']).first()
 
@@ -735,10 +736,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if isinstance(message, (int, str)):
             return Message.objects.get(pk=message).sender
         return message.sender
-
-    @database_sync_to_async
-    def was_message_edited(self, message_id):
-        return MessageHistory.objects.filter(message_id=message_id).exists()
 
     @database_sync_to_async
     def get_message_states(self, message_id):

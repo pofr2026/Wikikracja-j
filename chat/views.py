@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
 from .models import Room, Message
 from django.contrib.auth.models import User
 from chat.forms import RoomForm
@@ -54,6 +54,9 @@ def chat(request: HttpRequest):
     login and admin parts.
     """
     # TODO: This can be optimized with Signals or CRON
+
+    # Enabling query logging
+    # connection.force_debug_cursor = True
 
     # Allow active user access to all public rooms
     public_rooms = Room.objects.filter(public=True)
@@ -112,6 +115,12 @@ def chat(request: HttpRequest):
     messages_by_user = Message.objects.filter(sender=request.user).order_by("-time")
     if messages_by_user.exists():
         last_user_room = messages_by_user.first().room.id
+
+    # Disable query logging when done
+    # connection.force_debug_cursor = False
+
+
+
 
     # Render that in the chat template
     return render(request, "chat/chat.html", {
