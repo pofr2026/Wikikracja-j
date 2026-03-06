@@ -41,15 +41,24 @@ class Command(BaseCommand):
         
         # Fix public rooms - add all active users
         public_rooms = Room.objects.filter(public=True)
-        active_users = User.objects.filter(is_active=True)
+        active_users = list(User.objects.filter(is_active=True))
+        
+        self.stdout.write(f"Active users: {[u.id for u in active_users]}")
         
         for room in public_rooms:
-            current_allowed = set(room.allowed.all())
-            expected_allowed = set(active_users)
+            current_allowed = list(room.allowed.all())
+            current_allowed_ids = [u.id for u in current_allowed]
+            expected_allowed_ids = [u.id for u in active_users]
             
-            if current_allowed != expected_allowed:
+            self.stdout.write(f"Room {room.id} ({room.title}):")
+            self.stdout.write(f"  Current: {current_allowed_ids}")
+            self.stdout.write(f"  Expected: {expected_allowed_ids}")
+            
+            if set(current_allowed) != set(active_users):
                 room.allowed.set(active_users)
                 fixed_count += 1
-                log.info(f"Fixed public room {room.id} ({room.title})")
+                self.stdout.write(self.style.SUCCESS(f"  -> FIXED"))
+            else:
+                self.stdout.write(f"  -> OK")
         
         self.stdout.write(self.style.SUCCESS(f'Fixed {fixed_count} rooms'))
