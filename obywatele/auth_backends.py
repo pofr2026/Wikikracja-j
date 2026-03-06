@@ -38,5 +38,13 @@ class CaseInsensitiveEmailBackend(ModelBackend):
             # Run the default password hasher once to reduce timing
             # attacks against non-existent users
             UserModel().set_password(password)
+        except UserModel.MultipleObjectsReturned:
+            # Handle case where multiple users have the same email
+            # Try to authenticate with the active user
+            users = UserModel.objects.filter(email__iexact=normalized_username, is_active=True)
+            if users.count() == 1:
+                user = users.first()
+                if user.check_password(password) and self.user_can_authenticate(user):
+                    return user
         
         return None

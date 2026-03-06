@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-05 11:12+0100\n"
+"POT-Creation-Date: 2026-03-06 10:14+0100\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -1107,7 +1107,7 @@ msgid "Rejected"
 msgstr "Odrzucone"
 
 #: .\glosowania\management\commands\vote.py:188 .\glosowania\views.py:363
-#: .\obywatele\forms.py:182 .\obywatele\views.py:681
+#: .\obywatele\forms.py:187 .\obywatele\views.py:681
 #, python-brace-format
 msgid "Why you received this email? Here is explanation: {url}"
 msgstr "Dlaczego otrzymałeś ten e-mail? Tutaj jest wyjaśnienie: {url}"
@@ -1639,7 +1639,7 @@ msgstr "Zadania"
 #: .\home\templates\home\base.html:65 .\home\templates\home\home.html:14
 #: .\home\templates\home\login.html:4 .\home\templates\home\login.html:12
 #: .\home\templates\home\login.html:33
-#: .\obywatele\management\commands\count_citizens.py:90
+#: .\obywatele\management\commands\count_citizens.py:98
 msgid "Login"
 msgstr "Zaloguj"
 
@@ -1671,7 +1671,7 @@ msgid "Chat"
 msgstr "Czat"
 
 #: .\home\templates\home\haslo.html:3
-#: .\obywatele\management\commands\count_citizens.py:91
+#: .\obywatele\management\commands\count_citizens.py:99
 msgid "Password"
 msgstr "Hasło"
 
@@ -1814,59 +1814,63 @@ msgstr "Imię"
 msgid "Last name"
 msgstr "Nazwisko"
 
-#: .\obywatele\forms.py:147
+#: .\obywatele\forms.py:148
 msgid "Your candidacy is still in the queue. Please wait for verification."
 msgstr "Twoja kandydatura nadal czeka na zatwierdzenie. Poprosimy jeszcze o trochę cierpliwości."
 
-#: .\obywatele\forms.py:168
+#: .\obywatele\forms.py:152
+msgid "An account with this email address already exists."
+msgstr "Konto z tym adresem email już istnieje."
+
+#: .\obywatele\forms.py:173
 msgid "New person requested membership"
 msgstr "Nowa osoba poprosiła o dołączenie do grupy"
 
-#: .\obywatele\forms.py:169
+#: .\obywatele\forms.py:174
 #, python-format
 msgid "User %(username)s just requested membership"
 msgstr "Użytkownik %(username)s właśnie poprosił/a o dołączenie do grupy"
 
-#: .\obywatele\management\commands\count_citizens.py:86
+#: .\obywatele\management\commands\count_citizens.py:94
 msgid "You have been accepted in our community"
 msgstr "Zostałeś/aś zaakceptowany/a w naszej społeczności"
 
-#: .\obywatele\management\commands\count_citizens.py:88
-#: .\obywatele\management\commands\count_citizens.py:122
+#: .\obywatele\management\commands\count_citizens.py:96
+#: .\obywatele\management\commands\count_citizens.py:130
 msgid "Welcome"
 msgstr "Witaj"
 
-#: .\obywatele\management\commands\count_citizens.py:89
-#: .\obywatele\management\commands\count_citizens.py:123
+#: .\obywatele\management\commands\count_citizens.py:97
+#: .\obywatele\management\commands\count_citizens.py:131
 msgid "Your account on"
 msgstr "Twoje konto na"
 
-#: .\obywatele\management\commands\count_citizens.py:89
+#: .\obywatele\management\commands\count_citizens.py:97
 msgid "is now active"
 msgstr "jest teraz aktywne"
 
-#: .\obywatele\management\commands\count_citizens.py:92
+#: .\obywatele\management\commands\count_citizens.py:100
 msgid "You may login here"
 msgstr "Możesz się zalogować tutaj"
 
-#: .\obywatele\management\commands\count_citizens.py:93
+#: .\obywatele\management\commands\count_citizens.py:101
 msgid "You may change password here"
 msgstr "Możesz zmienić hasło tutaj"
 
-#: .\obywatele\management\commands\count_citizens.py:120
+#: .\obywatele\management\commands\count_citizens.py:128
 msgid "Your account has been blocked"
 msgstr "Twoje konto zostało zablokowane"
 
-#: .\obywatele\management\commands\count_citizens.py:123
-#: .\obywatele\management\commands\count_citizens.py:134
+#: .\obywatele\management\commands\count_citizens.py:131
+#: .\obywatele\management\commands\count_citizens.py:142
 msgid "has been blocked"
 msgstr "zostało zablokowane"
 
-#: .\obywatele\management\commands\count_citizens.py:133
+#: .\obywatele\management\commands\count_citizens.py:141
 msgid "Citizen has been banned"
 msgstr "Ta osoba została zbanowana"
 
-#: .\obywatele\management\commands\count_citizens.py:134
+#: .\obywatele\management\commands\count_citizens.py:142
 msgid "User"
 msgstr "Użytkownik"
 
@@ -2142,7 +2146,7 @@ msgstr "Twój email nie został jeszcze potwierdzony. Poprosimy o potwierdzenie 
 
 #: .\obywatele\templates\obywatele\onboarding_waiting.html:13
 msgid "Your email address is confirmed."
-msgstr "Twój email został już potwierdzony."
+msgstr "Twój email został potwierdzony."
 
 #: .\obywatele\templates\obywatele\onboarding_waiting.html:17
 #: .\obywatele\views.py:338
