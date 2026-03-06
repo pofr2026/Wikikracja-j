@@ -1,4 +1,3 @@
-import imghdr
 import json
 import logging
 import uuid
@@ -19,6 +18,7 @@ from django.conf import settings as s
 from django.dispatch import receiver
 from chat.signals import user_accepted, user_deleted
 from django.utils.translation import gettext_lazy as _
+from PIL import Image
 
 log = logging.getLogger(__name__)
 
@@ -81,20 +81,25 @@ def chat(request: HttpRequest):
         'DELETE_PUBLIC_CHAT_ROOM': td(days=s.DELETE_PUBLIC_CHAT_ROOM).days,})
 
 
+def check_image_type(file_path):
+    try:
+        with Image.open(file_path) as img:
+            return img.format.lower()
+    except Exception:
+        return None
+
 @csrf_exempt
 def upload_image(request: HttpRequest):
     filenames = []
     for image in request.FILES.getlist('images'):
-
-        file_type = imghdr.what(image)
+        file_type = check_image_type(image)
+        if file_type is None:
+            return JsonResponse({'error': 'bad type'})
+        
         image.seek(0)
-
         file_bytes = image.read()
         if len(file_bytes) > (s.UPLOAD_IMAGE_MAX_SIZE_MB * 1000000 * 2):
             return JsonResponse({'error': 'file too big'})
-
-        if file_type is None:
-            return JsonResponse({'error': 'bad type'})
 
         filename = f"{uuid.uuid4()}.{file_type}"
         with open(f"{s.BASE_DIR}/media/uploads/{filename}", "wb") as f:

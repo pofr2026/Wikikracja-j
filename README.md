@@ -26,7 +26,7 @@ Try the live demo: **https://demo.wikikracja.pl/**
 
 ## Tech Stack
 
-- **Backend**: Django 5.1, Django Channels, Python 3.11.x (both Docker and local dev)
+- **Backend**: Django 6, Django Channels, Python 3.14.x (both Docker and local dev)
 - **Frontend**: Bootstrap 5, TinyMCE, Crispy Forms
 - **Database**: SQLite (development), PostgreSQL (production ready)
 - **Cache/Channels**: Redis
@@ -39,7 +39,7 @@ Try the live demo: **https://demo.wikikracja.pl/**
 ### Development Environment
 
 #### Prerequisites
-- Python 3.11.x (install from [python.org](https://www.python.org/downloads/release/python-3119/) on Windows; add to PATH)
+- Python 3.14.x (install from [python.org](https://www.python.org/downloads/release/python-3143/) on Windows; add to PATH)
 - Redis server (for Django Channels)
 - SMTP account (for sending emails)
 

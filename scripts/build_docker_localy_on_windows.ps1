@@ -5,10 +5,10 @@
 #   Restart: .\scripts\build_docker_localy_on_windows.ps1 -Restart
 #   Reset DB: .\scripts\build_docker_localy_on_windows.ps1 -ResetDb
 
-# Install Python 3.11 from python.org
+# Install Python 3.14 from python.org
 # Add it to PATH
 # Install venv like this:
-#   py -3.11 -m venv .venv
+#   py -3.14 -m venv .venv
 
 param(
     [switch]$Detached,

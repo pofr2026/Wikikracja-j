@@ -4,7 +4,7 @@ channels~=4.3.2
 channels-redis~=4.3.0
 crispy-bootstrap5~=2026.3
 daphne~=4.2.1
-Django~=5.2.12
+Django~=6.0.3
 django-allauth~=65.14.3
 django-bootstrap5~=26.2
 django-browser-reload~=1.21.0
@@ -21,6 +21,5 @@ django-watchfiles~=1.4.0
 python-dotenv~=1.2.2
 pytz~=2026.1.post1
 redis~=7.2.1
-standard-imghdr~=3.13.0
 whitenoise~=6.12.0
  
