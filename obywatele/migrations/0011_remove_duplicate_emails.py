@@ -44,6 +44,28 @@ def remove_duplicate_emails(apps, schema_editor):
     # Clean up orphaned foreign key references in all models that reference User
     valid_user_ids = set(User.objects.values_list('id', flat=True))
     
+    # Clean up ManyToMany tables for Room model
+    if 'Room' in models_to_check:
+        Room = models_to_check['Room']
+        # Clean up room_allowed (ManyToMany)
+        for room in Room.objects.all():
+            invalid_users = room.allowed.exclude(id__in=valid_user_ids)
+            if invalid_users.exists():
+                room.allowed.remove(*invalid_users)
+                print(f"Removed {invalid_users.count()} orphaned users from Room {room.id} allowed list")
+            
+            # Clean up seen_by (ManyToMany)
+            invalid_seen = room.seen_by.exclude(id__in=valid_user_ids)
+            if invalid_seen.exists():
+                room.seen_by.remove(*invalid_seen)
+                print(f"Removed {invalid_seen.count()} orphaned users from Room {room.id} seen_by list")
+            
+            # Clean up muted_by (ManyToMany)
+            invalid_muted = room.muted_by.exclude(id__in=valid_user_ids)
+            if invalid_muted.exists():
+                room.muted_by.remove(*invalid_muted)
+                print(f"Removed {invalid_muted.count()} orphaned users from Room {room.id} muted_by list")
+    
     # MessageVote.user
     if 'MessageVote' in models_to_check:
         orphaned_votes = models_to_check['MessageVote'].objects.exclude(user_id__in=valid_user_ids)
