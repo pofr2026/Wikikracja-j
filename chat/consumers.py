@@ -190,34 +190,29 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             "notifications": not await self.has_muted_room(room.id)
         })
 
-        # Load all messages from DB to Chat
-        messages = await self.get_messages(room_id)
+        # Load recent messages from DB to Chat (paginated)
+        messages_data = await self.get_recent_messages(room_id, limit=100)
         to_send = []
-        for message in messages:
-            # latest_message_version = None
-            # history = await self.get_message_history(message['id'])
-            # if history:
-            #     latest_message_version = history[-1]
- 
-            # sender = await self.get_user_by_id(message["sender_id"])
-            upvotes = 1 if message["votes__vote"] == "upvote" else 0
-            downvotes = 1 if message["votes__vote"] == "downvote" else 0
-            edited = False if message["messagehistory__id"] is None else True
-            # t=str(message['time'])[0:19]
+        for msg_data in messages_data:
+            upvotes = msg_data['upvotes']
+            downvotes = msg_data['downvotes']
+            edited = msg_data['edited']
+            attachments = msg_data['attachments']
+            
             try:
                 data = format_chat_message(
                     room_id=room_id,
-                    user_id=message["sender_id"], # sender.id if sender else None,
-                    anonymous=message['anonymous'],
-                    message=message['text'],
-                    message_id=message['id'],
+                    user_id=msg_data["sender_id"],
+                    anonymous=msg_data['anonymous'],
+                    message=msg_data['text'],
+                    message_id=msg_data['id'],
                     new=False,
                     upvotes=upvotes,
                     downvotes=downvotes,
                     edited=edited,
-                    date=message['time'],
-                    latest_date=message['time'], # latest_message_version.time if latest_message_version else message['time'],
-                    attachments=await self.load_attachments(message['id']),
+                    date=msg_data['time'],
+                    latest_date=msg_data['time'],
+                    attachments=attachments,
             )
             except TypeError:
                 data = None
@@ -635,9 +630,43 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     ###########################
 
     @database_sync_to_async
-    def get_messages(self, room_id):
-        m = list(Message.objects.filter(room=room_id).values("id", "sender_id", "time", "text", "room_id", "anonymous", "votes__vote", "messagehistory__id").order_by('time'))
-        return m
+    def get_recent_messages(self, room_id, limit=100):
+        from django.db.models import Count, Q, Prefetch
+        
+        messages = Message.objects.filter(room=room_id).select_related(
+            'sender'
+        ).prefetch_related(
+            Prefetch('votes', queryset=MessageVote.objects.all()),
+            Prefetch('attachments', queryset=MessageAttachment.objects.all()),
+            'messagehistory'
+        ).order_by('-time')[:limit]
+        
+        result = []
+        for msg in reversed(list(messages)):
+            upvotes = msg.votes.filter(vote='upvote').count()
+            downvotes = msg.votes.filter(vote='downvote').count()
+            edited = hasattr(msg, 'messagehistory')
+            
+            attachments = {}
+            for attachment in msg.attachments.all():
+                attachments_of_type = attachments.get(attachment.type, [])
+                attachments_of_type.append(attachment.filename)
+                attachments[attachment.type] = attachments_of_type
+            
+            result.append({
+                'id': msg.id,
+                'sender_id': msg.sender_id,
+                'time': msg.time,
+                'text': msg.text,
+                'room_id': msg.room_id,
+                'anonymous': msg.anonymous,
+                'upvotes': upvotes,
+                'downvotes': downvotes,
+                'edited': edited,
+                'attachments': attachments,
+            })
+        
+        return result
     
     @database_sync_to_async
     def get_room(self, room_id):

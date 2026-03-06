@@ -100,6 +100,10 @@ class Message(models.Model):
 
     class Meta:
         unique_together = ('sender', 'text', 'room', 'time')
+        indexes = [
+            models.Index(fields=['room', '-time'], name='chat_message_room_time_idx'),
+            models.Index(fields=['room', 'time'], name='chat_message_room_time_asc_idx'),
+        ]
 
 
 class MessageVote(models.Model):
@@ -113,6 +117,9 @@ class MessageVote(models.Model):
     class Meta:
         # can be removed in future to make possible reactions or something like that
         unique_together = ('user', 'message')
+        indexes = [
+            models.Index(fields=['message', 'vote'], name='chat_messagevote_msg_vote_idx'),
+        ]
 
 
 # Store changes history separately,
@@ -139,3 +146,8 @@ class MessageAttachment(models.Model):
     type = models.CharField(max_length=255)
     filename = models.CharField(max_length=255)
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="attachments")
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['message'], name='chat_messageattachment_msg_idx'),
+        ]
