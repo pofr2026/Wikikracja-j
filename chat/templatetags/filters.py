@@ -24,7 +24,7 @@ def seen_by(room, user):
 @register.filter("has_messages")
 def has_messages(user):
     rooms_with_new_messages = (
-            Room.objects.filter(allowed=user.id)
+            Room.objects.filter(allowed=user.id, archived=False)
             .exclude(seen_by=user.id)
             .annotate(messages_count=Count('messages'))
             .filter(messages_count__gt=0)

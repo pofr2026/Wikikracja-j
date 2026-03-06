@@ -32,7 +32,6 @@ from allauth.account.signals import user_signed_up, email_confirmed
 from allauth.account.models import EmailAddress
 from django.dispatch import receiver
 from chat import signals
-from django.contrib.auth.models import Group, Permission
 from zzz.utils import build_site_url, get_site_domain
 
 HOST = get_site_domain()

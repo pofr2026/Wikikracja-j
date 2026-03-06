@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-06 20:43+0100\n"
+"POT-Creation-Date: 2026-03-06 21:34+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -75,7 +75,7 @@ msgstr ""
 msgid "Archived"
 msgstr ""
 
-#: .\board\models.py:15 .\tasks\views.py:22
+#: .\board\models.py:15 .\tasks\views.py:21
 msgid "Important"
 msgstr ""
 
@@ -1113,12 +1113,12 @@ msgid "Approved"
 msgstr ""
 
 #: .\glosowania\management\commands\vote.py:172 .\glosowania\views.py:219
-#: .\tasks\models.py:36 .\tasks\views.py:24
+#: .\tasks\models.py:36 .\tasks\views.py:23
 msgid "Rejected"
 msgstr ""
 
 #: .\glosowania\management\commands\vote.py:188 .\glosowania\views.py:378
-#: .\obywatele\forms.py:198 .\obywatele\views.py:661
+#: .\obywatele\forms.py:198 .\obywatele\views.py:660
 #, python-brace-format
 msgid "Why you received this email? Here is explanation: {url}"
 msgstr ""
@@ -2175,7 +2175,7 @@ msgid "Your email address is confirmed."
 msgstr ""
 
 #: .\obywatele\templates\obywatele\onboarding_waiting.html:17
-#: .\obywatele\views.py:346
+#: .\obywatele\views.py:345
 msgid "Your onboarding form has been saved."
 msgstr ""
 
@@ -2298,69 +2298,69 @@ msgstr ""
 msgid "I do not accept"
 msgstr ""
 
-#: .\obywatele\views.py:117
+#: .\obywatele\views.py:116
 msgid "Your new email has been saved."
 msgstr ""
 
-#: .\obywatele\views.py:136 .\obywatele\views.py:154
+#: .\obywatele\views.py:135 .\obywatele\views.py:153
 msgid "Your name has been saved."
 msgstr ""
 
-#: .\obywatele\views.py:300
+#: .\obywatele\views.py:299
 msgid "Your profile does not exist. Please contact administrator."
 msgstr ""
 
-#: .\obywatele\views.py:330 .\obywatele\views.py:366
+#: .\obywatele\views.py:329 .\obywatele\views.py:365
 msgid "Could not find your onboarding account."
 msgstr ""
 
-#: .\obywatele\views.py:391
+#: .\obywatele\views.py:390
 msgid "Email already exist"
 msgstr ""
 
-#: .\obywatele\views.py:425
+#: .\obywatele\views.py:424
 msgid "The new user has been saved"
 msgstr ""
 
-#: .\obywatele\views.py:429
+#: .\obywatele\views.py:428
 msgid "New citizen has been proposed"
 msgstr ""
 
-#: .\obywatele\views.py:430
+#: .\obywatele\views.py:429
 msgid ""
 "proposed new citizen\n"
 "You can approve him/her here:"
 msgstr ""
 
-#: .\obywatele\views.py:443
+#: .\obywatele\views.py:442
 msgid "Please correct the highlighted errors."
 msgstr ""
 
-#: .\obywatele\views.py:501
+#: .\obywatele\views.py:500
 msgid "Changes was saved"
 msgstr ""
 
-#: .\obywatele\views.py:514
+#: .\obywatele\views.py:513
 msgid "Form is not valid!"
 msgstr ""
 
-#: .\obywatele\views.py:589
+#: .\obywatele\views.py:588
 msgid "positive"
 msgstr ""
 
-#: .\obywatele\views.py:596
+#: .\obywatele\views.py:595
 msgid "negative"
 msgstr ""
 
-#: .\obywatele\views.py:603
+#: .\obywatele\views.py:602
 msgid "neutral"
 msgstr ""
 
-#: .\obywatele\views.py:703
+#: .\obywatele\views.py:702
 msgid "Fill out your onboarding form"
 msgstr ""
 
-#: .\obywatele\views.py:705
+#: .\obywatele\views.py:704
 #, python-format
 msgid "Your email has been confirmed. Please fill out your onboarding form here: %(link)s"
 msgstr ""
@@ -2532,11 +2532,11 @@ msgstr "No events yet"
 msgid "No rejected tasks yet."
 msgstr "No events yet"
 
-#: .\tasks\views.py:21
+#: .\tasks\views.py:20
 msgid "Critical"
 msgstr ""
 
-#: .\tasks\views.py:23
+#: .\tasks\views.py:22
 msgid "Beneficial"
 msgstr ""
 
