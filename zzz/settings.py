@@ -222,7 +222,6 @@ INSTALLED_APPS = [
 if DEBUG:
     INSTALLED_APPS = [
         *INSTALLED_APPS,
-        'django_extensions',
         'debug_toolbar',
     ]
     MIDDLEWARE = [
@@ -231,7 +230,7 @@ if DEBUG:
         'django_browser_reload.middleware.BrowserReloadMiddleware',
     ]
 
-DEBUG_AM = True # My(Miedziu) Debug profile/settings for better focus, default after "else"
+DEBUG_AM = True # Mine (Miedziu) Debug profile/settings for better focus, default after "else"
 
 # Just for suppressing "Using selector: EpollSelector"
 import logging
@@ -332,10 +331,9 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/board/'
 ACCOUNT_SIGNUP_REDIRECT_URL = '/obywatele/onboarding/'
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*'] #, 'password2*'*/]
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/obywatele/onboarding/'
