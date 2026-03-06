@@ -167,6 +167,7 @@ def create_one2one_rooms(sender, **kwargs):
             else:
                 try:
                     r = Room.objects.create(title=title, public=False)
+                    r.allowed.set((i, j,))
                 except IntegrityError:
                     r = Room.objects.get(title=title)
                     r.allowed.set((i, j,))
