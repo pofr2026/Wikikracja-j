@@ -38,9 +38,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Are they logged in?
         if self.scope["user"].is_anonymous:
             # Reject the connection
+            log.warning(f"WebSocket connection rejected: user is anonymous. Session data: {self.scope.get('session', {})}")
             await self.close()
         else:
             # Accept the connection
+            log.info(f"WebSocket connection accepted for user: {self.scope['user'].username}")
             await self.accept()
 
             # register user as online
