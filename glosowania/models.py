@@ -10,7 +10,7 @@ import re
 base_dir = os.path.abspath('.')
 
 def does_it_exist(value):
-    x = re.split('\W+', value.strip(' ').strip(',').strip(' ').strip(',').strip(' ').strip(',').strip(' ').strip(','))
+    x = re.split(r'\W+', value.strip(' ').strip(',').strip(' ').strip(',').strip(' ').strip(',').strip(' ').strip(','))
     for i in x:
         try:
             existing = Decyzja.objects.get(pk=int(i))  # all existing for now
