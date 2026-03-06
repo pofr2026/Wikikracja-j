@@ -66,7 +66,8 @@ class Uzytkownik(models.Model):
 
     @receiver(post_save, sender=User)
     def save_user_profile(sender, instance, **kwargs):
-        instance.uzytkownik.save()
+        if hasattr(instance, 'uzytkownik'):
+            instance.uzytkownik.save()
 
 
 class Rate(models.Model):

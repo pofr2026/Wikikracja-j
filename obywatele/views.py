@@ -378,7 +378,7 @@ def dodaj(request: HttpRequest):
             last_name = user_form.cleaned_data['last_name']
 
             mail = user_form.cleaned_data['email']
-            if User.objects.filter(email=mail).exists():
+            if User.objects.filter(email__iexact=mail).exists():
                 # is_valid doesn't check if email exist
                 message = _('Email already exist')
                 error(request, (message))
@@ -699,9 +699,14 @@ def SendEmailToAll(subject, message):
 
 @receiver(user_signed_up)
 def DeactivateNewUser(sender, **kwargs):
-    u = User.objects.get(username=kwargs['user'])
-    u.is_active=False
-    u.save()
+    try:
+        u = User.objects.get(username=kwargs['user'])
+        u.is_active=False
+        u.save()
+    except User.DoesNotExist:
+        log.error(f"User {kwargs['user']} does not exist in DeactivateNewUser signal")
+    except User.MultipleObjectsReturned:
+        log.error(f"Multiple users found with username {kwargs['user']} in DeactivateNewUser signal")
 
 
 @receiver(email_confirmed)

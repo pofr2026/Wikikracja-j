@@ -23,7 +23,7 @@ def add(request: HttpRequest):
         form = UpdateBookForm(request.POST, request.FILES)
         if form.is_valid():
             obj = form.save(commit=False)
-            obj.uploader = User.objects.get(username=request.user.username)
+            obj.uploader = request.user
             obj.save()
 
             image = Image.open(obj.cover)
