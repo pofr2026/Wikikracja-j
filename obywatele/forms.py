@@ -142,10 +142,15 @@ class CustomSignupForm(SignupForm):
         email = self.cleaned_data['email']
         existing_user = User.objects.filter(email__iexact=email).first()
 
-        if existing_user and not existing_user.is_active:
-            raise forms.ValidationError(
-                _('Your candidacy is still in the queue. Please wait for verification.')
-            )
+        if existing_user:
+            if not existing_user.is_active:
+                raise forms.ValidationError(
+                    _('Your candidacy is still in the queue. Please wait for verification.')
+                )
+            else:
+                raise forms.ValidationError(
+                    _('An account with this email address already exists.')
+                )
 
         return email
  
