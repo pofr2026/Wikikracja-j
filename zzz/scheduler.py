@@ -6,6 +6,9 @@ from django.core.management import call_command
 
 log = logging.getLogger(__name__)
 
+# Global scheduler instance (singleton)
+_scheduler_instance = None
+
 
 def start_scheduler():
     """
@@ -17,7 +20,15 @@ def start_scheduler():
     - */5 * * * * -> count_citizens (every 5 minutes)
     - 2 * * * * -> update_site (every hour)
     """
+    global _scheduler_instance
+    
+    # Return existing scheduler if already started
+    if _scheduler_instance is not None:
+        log.info("Scheduler already started, returning existing instance")
+        return _scheduler_instance
+    
     scheduler = BackgroundScheduler(timezone=settings.TIME_ZONE)
+    _scheduler_instance = scheduler
     
     # Chat messages - runs at 12, 18
     scheduler.add_job(
