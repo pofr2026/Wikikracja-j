@@ -56,26 +56,28 @@ def chat(request: HttpRequest):
 
     # Get a list of rooms, ordered alphabetically
     allowed_rooms = Room.objects.filter(allowed=request.user.id).order_by("title")
-
+    public_active= allowed_rooms.filter(public=True, archived=False).prefetch_related("messages")
+    # a = list(public_active)
+    
+    
+    public_archived= allowed_rooms.filter(public=True, archived=True).prefetch_related("messages")
+    private_active= allowed_rooms.filter(public=False, archived=False).prefetch_related("messages")
+    private_archived= allowed_rooms.filter(public=False, archived=True).prefetch_related("messages")
+    
+    # seen = room.seen_by.filter(id=user.id) or room.messages.all().count() == 0
+    
     # Find out which room to open by default
-    last_user_room = None
-    messages_by_user = Message.objects.filter(sender=request.user).order_by("-time")
-    if messages_by_user.exists():
-        last_user_room = messages_by_user.first().room.id
-
-    # Disable query logging when done
-    # connection.force_debug_cursor = False
-
+    # messages_by_user = Message.objects.filter(sender=request.user).values("room__id").order_by("-time").first()
+    # last_user_room = messages_by_user and messages_by_user["room__id"]
+    
     # Render that in the chat template
     return render(request, "chat/chat.html", {
-        'last_used_room': json.dumps(last_user_room),
+        'last_used_room': json.dumps(None),
         'translations': get_translations(),
-
-        'public_active': allowed_rooms.filter(public=True, archived=False).extra(select={'lower_title':'lower(title)'}).order_by('lower_title'),
-        'public_archived': allowed_rooms.filter(public=True, archived=True),
-        'private_active': allowed_rooms.filter(public=False, archived=False),
-        'private_archived': allowed_rooms.filter(public=False, archived=True),
-
+        'public_active': public_active,
+        'public_archived': public_archived,
+        'private_active': private_active,
+        'private_archived': private_archived,
         'user': request.user,
         'ARCHIVE_PUBLIC_CHAT_ROOM': td(days=s.ARCHIVE_PUBLIC_CHAT_ROOM).days,
         'DELETE_PUBLIC_CHAT_ROOM': td(days=s.DELETE_PUBLIC_CHAT_ROOM).days,})
