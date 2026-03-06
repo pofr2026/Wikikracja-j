@@ -7,7 +7,23 @@ def remove_duplicate_emails(apps, schema_editor):
     """
     Remove duplicate users with the same email address.
     Keeps the active user and removes/deactivates inactive duplicates.
+    Also removes orphaned Uzytkownik records that don't have a corresponding User.
     """
+    Uzytkownik = apps.get_model('obywatele', 'Uzytkownik')
+    
+    # First, remove orphaned Uzytkownik records (where uid_id doesn't exist in auth_user)
+    orphaned = Uzytkownik.objects.filter(uid_id__isnull=True)
+    orphaned_count = orphaned.count()
+    orphaned.delete()
+    print(f"Deleted {orphaned_count} orphaned Uzytkownik records with null uid_id")
+    
+    # Also remove Uzytkownik records where the referenced User doesn't exist
+    all_uzytkownik = Uzytkownik.objects.all()
+    for uz in all_uzytkownik:
+        if not User.objects.filter(id=uz.uid_id).exists():
+            print(f"Deleting orphaned Uzytkownik id={uz.id} with non-existent uid_id={uz.uid_id}")
+            uz.delete()
+    
     # Find emails that appear more than once
     duplicate_emails = User.objects.values('email').annotate(
         count=Count('id')
@@ -22,6 +38,7 @@ def remove_duplicate_emails(apps, schema_editor):
         
         for user in users_to_delete:
             try:
+                print(f"Deleting duplicate user id={user.id} with email {email}")
                 user.delete()
             except Exception as e:
                 print(f"Error deleting user {user.id} with email {email}: {e}")
