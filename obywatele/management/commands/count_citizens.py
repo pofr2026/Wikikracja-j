@@ -136,44 +136,36 @@ class Command(BaseCommand):
                 continue
                 
             if i.reputation > req_rep:
-                # Use database transaction with select_for_update to prevent race conditions
-                user_activated = False
-                password = None
+                # Generate password first
+                password = password_generator()
                 
-                try:
-                    with transaction.atomic():
-                        # Re-fetch user with lock to prevent concurrent activation
-                        user = User.objects.select_for_update().get(id=i.uid.id)
-                        
-                        # Double-check if user is still inactive (another process might have activated)
-                        if user.is_active:
-                            log.info(f'User {user.username} already activated by another process, skipping')
-                        else:
-                            # CRITICAL: Log before activation to detect duplicates
-                            log.info(f'ACTIVATING: user_id={user.id}, email={user.email}, username={user.username}, uzytkownik_id={i.id}')
-                            
-                            activated_user_ids.add(user.id)
-                            activated_emails.add(user.email.lower())
-                            user.is_active = True
-                            
-                            password = password_generator()
-                            user.set_password(password)
-                            i.data_przyjecia = now()
-                            
-                            # Log the generated password for debugging
-                            log.info(f'Generated password for {user.email}: {password}')
-                            
-                            user.save()
-                            i.save()
-                            log.info(f'ACTIVATED: user_id={user.id}, email={user.email}')
-                            user_activated = True
-                except User.DoesNotExist:
-                    log.error(f'User {i.uid_id} does not exist')
+                # Atomically activate user only if still inactive (prevents race condition)
+                # This returns number of rows updated - will be 0 if user already active
+                from django.contrib.auth.hashers import make_password
+                rows_updated = User.objects.filter(
+                    id=i.uid.id,
+                    is_active=False
+                ).update(
+                    is_active=True,
+                    password=make_password(password)
+                )
+                
+                # If no rows updated, user was already activated by another process
+                if rows_updated == 0:
+                    log.info(f'User {i.uid.username} (id={i.uid.id}) already activated by another process, skipping')
                     continue
                 
-                # Only send email and create rooms if user was actually activated
-                if not user_activated:
-                    continue
+                # User was successfully activated by THIS process
+                log.info(f'ACTIVATING: user_id={i.uid.id}, email={i.uid.email}, username={i.uid.username}, uzytkownik_id={i.id}')
+                
+                activated_user_ids.add(i.uid.id)
+                activated_emails.add(i.uid.email.lower())
+                i.data_przyjecia = now()
+                i.save()
+                
+                # Log the generated password for debugging
+                log.info(f'Generated password for {i.uid.email}: {password}')
+                log.info(f'ACTIVATED: user_id={i.uid.id}, email={i.uid.email}')
 
                 # Create one2one chat rooms for new person with Signals
                 signals.user_accepted.send(sender='user_accepted', user=i)
