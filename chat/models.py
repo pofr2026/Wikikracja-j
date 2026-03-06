@@ -35,6 +35,12 @@ class Room(models.Model):
 
     def get_other(self, user):
         assert not self.public
+        # Use prefetched data if available to avoid extra query
+        if hasattr(self, '_prefetched_objects_cache') and 'allowed' in self._prefetched_objects_cache:
+            for allowed_user in self.allowed.all():
+                if allowed_user.id != user.id:
+                    return allowed_user
+            return None
         return self.allowed.exclude(id=user.id).first()
 
     # Name that user will see in chats list
@@ -43,13 +49,14 @@ class Room(models.Model):
         if self.public:
             # Clip public room names to title_len characters for display
             return self.title[:title_len] if len(self.title) > title_len else self.title
-        if self.get_other(user) is not None:
-            get_user=self.get_other(user)
-            username = get_user and get_user.username
+        
+        get_user = self.get_other(user)
+        if get_user is not None:
+            username = get_user.username
             # Clip long usernames to match room title length
-            return username and (username[:title_len] if len(username) > title_len else username)
+            return username[:title_len] if len(username) > title_len else username
         else:
-            return ("--")
+            return "--"
 
     @property  # adds 'getter', 'setter' and 'deleter' methods
     def group_name(self):

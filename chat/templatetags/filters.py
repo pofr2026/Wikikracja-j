@@ -14,7 +14,11 @@ def name_for(room, user):
 
 @register.filter('seen_by')
 def seen_by(room, user):
-    return "" if (room.seen_by.filter(id=user.id) or room.messages.all().count() == 0) else "room-not-seen"
+    # Use pre-computed annotations from the view if available
+    if hasattr(room, 'is_seen') and hasattr(room, 'messages_count'):
+        return "" if (room.is_seen or room.messages_count == 0) else "room-not-seen"
+    # Fallback to original logic if annotations not available
+    return "" if (room.seen_by.filter(id=user.id).exists() or room.messages.all().count() == 0) else "room-not-seen"
 
 
 @register.filter("has_messages")

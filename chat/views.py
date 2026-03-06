@@ -53,16 +53,29 @@ def chat(request: HttpRequest):
     Root page view. This is essentially a single-page app, if you ignore the
     login and admin parts.
     """
+    from django.db.models import Count, Exists, OuterRef, Prefetch
 
     # Get a list of rooms, ordered alphabetically
-    allowed_rooms = Room.objects.filter(allowed=request.user.id).order_by("title")
-    public_active= allowed_rooms.filter(public=True, archived=False).prefetch_related("messages")
-    # a = list(public_active)
+    # Optimize queries by:
+    # 1. Prefetch allowed users for private rooms (needed for displayed_name)
+    # 2. Annotate with message count (for seen_by filter)
+    # 3. Annotate with is_seen status (for seen_by filter)
+    allowed_rooms = Room.objects.filter(allowed=request.user.id).prefetch_related(
+        Prefetch('allowed', queryset=User.objects.only('id', 'username'))
+    ).annotate(
+        messages_count=Count('messages'),
+        is_seen=Exists(
+            Room.seen_by.through.objects.filter(
+                room_id=OuterRef('pk'),
+                user_id=request.user.id
+            )
+        )
+    ).order_by("title")
     
-    
-    public_archived= allowed_rooms.filter(public=True, archived=True).prefetch_related("messages")
-    private_active= allowed_rooms.filter(public=False, archived=False).prefetch_related("messages")
-    private_archived= allowed_rooms.filter(public=False, archived=True).prefetch_related("messages")
+    public_active = allowed_rooms.filter(public=True, archived=False)
+    public_archived = allowed_rooms.filter(public=True, archived=True)
+    private_active = allowed_rooms.filter(public=False, archived=False)
+    private_archived = allowed_rooms.filter(public=False, archived=True)
     
     # seen = room.seen_by.filter(id=user.id) or room.messages.all().count() == 0
     

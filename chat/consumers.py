@@ -631,20 +631,20 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def get_recent_messages(self, room_id, limit=100):
-        from django.db.models import Count, Q, Prefetch
+        from django.db.models import Count, Q, Prefetch, Case, When, IntegerField
         
         messages = Message.objects.filter(room=room_id).select_related(
             'sender'
         ).prefetch_related(
-            Prefetch('votes', queryset=MessageVote.objects.all()),
             Prefetch('attachments', queryset=MessageAttachment.objects.all()),
             'messagehistory'
+        ).annotate(
+            upvotes=Count('votes', filter=Q(votes__vote='upvote')),
+            downvotes=Count('votes', filter=Q(votes__vote='downvote'))
         ).order_by('-time')[:limit]
         
         result = []
         for msg in reversed(list(messages)):
-            upvotes = msg.votes.filter(vote='upvote').count()
-            downvotes = msg.votes.filter(vote='downvote').count()
             edited = hasattr(msg, 'messagehistory')
             
             attachments = {}
@@ -660,8 +660,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 'text': msg.text,
                 'room_id': msg.room_id,
                 'anonymous': msg.anonymous,
-                'upvotes': upvotes,
-                'downvotes': downvotes,
+                'upvotes': msg.upvotes,
+                'downvotes': msg.downvotes,
                 'edited': edited,
                 'attachments': attachments,
             })
