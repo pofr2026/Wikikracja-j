@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.urls import reverse
 import logging
+from zzz.utils import get_site_domain
 
 from .models import Task
 
@@ -42,8 +43,7 @@ def create_task_chat_room(sender, instance, created, **kwargs):
         # Send initial message with link back to the task
         from django.contrib.sites.models import Site
         try:
-            current_site = Site.objects.get_current()
-            domain = current_site.domain
+            domain =  get_site_domain()
         except:
             # Fallback to settings if Site framework is not configured
             from django.conf import settings

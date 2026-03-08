@@ -1,7 +1,5 @@
-import os
-import sys
 import mimetypes
-from os import path
+from os import getenv, path
 from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
 
@@ -10,40 +8,40 @@ mimetypes.add_type('image/webp', '.webp')
 
 
 def env_bool(name, default=False):
-    value = os.getenv(name)
+    value = getenv(name)
     if value is None:
         return default
     return value.strip().lower() in ("1", "true", "t", "yes", "y", "on")
 
 
 def env_int(name, default):
-    value = os.getenv(name)
+    value = getenv(name)
     if value is None or value == "":
         return default
     return int(value)
 
 
 def env_list(name, default=None, sep=","):
-    value = os.getenv(name)
+    value = getenv(name)
     if value is None:
         return default if default is not None else []
     parts = [p.strip() for p in value.split(sep)]
     return [p for p in parts if p]
 
-PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = path.dirname(path.abspath(__file__))
 PROJECT_ROOT = path.dirname(path.abspath(path.dirname(__file__)))
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+BASE_DIR = path.dirname(path.dirname(path.abspath(__file__)))
+STATIC_ROOT = path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = []
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+MEDIA_ROOT = path.join(BASE_DIR, 'media/')
+load_dotenv(path.join(BASE_DIR, '.env'))
 
 DEBUG = env_bool("DEBUG", False)
 SITE_PROTOCOL = "http" if DEBUG else "https"
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = getenv("SECRET_KEY")
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "dev-insecure-secret-key"
@@ -69,13 +67,13 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-TIME_ZONE = os.getenv("TIME_ZONE", "Europe/Warsaw")
-LANGUAGE_CODE = os.getenv("LANGUAGE_CODE", "pl")
+TIME_ZONE = getenv("TIME_ZONE", "Europe/Warsaw")
+LANGUAGE_CODE = getenv("LANGUAGE_CODE", "pl")
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db', 'db.sqlite3'),
+        'NAME': path.join(BASE_DIR, 'db', 'db.sqlite3'),
     }
 }
 
@@ -83,7 +81,7 @@ SITE_ID = 1
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale'),)
+LOCALE_PATHS = (path.join(BASE_DIR, 'locale'),)
 DATE_FORMAT = "Y-m-d"
 INTERNAL_IPS = ['127.0.0.1', '192.168.1.3', '192.168.178.79', '10.1.77.31', '10.0.0.0/8']
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -104,7 +102,7 @@ SESSION_COOKIE_AGE = env_int("SESSION_COOKIE_AGE", 60 * 60 * 24 * 90)  # default
 REMEMBER_ME_DAYS = env_int("REMEMBER_ME_DAYS", 90)
 REMEMBER_ME_COOKIE_AGE = env_int("REMEMBER_ME_COOKIE_AGE", 60 * 60 * 24 * REMEMBER_ME_DAYS)
 
-REDIS_HOST = os.getenv("REDIS_HOST", "redis://redis:6379/1")
+REDIS_HOST = getenv("REDIS_HOST", "redis://redis:6379/1")
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -160,7 +158,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'templates', 'allauth')],
+        'DIRS': [path.join(BASE_DIR, 'templates'), path.join(BASE_DIR, 'templates', 'allauth')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -296,18 +294,18 @@ LOGGING = {
     },
 }
 
-EMAIL_BACKEND = os.getenv(
+EMAIL_BACKEND = getenv(
     "EMAIL_BACKEND",
     "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",
 )
-EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_HOST = getenv("EMAIL_HOST", "")
 EMAIL_PORT = env_int("EMAIL_PORT", 587)
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
-SERVER_EMAIL = os.getenv("SERVER_EMAIL", "")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
+EMAIL_HOST_USER = getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = getenv("EMAIL_HOST_PASSWORD", "")
+SERVER_EMAIL = getenv("SERVER_EMAIL", "")
+DEFAULT_FROM_EMAIL = getenv("DEFAULT_FROM_EMAIL", SERVER_EMAIL)
 EMAIL_SEND_DELAY_SECONDS = env_int("EMAIL_SEND_DELAY_SECONDS", 2)
 
 if not DEBUG and EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
