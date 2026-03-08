@@ -84,8 +84,8 @@
         {% csrf_token %}
         <input type="hidden" name="value" value="1">
         <input type="hidden" name="next" value="{{ request.get_full_path }}">
-        <button class="btn {% if vote_value == 1 %}btn-success{% else %}btn-outline-success{% endif %}" type="submit">
-          {% trans "Vote up" %}
+        <button class="btn {% if vote_value == 1 %}btn-info{% else %}btn-outline-info{% endif %}" type="submit">
+          {% trans "Pomogę" %}
         </button>
       </form>
 
@@ -93,8 +93,8 @@
         {% csrf_token %}
         <input type="hidden" name="value" value="-1">
         <input type="hidden" name="next" value="{{ request.get_full_path }}">
-        <button class="btn {% if vote_value == -1 %}btn-danger{% else %}btn-outline-danger{% endif %}" type="submit">
-          {% trans "Vote down" %}
+        <button class="btn {% if vote_value == -1 %}btn-light{% else %}btn-outline-light{% endif %}" type="submit">
+          {% trans "Nie róbmy" %}
         </button>
       </form>
       {% endwith %}
@@ -103,7 +103,7 @@
         <form method="post" action="{% url 'tasks:take' task.pk %}">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.get_full_path }}">
-          <button class="btn btn-primary" type="submit">{% trans "Take task" %}</button>
+          <button class="btn btn-info text-dark" type="submit">{% trans "Take task" %}</button>
         </form>
       {% endif %}
 
@@ -126,6 +126,21 @@
         {% trans "Delete task" %}
       </button>
     {% endif %}
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{% trans "Pomogę" %}</h2>
+      {% if helping_votes %}
+        <ul class="mb-0 ps-3">
+          {% for vote in helping_votes %}
+            <li>{{ vote.user }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted mb-0">{% trans "Nikt jeszcze nie zadeklarował pomocy." %}</p>
+      {% endif %}
+    </div>
   </div>
 
   {% if not task.is_active %}

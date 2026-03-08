@@ -205,6 +205,11 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         )
         task.priority_label = current_label or task.get_status_display()
         task.priority_category = current_category
+        context["helping_votes"] = (
+            TaskVote.objects.filter(task=task, value=TaskVote.Value.UP)
+            .select_related("user")
+            .order_by("-updated_at")
+        )
         if self.request.user.is_authenticated:
             vote = TaskVote.objects.filter(task=task, user=self.request.user).first()
             context["user_vote_value"] = vote.value if vote else None
