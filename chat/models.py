@@ -108,7 +108,6 @@ class Message(models.Model):
     class Meta:
         unique_together = ('sender', 'text', 'room', 'time')
         indexes = [
-            models.Index(fields=['room', '-time'], name='chat_message_room_time_idx'),
             models.Index(fields=['room', 'time'], name='chat_message_room_time_asc_idx'),
         ]
 
