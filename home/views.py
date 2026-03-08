@@ -61,11 +61,10 @@ def home(request: HttpRequest):
             .order_by('-last_activity')[:10]
         )
 
-    try:
-        start = Post.objects.get(title='Start')
-    except Exception as e:
-        log.info(f'Add Board Message title Start. Exception: {e}')
-        start=''
+    start = Post.objects.filter(title='Start').order_by('-updated', '-created').first()
+    if not start:
+        log.info('Add Board Message title Start.')
+        start = ''
         
     # data_referendum_start = ZliczajWszystko.kolejka
     return render(request,
