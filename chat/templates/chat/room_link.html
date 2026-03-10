@@ -1,0 +1,25 @@
+{% load i18n filters %}
+
+
+<div class="room-link {{ room|seen_by:user }}"
+  data-room-type="{% if room.public %}public{% else %}private{% endif %}"
+  data-room-id="{{ room.id }}">
+  <div class="room-name flex-grow-1">
+    {{ room|name_for:user }}
+  </div>
+
+  <div class="room-controls">
+    <input type='checkbox'
+      class="notif-switch"
+      id='notif-switch-{{room.id}}'
+      data-room-id="{{room.id}}">
+    <label for='notif-switch-{{room.id}}' class="mb-0"> <i class="far fa-bell px-1"></i> </label>
+    <button type="button"
+      class="btn btn-link btn-sm p-0 copy-link-btn copy-room-url"
+      data-room-id="{{ room.id }}"
+      title="{% trans 'Copy link' %}"
+      aria-label="{% blocktrans with room_name=room|name_for:user %}Copy link to room {{ room_name }}{% endblocktrans %}">
+      <i class="fas fa-link"></i>
+    </button>
+  </div>
+</div>
