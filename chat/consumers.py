@@ -328,18 +328,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     @handlers.register("get-online-users")
     async def send_online_users(self, proxy: HandledMessage):
         """ Send list of private chats with online user in it. Sent on request. """
+        scoped_user = self.scope['user']
+        online_users = ChatConsumer.online_registry.get_online()
+        
+        # Filter out self from online users
+        other_user_ids = [uid for uid in online_users if uid != scoped_user.id]
+        
+        # Use optimized batch query to get all private rooms at once
+        rooms_dict = await self.find_private_rooms_for_user_pairs(scoped_user, other_user_ids)
+        
         online_data = []
-        for online_user_id in ChatConsumer.online_registry.get_online():
-            if online_user_id == self.scope['user'].id:
-                continue
-
-            user = await self.get_user_by_id(online_user_id)
-            private_chat = await self.find_room_with(user, self.scope['user'])
-            online_data.append({
-                'user_id': user.id if user else None,
-                'room_id': private_chat.id,
-                'online': True,
-            })
+        for online_user_id in other_user_ids:
+            room = rooms_dict.get(online_user_id)
+            if room is not None:
+                online_data.append({
+                    'user_id': online_user_id,
+                    'room_id': room.id,
+                    'online': True,
+                })
 
         proxy.send_json({
             'online_data': online_data
@@ -687,6 +693,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """ Find private 1 to 1 room with given users """
         # convert to list to avoid lazy evaluation inside async context
         return list(Room.find_all_with_users(*users))
+
+    @database_sync_to_async
+    def find_private_rooms_for_user_pairs(self, user, other_user_ids):
+        """ 
+        Optimized batch version: Find all private 1-to-1 rooms between the given user 
+        and multiple other users. Returns a dictionary mapping other_user_id to Room.
+        """
+        return Room.find_private_rooms_for_user_pairs(user, other_user_ids)
 
     @database_sync_to_async
     def get_user_by_id(self, id):
