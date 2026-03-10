@@ -22,25 +22,6 @@ class UserForm(forms.ModelForm):
         fields = ('username', 'email', 'first_name', 'last_name')
 
 
-class NameChangeForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name')
-
-    def __init__(self, user, *args, **kwargs):
-        self.user = user
-        super(NameChangeForm, self).__init__(*args, **kwargs)
-
-    def save(self, commit=True):
-        first_name = self.cleaned_data["first_name"]
-        last_name = self.cleaned_data["last_name"]
-        self.user.first_name = first_name
-        self.user.last_name = last_name
-        if commit:
-            self.user.save()
-        return self.user
-
-
 class UsernameChangeForm(forms.ModelForm):
     class Meta:
         model = User
@@ -113,6 +94,9 @@ class EmailChangeForm(forms.Form):
 
 
 class ProfileForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=150, label=_('First name'), required=True)
+    last_name = forms.CharField(max_length=150, label=_('Last name'), required=True)
+
     class Meta:
         model = Uzytkownik
         fields = ('phone', 'responsibilities', 'city', 'hobby',
@@ -120,14 +104,40 @@ class ProfileForm(forms.ModelForm):
                   'skills', 'knowledge', 'want_to_learn', 'business',
                   'job', 'gift', 'other', 'why')
 
+    def __init__(self, *args, **kwargs):
+        super(ProfileForm, self).__init__(*args, **kwargs)
+        self.fields['phone'].label = _('Communicator or Phone number')
+        self.fields['phone'].required = True
+        self.fields['city'].required = True
+        self.fields['job'].required = True
+
+        self.fields['first_name'].error_messages['required'] = _('First name is required.')
+        self.fields['last_name'].error_messages['required'] = _('Last name is required.')
+        self.fields['phone'].error_messages['required'] = _('Phone number is required.')
+        self.fields['city'].error_messages['required'] = _('City is required.')
+        self.fields['job'].error_messages['required'] = _('Job is required.')
+
 
 class OnboardingDetailsForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=150, label=_('First name'), required=False)
-    last_name = forms.CharField(max_length=150, label=_('Last name'), required=False)
+    first_name = forms.CharField(max_length=150, label=_('First name'), required=True)
+    last_name = forms.CharField(max_length=150, label=_('Last name'), required=True)
 
     class Meta:
         model = Uzytkownik
         fields = ('why', 'phone', 'city', 'job', 'hobby', 'business', 'skills', 'knowledge')
+
+    def __init__(self, *args, **kwargs):
+        super(OnboardingDetailsForm, self).__init__(*args, **kwargs)
+        self.fields['phone'].label = _('Communicator or Phone number')
+        self.fields['phone'].required = True
+        self.fields['city'].required = True
+        self.fields['job'].required = True
+
+        self.fields['first_name'].error_messages['required'] = _('First name is required.')
+        self.fields['last_name'].error_messages['required'] = _('Last name is required.')
+        self.fields['phone'].error_messages['required'] = _('Phone number is required.')
+        self.fields['city'].error_messages['required'] = _('City is required.')
+        self.fields['job'].error_messages['required'] = _('Job is required.')
 
 
 class CustomSignupForm(SignupForm):
@@ -212,36 +222,3 @@ def SendEmailToAll(subject, message):
     t = threading.Thread(target=_send_with_delay)
     t.setDaemon(True)
     t.start()
-
-
-
-'''
-class SignupForm(forms.ModelForm):
-    # https://stackoverflow.com/questions/35580077/django-allauth-signup-without-password
-    class Meta:
-        model = User
-        fields = ('username', 'email')
-        exclude = ('password',)
-
-    username = forms.CharField(label=_("username"))
-    email = forms.CharField(label=_("email"))
-
-    def signup(self, request, user):
-        user.username = self.cleaned_data['username']
-        user.email = self.cleaned_data['email']
-        user.set_unusable_password()
-        user.save()
-'''
-
-'''
-from django.contrib.auth.forms import AuthenticationForm
-class LoginForm(AuthenticationForm):
-    username = forms.CharField(label="Username", max_length=30,
-                               widget=forms.TextInput(attrs={
-                                   'class': 'form-control', 'name': 'username'
-                                   }))
-    password = forms.CharField(label="Password", max_length=30,
-                               widget=forms.TextInput(attrs={
-                                   'class': 'form-control', 'name': 'password'
-                                   }))
-'''

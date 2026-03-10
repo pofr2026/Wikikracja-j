@@ -11,7 +11,6 @@
 			<div><b>{% trans "You've joined" %}</b> {{ profile.data_przyjecia|date:"Y-m-d" }}</div>
 			<a class="btn btn-primary btn-sm mb-1" href="{% url 'haslo'%}">{% trans 'Change password' %}</a>
 			<a class="btn btn-primary btn-sm mb-1" href="{% url 'change_email'%}">{% trans 'Change email' %}</a>
-			<a class="btn btn-primary btn-sm mb-1" href="{% url 'obywatele:change_name'%}">{% trans 'Change name' %}</a>
 
 			{% comment %} Changing username may have some unintended consequences in chat {% endcomment %}
 			<a class="btn btn-primary btn-sm mb-1" href="{% url 'obywatele:change_username'%}">{% trans 'Change username' %}</a>
@@ -30,24 +29,24 @@
 							<td scope="col">{{ profile.city|default:"-" }}</td>
 						</tr>
 						<tr>
-							<th scope="col">{% trans "Phone" %}</th>
+							<th scope="col">{% trans "Communicator or Phone number" %}</th>
 							<td scope="col">{{ profile.phone|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="col">{% trans "Responsibilities" %}</th>
-							<td scope="col">{{ profile.responsibilities|default:"-" }}</td>
 						</tr>
 						<tr>
 							<th scope="col">{% trans "Job" %}</th>
 							<td scope="col">{{ profile.job|default:"-" }}</td>
 						</tr>
 						<tr>
-							<th scope="col">{% trans "Hobby" %}</th>
-							<td scope="col">{{ profile.hobby|default:"-" }}</td>
+							<th scope="col">{% trans "Responsibilities" %}</th>
+							<td scope="col">{{ profile.responsibilities|default:"-" }}</td>
 						</tr>
 						<tr>
 							<th scope="col">{% trans "Business" %}</th>
 							<td scope="col">{{ profile.business|default:"-" }}</td>
+						</tr>
+						<tr>
+							<th scope="col">{% trans "Hobby" %}</th>
+							<td scope="col">{{ profile.hobby|default:"-" }}</td>
 						</tr>
 						<tr>
 							<th scope="col">{% trans "To give away" %}</th>

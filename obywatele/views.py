@@ -16,7 +16,7 @@ from django.utils.translation import gettext_lazy as _
 from random import choice
 from string import ascii_letters, digits
 import logging
-from obywatele.forms import UserForm, ProfileForm, EmailChangeForm, NameChangeForm, UsernameChangeForm, OnboardingDetailsForm
+from obywatele.forms import UserForm, ProfileForm, EmailChangeForm, UsernameChangeForm, OnboardingDetailsForm
 from obywatele.models import Uzytkownik, Rate
 from django.utils import translation
 from django.core.mail import EmailMessage
@@ -122,25 +122,6 @@ def change_email(request: HttpRequest):
             return redirect('obywatele:my_profile')
     else:
         return render(request, 'obywatele/change_email.html', {'form':form})
-
-
-@login_required() 
-def change_name(request: HttpRequest):
-    form = NameChangeForm(request.POST)
-    if request.method=='POST':
-        # form = NameChangeForm(request.POST, request.user)
-        form = NameChangeForm(request.user, request.POST)
-        if form.is_valid():
-            form.save()
-            message = _("Your name has been saved.")
-            success(request, (message))
-            return redirect('obywatele:my_profile')
-        else:
-            message = form.errors
-            error(request, (message))
-            return redirect('obywatele:my_profile')
-    else:
-        return render(request, 'obywatele/change_name.html', {'form':form})
 
 
 @login_required() 
@@ -475,6 +456,10 @@ def my_assets(request: HttpRequest):
 
     if request.method == 'POST':
         if form.is_valid():
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.save()
+
             profile.phone = form.cleaned_data['phone']
             profile.responsibilities = form.cleaned_data['responsibilities']
             profile.city = form.cleaned_data['city']
@@ -517,6 +502,8 @@ def my_assets(request: HttpRequest):
             )
     else:  # request.method != 'POST':
         form = ProfileForm(initial={  # pre-populate fields from database
+            'first_name': user.first_name,
+            'last_name': user.last_name,
             'phone': profile.phone,
             'responsibilities': profile.responsibilities,
             'city': profile.city,

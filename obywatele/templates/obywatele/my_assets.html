@@ -12,6 +12,15 @@
 
 			<div class="row">
 				<div class="col">
+					{{ form.first_name|as_crispy_field }}
+				</div>
+				<div class="col">
+					{{ form.last_name|as_crispy_field }}
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col">
 					{{ form.city|as_crispy_field }}
 				</div>
 				<div class="col">
@@ -21,10 +30,10 @@
 
 			<div class="row">
 				<div class="col">
-					{{ form.responsibilities|as_crispy_field }}
+					{{ form.job|as_crispy_field }}
 				</div>
 				<div class="col">
-					{{ form.job|as_crispy_field }}
+					{{ form.responsibilities|as_crispy_field }}
 				</div>
 			</div>
 

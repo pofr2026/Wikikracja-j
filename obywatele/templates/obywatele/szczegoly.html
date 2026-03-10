@@ -44,16 +44,20 @@
         <table class="table table-striped table-sm">
           <tbody>
             <tr>
-              <th scope="col" class="col-md-2">{% trans "Responsibilities" %}</th>
-              <td scope="col">{{ b.responsibilities|default:"-" }}</td>
+              <th scope="col">{% trans "Communicator or Phone number" %}</th>
+              <td scope="col">{{ b.phone|default:"-" }}</td>
             </tr>
             <tr>
-              <th scope="col">{% trans "Phone" %}</th>
-              <td scope="col">{{ b.phone|default:"-" }}</td>
+              <th scope="col">{% trans "Job" %}</th>
+              <td scope="col">{{ b.job|default:"-" }}</td>
             </tr>
             <tr>
               <th scope="col">{% trans "City" %}</th>
               <td scope="col">{{ b.city|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th scope="col" class="col-md-2">{% trans "Responsibilities" %}</th>
+              <td scope="col">{{ b.responsibilities|default:"-" }}</td>
             </tr>
             <tr>
               <th scope="col">{% trans "Hobby" %}</th>
@@ -90,10 +94,6 @@
             <tr>
               <th scope="col">{% trans "Business" %}</th>
               <td scope="col">{{ b.business|default:"-" }}</td>
-            </tr>
-            <tr>
-              <th scope="col">{% trans "Job" %}</th>
-              <td scope="col">{{ b.job|default:"-" }}</td>
             </tr>
             <tr>
               <th scope="col">{% trans "Gift" %}</th>

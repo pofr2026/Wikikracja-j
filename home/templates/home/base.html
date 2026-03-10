@@ -114,7 +114,7 @@
 					{% endif %}"
 					data-route="chat" href="/chat/">{% trans "Chat" %}</a>
 
-					<a {% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'haslo' or request.resolver_match.url_name == 'my_assets' or request.resolver_match.url_name == 'change_email' or request.resolver_match.url_name == 'change_name' or request.resolver_match.url_name == 'change_username' %}
+					<a {% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'haslo' or request.resolver_match.url_name == 'my_assets' or request.resolver_match.url_name == 'change_email' or request.resolver_match.url_name == 'change_username' %}
 						class="nav-item nav-link mx-1 px-2 fas fa-user active fs-3"
 				 	{% else %}
 						class="nav-item nav-link mx-1 px-2 fas fa-user fs-3"
