@@ -18,7 +18,7 @@ def seen_by(room, user):
     if hasattr(room, 'is_seen') and hasattr(room, 'messages_count'):
         return "" if (room.is_seen or room.messages_count == 0) else "room-not-seen"
     # Fallback to original logic if annotations not available
-    return "" if (room.seen_by.filter(id=user.id).exists() or room.messages.all().count() == 0) else "room-not-seen"
+    return "" if (room.messages.all().count() == 0 or room.seen_by.filter(id=user.id).exists()) else "room-not-seen"
 
 
 @register.filter("has_messages")
@@ -31,3 +31,17 @@ def has_messages(user):
         )
     count = rooms_with_new_messages.count()
     return "chat-has-messages" if count > 0 else ""
+    
+    # from django.core.cache import cache
+    # rooms_with_new_messages = cache.get('has_messages')
+    
+    # if not rooms_with_new_messages:
+    #     rooms_with_new_messages = (
+    #             Room.objects.filter(allowed=user.id, archived=False)
+    #             .exclude(seen_by=user.id)
+    #             .annotate(messages_count=Count('messages'))
+    #             .filter(messages_count__gt=0)
+    #         )
+    #     cache.set("has_messages", rooms_with_new_messages, timeout=60)
+    # count = rooms_with_new_messages.count()
+    # return "chat-has-messages" if count > 0 else ""

@@ -85,7 +85,7 @@ def main():
     print(f"- DB path: {db_path()}")
     print("- Virtualenv must stay activated while running\n")
 
-    (BASE_DIR / "media" / "uploads").mkdir(parents=True, exist_ok=True)
+    # (BASE_DIR / "media" / "uploads").mkdir(parents=True, exist_ok=True)
 
     if args.full:
         run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])

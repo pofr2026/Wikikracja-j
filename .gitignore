@@ -45,3 +45,4 @@ package.json
 notatki.md
 out.sql
 out.csv
+data/*

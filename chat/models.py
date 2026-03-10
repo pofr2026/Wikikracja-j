@@ -94,6 +94,55 @@ class Room(models.Model):
         for room in Room.find_all_with_users(*users):
             return room
 
+    @staticmethod
+    def find_private_rooms_for_user_pairs(user, other_user_ids):
+        """
+        Optimized: Find all private 1-to-1 rooms between the given user and multiple other users.
+        Returns a dictionary mapping other_user_id to Room object.
+        This uses a single database query instead of N queries.
+        
+        Args:
+            user: The main user
+            other_user_ids: List or queryset of user IDs to find rooms with
+            
+        Returns:
+            dict: {other_user_id: Room} for found rooms
+        """
+        from django.contrib.auth.models import User
+        
+        # Convert to list if needed
+        other_user_ids = list(other_user_ids)
+        
+        if not other_user_ids:
+            return {}
+        
+        # Find all private rooms where:
+        # 1. public=False
+        # 2. user is in allowed
+        # 3. room has exactly 2 users (1-to-1)
+        # 4. at least one of the other_user_ids is also in allowed
+        rooms = Room.objects.filter(
+            public=False,
+            allowed=user
+        ).filter(
+            allowed__id__in=other_user_ids
+        ).distinct()
+        
+        # Build mapping: other_user_id -> room
+        result = {}
+        
+        # We need to check each room to find which other user from the pair it corresponds to
+        # Since these are 1-to-1 rooms, there should be exactly one other user besides the main user
+        for room in rooms:
+            # Get the other user in this room (excluding the main user)
+            other_users = room.allowed.exclude(id=user.id)
+            if other_users.count() == 1:
+                other_user = other_users.first()
+                if other_user.id in other_user_ids:
+                    result[other_user.id] = room
+        
+        return result
+
 
 class Message(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')

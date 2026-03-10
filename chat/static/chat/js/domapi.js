@@ -10,7 +10,7 @@ import { Room, Message, MessageHistory } from './templates.js';
 
 
 export default class DomApi {
-    getRoomIcon(room_id) {
+    getRoomLinkDiv(room_id) {
         return $(`.room-link[data-room-id="${room_id}"]`);
     }
 
@@ -154,8 +154,8 @@ export default class DomApi {
     }
 
     seenChat(room_id) {
-        let room_icon = this.getRoomIcon(room_id);
-        room_icon.removeClass("room-not-seen");
+        let room_link = this.getRoomLinkDiv(room_id);
+        room_link.removeClass("room-not-seen");
 
         // all rooms are seen, change tab icon back
         if ($('.room-not-seen').length == 0) {
@@ -164,11 +164,11 @@ export default class DomApi {
     }
 
     updateOnline(room_id, is_online) {
-        let room_icon = this.getRoomIcon(room_id);
+        let room_link = this.getRoomLinkDiv(room_id);
         if (is_online) {
-            room_icon.removeClass('offline').addClass('online');
+            room_link.removeClass('offline').addClass('online');
         } else {
-            room_icon.removeClass('online').addClass('offline');
+            room_link.removeClass('online').addClass('offline');
         }
     }
 

@@ -21,6 +21,7 @@ from obywatele.models import Uzytkownik, Rate
 from django.utils import translation
 from django.core.mail import EmailMessage
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
+# from django.core.management import call_command
 import threading
 import time
 from obywatele.tables import UzytkownikTable
@@ -696,3 +697,11 @@ def set_onboarding_email_confirmed(sender, request, email_address, **kwargs):
         send_mail(subject, message, s.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
     except Exception as e:
         log.error(f'Failed sending onboarding email after confirmation: {e}')
+
+    # # Trigger count_citizens command after email confirmation
+    # try:
+    #     log.info(f"Running count_citizens command triggered by email confirmation for user {user.email}")
+    #     call_command('count_citizens')
+    #     log.info(f"count_citizens command completed successfully")
+    # except Exception as e:
+    #     log.error(f"Error running count_citizens after email confirmation: {e}", exc_info=True)

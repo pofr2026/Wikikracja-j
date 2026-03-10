@@ -90,7 +90,7 @@ export async function onRoomTryJoin(room_id) {
         await onRoomTryLeave(false);
     }
 
-    DOM_API.getRoomIcon(room_id).addClass("joined");
+    DOM_API.getRoomLinkDiv(room_id).addClass("joined");
 
     // already in the room
     if (current_room == room_id) {
@@ -137,7 +137,7 @@ export async function onRoomTryLeave(sync_with_server) {
         await WS_API.leaveRoom(current_room);
         RoomLock.unlock();
     }
-    DOM_API.getRoomIcon(current_room).removeClass("joined");
+    DOM_API.getRoomLinkDiv(current_room).removeClass("joined");
     DOM_API.clearRoomData();
 
     current_room = null;
@@ -253,7 +253,7 @@ export async function onRoomUnsee(room_id) {
     if (current_room == room_id) {
         return;
     }
-    DOM_API.getRoomIcon(room_id).addClass("room-not-seen");
+    DOM_API.getRoomLinkDiv(room_id).addClass("room-not-seen");
 }
 
 export async function onUpdateVote(vote, message_id, is_add) {

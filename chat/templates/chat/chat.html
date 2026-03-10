@@ -55,7 +55,7 @@
           </p>
           <div id="content-pub-active" class="list-of-rooms">
             {% for room in public_active %}
-              {% include 'chat/room_icon.html' %}
+              {% include 'chat/room_link.html' %}
             {% empty %}
               <p class="text-muted text-center">
                 {% trans 'None' %}
@@ -69,7 +69,7 @@
           </p>
           <div id="content-pub-archive" class="list-of-rooms">
             {% for room in public_archived %}
-              {% include 'chat/room_icon.html' %}
+              {% include 'chat/room_link.html' %}
             {% empty %}
               <p class="text-muted text-center">
                 {% trans 'None' %}
@@ -88,7 +88,7 @@
           </p>
           <div id="content-prv-active" class="list-of-pms">
             {% for room in private_active %}
-              {% include 'chat/room_icon.html' %}
+              {% include 'chat/room_link.html' %}
             {% empty %}
               <p class="text-muted text-center">
                 {% trans 'None' %}
@@ -101,7 +101,7 @@
           </p>
           <div id="content-prv-archive" class="list-of-pms">
             {% for room in private_archived %}
-              {% include 'chat/room_icon.html' %}
+              {% include 'chat/room_link.html' %}
             {% empty %}
               <p class="text-muted text-center">
                 {% trans 'None' %}
