@@ -376,3 +376,7 @@ WHITENOISE_MAX_AGE = 31536000
 WHITENOISE_STATIC_PREFIX = '/static/'
 
 DEBUG_SKIP_AUTH = env_bool("DEBUG_SKIP_AUTH", False)
+
+from pathlib import Path
+BASE_DIR2 = Path(__file__).resolve().parent.parent
+(BASE_DIR2 / "media" / "uploads").mkdir(parents=True, exist_ok=True)
