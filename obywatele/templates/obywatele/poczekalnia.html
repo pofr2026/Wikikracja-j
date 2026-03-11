@@ -3,64 +3,68 @@
 {% load i18n %}
 
 {% block citizens %}
-<link rel="stylesheet" href="{% static 'obywatele/css/citizens_list.css' %}">
+<div class="container section">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span class="section-heading">{% trans "Candidates" %}</span>
+      <span>
+        {% trans "New person will be accepted above" %}
+        <span class="badge text-bg-primary rounded-pill">{{ acceptance }}</span>
+        {% trans "threshold." %}
+      </span>
+    </div>
 
-<p>
-  {% trans "New person will be accepted above" %}
-  <span class="badge text-bg-primary rounded-pill">{{ acceptance }}</span>
-  {% trans "threshold." %}
-</p>
-
-{% if uid %}
-	<table class="table table-hover">
-		<thead>
-			<tr>
-				<th scope="col">{% trans 'Nick' %}</th>
-				<!-- <th scope="col">{% trans 'Email' %}</th> -->
-				<th scope="col">{% trans 'Email confirmed' %}</th>
-				<th scope="col">{% trans 'Form completed' %}</th>
-				<th scope="col">{% trans 'First name' %}</th>
-				<th scope="col">{% trans 'Last name' %}</th>
-				<th scope="col">{% trans 'Candidate since' %}</th>
-				<th scope="col">{% trans 'Last login' %}</th>
-				<th scope="col">{% trans 'Recommended by' %}</th>
-			  </tr>
-		</thead>
-		<tbody>
-			{% for i in uid|dictsortreversed:"date_joined" %}
-				<tr class="user-row" data-user-id="{{ i.pk }}">
-					<td>
-						<span class="d-flex align-items-center">
-							{% if i.rating == 1 %}
-							<i class="fas fa-check-circle text-success me-2" title="{% trans 'You accepted this candidate' %}"></i>
-							{% elif i.rating == -1 %}
-							<i class="fas fa-times-circle text-danger me-2" title="{% trans 'You rejected this candidate' %}"></i>
-							{% else %}
-							<i class="fas fa-circle text-secondary me-2" title="{% trans 'You are neutral about this candidate' %}"></i>
-							{% endif %}
-							{{ i.username }}
-						</span>
-					</td>
-					<td>{% if i.email_confirmed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</td>
-					<td>{% if i.form_completed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</td>
-					<!-- <td class="email-cell">
-						{{ i.email }}
-						<button class="btn btn-sm btn-light copy-btn" data-email="{{ i.email }}" title="{% trans 'Copy email' %}">
-							<i class="fas fa-copy"></i>
-						</button>
-					</td> -->
-					<td>{{ i.first_name }}</td>
-					<td>{{ i.last_name }}</td>
-					<td>{{ i.date_joined|date:"Y-m-d" }}</td>
-					<td>{{ i.last_login|date:"Y-m-d" }}</td>
-      		<td>{% if i.uzytkownik.polecajacy %} {{ i.uzytkownik.polecajacy }} {% else %} -- {% endif %}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-{% else %}
-		<div class="alert alert-dark">({% trans 'None' %})</div>
-{% endif %}
+    {% if uid %}
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">{% trans 'Nick' %}</th>
+              <th scope="col">{% trans 'Email confirmed' %}</th>
+              <th scope="col">{% trans 'Form completed' %}</th>
+              <th scope="col">{% trans 'First name' %}</th>
+              <th scope="col">{% trans 'Last name' %}</th>
+              <th scope="col">{% trans 'Candidate since' %}</th>
+              <th scope="col">{% trans 'Last login' %}</th>
+              <th scope="col">{% trans 'Recommended by' %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in uid|dictsortreversed:"date_joined" %}
+            <tr class="user-row" data-user-id="{{ i.pk }}">
+              <td>
+                <span class="d-flex align-items-center">
+                  {% if i.rating == 1 %}
+                  <i class="fas fa-check-circle text-success me-2" title="{% trans 'You accepted this candidate' %}"></i>
+                  {% elif i.rating == -1 %}
+                  <i class="fas fa-times-circle text-danger me-2" title="{% trans 'You rejected this candidate' %}"></i>
+                  {% else %}
+                  <i class="fas fa-circle text-secondary me-2" title="{% trans 'You are neutral about this candidate' %}"></i>
+                  {% endif %}
+                  {{ i.username }}
+                </span>
+              </td>
+              <td>{% if i.email_confirmed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</td>
+              <td>{% if i.form_completed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</td>
+              <td>{{ i.first_name }}</td>
+              <td>{{ i.last_name }}</td>
+              <td>{{ i.date_joined|date:"Y-m-d" }}</td>
+              <td>{{ i.last_login|date:"Y-m-d" }}</td>
+              <td>{% if i.uzytkownik.polecajacy %} {{ i.uzytkownik.polecajacy }} {% else %} -- {% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="card-body">
+      <div class="alert alert-primary mb-0">{% trans "No candidates" %}</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
 
 <script src="{% static 'obywatele/js/citizens_list.js' %}"></script>
 

@@ -85,7 +85,7 @@
         <input type="hidden" name="value" value="1">
         <input type="hidden" name="next" value="{{ request.get_full_path }}">
         <button class="btn {% if vote_value == 1 %}btn-info text-dark{% else %}btn-outline-info{% endif %}" type="submit">
-          {% trans "I want to help" %}
+        + {% trans "I want to help" %}
         </button>
       </form>
 
@@ -94,7 +94,7 @@
         <input type="hidden" name="value" value="-1">
         <input type="hidden" name="next" value="{{ request.get_full_path }}">
         <button class="btn {% if vote_value == -1 %}btn-light text-dark{% else %}btn-outline-light{% endif %}" type="submit">
-          {% trans "Let's not do that" %}
+          - {% trans "Let's not do that" %}
         </button>
       </form>
       {% endwith %}

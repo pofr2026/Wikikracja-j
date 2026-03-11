@@ -1,0 +1,97 @@
+:root {
+  --app-max-width: 1200px;
+}
+
+.app-body {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+.body-content {
+  max-width: var(--app-max-width);
+}
+
+.section {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-heading {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.card {
+  border-radius: 0.6rem;
+  border-color: var(--bs-gray-700);
+}
+
+.card-header {
+  font-weight: 600;
+  background: var(--bs-gray-800);
+  border-bottom-color: var(--bs-gray-700);
+}
+
+.list-group-item {
+  background: var(--bs-dark);
+  border-color: var(--bs-gray-700);
+}
+
+.table thead th {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.table-action {
+  min-width: 90px;
+}
+
+/* Citizens table shared behaviors */
+tr.user-row {
+  cursor: pointer;
+}
+
+tr.user-row .copy-btn {
+  padding: 2px 8px;
+  margin-left: 6px;
+  font-size: 0.9em;
+  cursor: pointer;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+tr.user-row:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+tr.user-row:hover .copy-btn {
+  opacity: 1;
+}
+
+.email-cell {
+  white-space: nowrap;
+}
+
+.btn {
+  line-height: 1.35;
+}
+
+.btn-sm {
+  padding: 0.3rem 0.65rem;
+}
+
+.copy-btn {
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--bs-gray-700);
+}
+
+.copy-btn:hover {
+  background: var(--bs-gray-800);
+}

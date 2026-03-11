@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     row.addEventListener('click', function(e) {
       // Only navigate if the click wasn't on a button or other interactive element
       if (!e.target.closest('button, a')) {
-        window.location.href = this.getAttribute('data-user-id');
+        const userId = this.getAttribute('data-user-id');
+        window.location.href = `/obywatele/poczekalnia/${userId}/`;
       }
     });
   });
