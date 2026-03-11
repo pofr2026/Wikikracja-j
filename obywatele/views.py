@@ -699,6 +699,7 @@ def set_onboarding_email_confirmed(sender, request, email_address, **kwargs):
     try:
         time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
         send_mail(subject, message, s.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False)
+        log.info(f'Onboarding email sent successfully after confirmation to {user.email}; subject: {subject}')
     except Exception as e:
         log.error(f'Failed sending onboarding email after confirmation: {e}')
 
