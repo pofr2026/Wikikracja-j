@@ -111,12 +111,9 @@ class Command(BaseCommand):
     
     def activate_eligible_users(self):
         """Activate users with sufficient reputation"""
-        from django.db import transaction
         
         inactive_users = list(Uzytkownik.objects.filter(uid__is_active=False))
         req_rep = required_reputation()
-        activated_user_ids = set()
-        activated_emails = set()  # Track by email to prevent duplicate activations
         
         for i in inactive_users:
             # CRITICAL: Skip if uid is None or invalid
@@ -124,20 +121,12 @@ class Command(BaseCommand):
                 log.warning(f'Skipping Uzytkownik id={i.id} with invalid uid_id={i.uid_id}')
                 continue
             
-            # Skip if already activated in this run (by ID or email)
-            if i.uid.id in activated_user_ids:
-                continue
-            
-            # CRITICAL: Skip if email already activated (prevents duplicate emails)
-            if i.uid.email.lower() in activated_emails:
-                log.warning(f'Skipping user {i.uid.username} - email {i.uid.email} already activated in this run')
-                continue
-                
             if i.reputation is None:
                 log.warning(f'User {i.uid.username} has None reputation, skipping activation')
                 continue
                 
             if i.reputation > req_rep:
+                log.info(f'EMAIL_DIAG trigger=count_citizens_activation_check user_id={i.uid.id} email={i.uid.email} username={i.uid.username} reputation={i.reputation} required_reputation={req_rep}')
                 # Generate password first
                 password = password_generator()
                 
@@ -159,9 +148,6 @@ class Command(BaseCommand):
                 
                 # User was successfully activated by THIS process
                 log.info(f'ACTIVATING: user_id={i.uid.id}, email={i.uid.email}, username={i.uid.username}, uzytkownik_id={i.id}')
-                
-                activated_user_ids.add(i.uid.id)
-                activated_emails.add(i.uid.email.lower())
                 i.data_przyjecia = now()
                 i.save()
                 
@@ -170,6 +156,7 @@ class Command(BaseCommand):
                 log.info(f'ACTIVATED: user_id={i.uid.id}, email={i.uid.email}')
 
                 # Create one2one chat rooms for new person with Signals
+                log.info(f'EMAIL_DIAG trigger=user_accepted_signal user_id={i.uid.id} email={i.uid.email} username={i.uid.username} source=count_citizens.activate_eligible_users')
                 signals.user_accepted.send(sender='user_accepted', user=i)
                 
                 # New person accepts automatically every other active user
@@ -195,6 +182,7 @@ class Command(BaseCommand):
 {_('You may change password here')}: {host}/haslo/\
 """
                 try:
+                    log.info(f'EMAIL_DIAG trigger=welcome_email user_id={i.uid.id} email={uemail} username={uname} source=count_citizens.activate_eligible_users subject={subject}')
                     time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
                     send_mail(subject, message, s.DEFAULT_FROM_EMAIL, [uemail], fail_silently=False)
                     log.info(f'Sent welcome email to {uemail}')

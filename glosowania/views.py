@@ -43,6 +43,7 @@ def dodaj(request: HttpRequest):
             message = _("New proposal has been saved.")
             messages.success(request, (message))
 
+            log.info(f'EMAIL_DIAG trigger=new_law_proposal source=glosowania.views.dodaj actor_user_id={request.user.id} actor_username={request.user.username} decision_id={form.id} subject={_("New law proposal")}')
             SendEmail(
                 _('New law proposal'),
                 _('{user} added new law proposal\nYou can read it here: {url}').format(

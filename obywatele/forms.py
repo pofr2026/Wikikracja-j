@@ -189,6 +189,7 @@ class CustomSignupForm(SignupForm):
         request.session.modified = True
     
         HOST = get_site_domain()
+        log.info(f'EMAIL_DIAG trigger=new_person_requested_membership source=obywatele.forms.CustomSignupForm.save user_id={user.id} email={user.email} username={user.username} subject={_("New person requested membership")}')
         SendEmailToAll(
             _('New person requested membership'),
             _('User %(username)s just requested membership') % {'username': user.username} + '\n' + build_site_url('/obywatele/poczekalnia/')

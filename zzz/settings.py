@@ -254,6 +254,22 @@ _active_handler = "file" if _log_to_file else "console"
 logging.getLogger('asyncio').setLevel(logging.ERROR)
 logging.getLogger('urllib3.connectionpool').setLevel(logging.ERROR)
 
+LOGGING_HANDLERS = {
+    'console': {
+        'level': LOG_LEVEL,
+        'class': 'logging.StreamHandler',
+        'formatter': 'verbose',
+        'stream': 'ext://sys.stdout',
+    },
+}
+if _log_to_file:
+    LOGGING_HANDLERS['file'] = {
+        'level': LOG_LEVEL,
+        'class': 'logging.FileHandler',
+        'filename': LOG_FILE,
+        'formatter': 'verbose',
+    }
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -262,20 +278,7 @@ LOGGING = {
             'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
         },
     },
-    'handlers': {
-        'console': {
-            'level': LOG_LEVEL,
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-            'stream': 'ext://sys.stdout',
-        },
-        'file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'formatter': 'verbose',
-        },
-    },
+    'handlers': LOGGING_HANDLERS,
     'loggers': {
         '': {
             'handlers': [_active_handler],

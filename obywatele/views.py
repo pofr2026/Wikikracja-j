@@ -405,6 +405,7 @@ def dodaj(request: HttpRequest):
                 message = _('The new user has been saved')
                 success(request, (message))
 
+                log.info(f'EMAIL_DIAG trigger=new_citizen_proposed source=obywatele.views.dodaj actor_user_id={request.user.id} actor_username={request.user.username} candidate_user_id={candidate.id} candidate_username={candidate.username} subject={_("New citizen has been proposed")}')
                 SendEmailToAll(
                           _('New citizen has been proposed'),
                           f'{request.user.username} ' + str(_('proposed new citizen\nYou can approve him/her here:')) + f' {build_site_url(f"/obywatele/poczekalnia/{candidate.id}")}'
