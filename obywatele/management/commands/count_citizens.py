@@ -16,19 +16,13 @@ from zzz.utils import get_site_domain
 import time
 
 import logging
-log = logging.getLogger('django')
+log = logging.getLogger(__name__)
 
 # count_citizens command
 class Command(BaseCommand):
     help = 'Count citizens\' reputation and activate/deactivate users based on reputation thresholds'
 
     def handle(self, *args, **options):
-        logging.basicConfig(
-            filename='/var/log/wiki.log',
-            datefmt='%d-%b-%y %H:%M:%S',
-            format='%(asctime)s %(levelname)s %(funcName)s() %(message)s',
-            level=logging.INFO,
-        )
         ts = now().strftime('%Y-%m-%d %H:%M:%S%z')
         self.stdout.write(f'[{ts}] Starting citizen count and reputation check...')
         

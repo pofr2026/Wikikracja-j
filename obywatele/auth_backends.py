@@ -1,6 +1,9 @@
+import logging
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.conf import settings
+
+log = logging.getLogger(__name__)
 
 
 class CaseInsensitiveEmailBackend(ModelBackend):
@@ -41,10 +44,13 @@ class CaseInsensitiveEmailBackend(ModelBackend):
         except UserModel.MultipleObjectsReturned:
             # Handle case where multiple users have the same email
             # Try to authenticate with the active user
+            log.error(f'Multiple users found with email {normalized_username}, attempting fallback to active user')
             users = UserModel.objects.filter(email__iexact=normalized_username, is_active=True)
             if users.count() == 1:
                 user = users.first()
                 if user.check_password(password) and self.user_can_authenticate(user):
                     return user
+            else:
+                log.error(f'Cannot resolve login for {normalized_username}: {users.count()} active users found')
         
         return None

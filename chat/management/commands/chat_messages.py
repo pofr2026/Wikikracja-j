@@ -28,31 +28,30 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         translation.activate(s.LANGUAGE_CODE)
 
-        # Configure the root logger (this approach is used by the original code)
-        logging.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', 
-                          format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', 
-                          level=logging.INFO)
-    
         HOST = get_site_domain()
-    
+
         def SendEmail(recipients: list[str], message: str) -> None:
-            
+
             subject = _("{HOST} New messages on chat").format(HOST=HOST)
             header = _("New messages on {HOST}/chat").format(HOST=HOST)
             footer1 = _("You can disable those messages by unchecking bell icon next to chat room name.")
             footer2 = _("Go to chat to do so {HOST}/chat").format(HOST=HOST)
 
             email_message = EmailMessage(
-                subject = subject,
-                body = header + "\n\n" + message + "\n\n" + footer1 + "\n" + footer2,
-                from_email = str(s.DEFAULT_FROM_EMAIL),
-                bcc = recipients,
+                subject=subject,
+                body=header + "\n\n" + message + "\n\n" + footer1 + "\n" + footer2,
+                from_email=str(s.DEFAULT_FROM_EMAIL),
+                bcc=recipients,
                 )
-            log.info(f'SENDING - Subject: {email_message.subject}; TO: {email_message.bcc};')
+            log.info(f'Sending email to {recipients}; subject: {email_message.subject}')
 
             def _send_with_delay():
-                sleep(s.EMAIL_SEND_DELAY_SECONDS)
-                email_message.send(fail_silently=False)
+                try:
+                    sleep(s.EMAIL_SEND_DELAY_SECONDS)
+                    email_message.send(fail_silently=False)
+                    log.info(f'Email sent successfully to {recipients}; subject: {email_message.subject}')
+                except Exception as e:
+                    log.error(f'Failed to send email to {recipients}; subject: {email_message.subject}; error: {e}', exc_info=True)
 
             t = threading.Thread(target=_send_with_delay)
             t.setDaemon(True)

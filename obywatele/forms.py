@@ -14,7 +14,6 @@ from zzz.utils import build_site_url, get_site_domain
 
 import logging
 log = logging.getLogger(__name__)
-logging.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=logging.INFO)
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -207,17 +206,22 @@ def SendEmailToAll(subject, message):
     info_url = "https://wikikracja.pl/powiadomienia-email/"
     email_footer = _("Why you received this email? Here is explanation: {url}").format(url=info_url)
 
+    recipients = list(User.objects.filter(is_active=True).values_list('email', flat=True))
     email_message = EmailMessage(
         from_email=str(s.DEFAULT_FROM_EMAIL),
-        bcc = list(User.objects.filter(is_active=True).values_list('email', flat=True)),
+        bcc=recipients,
         subject=f'[{HOST}] {subject}',
         body=f"{message}\n\n{email_footer}",
         )
-    log.info(f'subject: {subject} message: {message}')
-    
+    log.info(f'Sending email to {len(recipients)} recipients; subject: {subject}')
+
     def _send_with_delay():
-        time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
-        email_message.send(fail_silently=False)
+        try:
+            time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
+            email_message.send(fail_silently=False)
+            log.info(f'Email sent successfully; subject: {subject}')
+        except Exception as e:
+            log.error(f'Failed to send email; subject: {subject}; error: {e}', exc_info=True)
 
     t = threading.Thread(target=_send_with_delay)
     t.setDaemon(True)

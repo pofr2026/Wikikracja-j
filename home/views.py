@@ -23,7 +23,6 @@ from .forms import RememberLoginForm
 import logging
 
 log = logging.getLogger(__name__)
-logging.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=logging.INFO)
 
 def home(request: HttpRequest):
     ongoing = Decyzja.objects.filter(status=3).order_by('data_referendum_start')

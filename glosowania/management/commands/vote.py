@@ -35,14 +35,13 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         translation.activate(s.LANGUAGE_CODE)
 
-        logging.basicConfig(filename='/var/log/wiki.log', datefmt='%d-%b-%y %H:%M:%S', format='%(asctime)s %(levelname)s %(funcName)s() %(message)s', level=logging.INFO)
         HOST = get_site_domain()
 
         INFO_URL = "https://wikikracja.pl/powiadomienia-email/"
 
         def zliczaj_wszystko():
 
-            logging.info(f'zliczaj_wszystko() run ok')
+            log.info(f'zliczaj_wszystko() run ok')
 
             # POPRZEDNIO:
             # propozycja = 1

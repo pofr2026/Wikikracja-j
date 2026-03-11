@@ -239,6 +239,13 @@ if DEBUG:
 
 DEBUG_AM = True # Mine (Miedziu) Debug profile/settings for better focus, default after "else"
 
+# LOGGING_DESTINATION: 'console' (default) or 'file'
+# When 'file', logs are written to LOG_FILE (default: /var/log/wiki.log)
+LOGGING_DESTINATION = getenv("LOGGING_DESTINATION", "console")
+LOG_FILE = getenv("LOG_FILE", "/var/log/wiki.log")
+_log_to_file = LOGGING_DESTINATION == "file"
+_active_handler = "file" if _log_to_file else "console"
+
 # Just for suppressing "Using selector: EpollSelector"
 import logging
 logging.getLogger('asyncio').setLevel(logging.ERROR if DEBUG_AM else logging.DEBUG)
@@ -260,41 +267,42 @@ LOGGING = {
             'stream': 'ext://sys.stdout',
         },
         'file': {
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG_AM else 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'django_queries.log',
+            'filename': LOG_FILE,
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         '': {
-            'handlers': ['console'],
+            'handlers': [_active_handler],
             'level': 'ERROR' if DEBUG_AM else 'INFO',
             'propagate': True
         },
         # 'django': {
-        #     'handlers': ['console'],
+        #     'handlers': [_active_handler],
         #     'level': 'INFO',
         #     'propagate': True
         # },
         # Urls:
         'django.channels.server': {
-            'handlers': ['console'],
+            'handlers': [_active_handler],
             'level': 'ERROR',
             'propagate': True
         },
         # SQL logs:
-        # 'django.db.backends': { 
-        #     'handlers': ['console', 'file'],
+        # 'django.db.backends': {
+        #     'handlers': [_active_handler],
         #     'level': 'DEBUG',
         #     'propagate': True
         # }
         # 'glosowania': {
-        #     'handlers': ['console'],
+        #     'handlers': [_active_handler],
         #     'level': 'INFO',
         #     'propagate': True
         # },
         # 'obywatele': {
-        #     'handlers': ['console'],
+        #     'handlers': [_active_handler],
         #     'level': 'INFO',
         #     'propagate': True
         # },

@@ -7,7 +7,7 @@ from chat.models import Room, Message
 import logging
 from zzz.utils import get_site_domain
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=Decyzja)
@@ -52,6 +52,6 @@ def create_chat_room_for_referendum(sender, instance, created, **kwargs):
                     sender=None
                 )
                 
-                logger.info(f'Chat room "{room_title}" created for referendum #{instance.pk}')
+                log.info(f'Chat room "{room_title}" created for referendum #{instance.pk}')
             except Exception as e:
-                logger.error(f'Failed to create chat room for referendum #{instance.pk}: {str(e)}')
+                log.error(f'Failed to create chat room for referendum #{instance.pk}: {str(e)}')
