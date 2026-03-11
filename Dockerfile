@@ -38,6 +38,9 @@ COPY --from=builder /root/.local /root/.local
 # Copy application code
 COPY . /app/
 
+# Copy collected static files from builder stage
+COPY --from=builder /app/static /app/static
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     mc \
     sqlite3 \

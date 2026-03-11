@@ -2157,7 +2157,7 @@ msgstr "Pamiętaj: Twój email nie został jeszcze potwierdzony. Poprosimy o pot
 
 #: .\obywatele\templates\obywatele\onboarding_details.html:15
 msgid "Please fill in the questions below. This helps the group evaluate your application."
-msgstr "Wypełnij proszę poniższe pytania. To pomaga grupie podjąć decyzję."
+msgstr "Wypełnij proszę poniższe pytania. To pomoże grupie podjąć decyzję."
 
 #: .\obywatele\templates\obywatele\onboarding_details.html:31
 msgid "Save form"
@@ -2263,10 +2263,8 @@ msgid "You are neutral about this candidate"
 msgstr "Masz stosunek neutralny do tego kandydata"
 
 #: .\obywatele\templates\obywatele\poczekalnia.html:63
-#, fuzzy
-#| msgid "Candidates"
 msgid "No candidates"
-msgstr "Kandydaci"
+msgstr "Brak kandydatów"
 
 #: .\obywatele\templates\obywatele\start.html:38
 msgid "Contact"
