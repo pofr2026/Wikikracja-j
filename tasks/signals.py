@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
@@ -32,6 +32,7 @@ def create_task_chat_room(sender, instance, created, **kwargs):
             title=room_title,
             public=True,
             archived=False,
+            protected=True,
             last_activity=timezone.now()
         )
         
@@ -62,3 +63,20 @@ def create_task_chat_room(sender, instance, created, **kwargs):
         )
         
         log.info(f"Sent initial message to chat room '{room_title}'")
+
+
+@receiver(pre_delete, sender=Task)
+def delete_task_chat_room(sender, instance, **kwargs):
+    """
+    Automatically delete the associated chat room when a task is deleted
+    """
+    from chat.models import Room
+    
+    room_title = instance.get_chat_room_title()
+    
+    try:
+        room = Room.objects.get(title=room_title)
+        room.delete()
+        log.info(f"Deleted chat room '{room_title}' for task #{instance.id}")
+    except Room.DoesNotExist:
+        log.info(f"Chat room '{room_title}' does not exist, nothing to delete")

@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
@@ -29,7 +29,8 @@ def create_chat_room_for_referendum(sender, instance, created, **kwargs):
                 room = Room.objects.create(
                     title=room_title,
                     public=True,
-                    archived=False
+                    archived=False,
+                    protected=True
                 )
                 
                 # Add all active users to the room
@@ -55,3 +56,20 @@ def create_chat_room_for_referendum(sender, instance, created, **kwargs):
                 log.info(f'Chat room "{room_title}" created for referendum #{instance.pk}')
             except Exception as e:
                 log.error(f'Failed to create chat room for referendum #{instance.pk}: {str(e)}')
+
+
+@receiver(pre_delete, sender=Decyzja)
+def delete_decyzja_chat_room(sender, instance, **kwargs):
+    """
+    Automatically delete the associated chat room when a Decyzja (voting) is deleted.
+    Note: Currently, Decyzja objects are not deleted in the system, but this signal
+    is here for future-proofing in case deletion functionality is added.
+    """
+    room_title = _("Vote #%(id)s: %(title)s") % {"id": instance.pk, "title": instance.title[:20]}
+    
+    try:
+        room = Room.objects.get(title=room_title)
+        room.delete()
+        log.info(f"Deleted chat room '{room_title}' for referendum #{instance.pk}")
+    except Room.DoesNotExist:
+        log.info(f"Chat room '{room_title}' does not exist, nothing to delete")

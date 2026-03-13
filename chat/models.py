@@ -30,6 +30,9 @@ class Room(models.Model):
     # Last activity timestamp
     last_activity = models.DateTimeField(auto_now=True)
 
+    # Protected rooms (for tasks, voting) should not be auto-deleted by chat_rooms command
+    protected = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title
 

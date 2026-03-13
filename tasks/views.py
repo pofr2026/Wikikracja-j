@@ -333,10 +333,5 @@ def delete_task(request: HttpRequest, pk: int) -> HttpResponse:
     if task.status == Task.Status.COMPLETED:
         return redirect("tasks:detail", pk=pk)
     
-    # Delete associated chat room if it exists
-    chat_room = task.chat_room
-    if chat_room:
-        chat_room.delete()
-    
     task.delete()
     return redirect("tasks:list")

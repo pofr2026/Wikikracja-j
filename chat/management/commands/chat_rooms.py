@@ -29,6 +29,10 @@ class Command(BaseCommand):
 
         # Archive/Delete old public chat rooms
         for room in public_rooms:
+            # Skip protected rooms (for tasks, voting) - they should only be deleted when the task/vote is deleted
+            if room.protected:
+                continue
+                
             try:
                 last_message = Message.objects.filter(room_id=room.id).latest('time')
             except Message.DoesNotExist:
