@@ -21,11 +21,6 @@ class Command(BaseCommand):
     help = 'Send chat messages through email'
 
     def handle(self, *args, **options):
-        pass
-        '''Jeśli tego nie będzie to: raise NotImplementedError('subclasses of BaseCommand must provide a handle() method')
-        NotImplementedError: subclasses of BaseCommand must provide a handle() method'''
-
-    def __init__(self, *args, **kwargs):
         translation.activate(s.LANGUAGE_CODE)
 
         HOST = get_site_domain()
@@ -59,7 +54,7 @@ class Command(BaseCommand):
 
         user_list = Uzytkownik.objects.filter(uid__is_active=True)
         for u in user_list:
-            room_allowed = Room.objects.filter(allowed=u.uid, archived=False).exclude(muted_by=u.uid, seen_by=u.uid)
+            room_allowed = Room.objects.filter(allowed=u.uid, archived=False).exclude(muted_by=u.uid).exclude(seen_by=u.uid)
             message_list = Message.objects.filter(time__gte=u.last_broadcast, room__in=room_allowed).exclude(sender=u.uid)
             if not message_list:
                 log.info(f'No new messages for user {u.uid}')
