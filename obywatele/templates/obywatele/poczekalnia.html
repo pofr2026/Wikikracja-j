@@ -26,7 +26,6 @@
               <th scope="col">{% trans 'First name' %}</th>
               <th scope="col">{% trans 'Last name' %}</th>
               <th scope="col">{% trans 'Candidate since' %}</th>
-              <th scope="col">{% trans 'Last login' %}</th>
               <th scope="col">{% trans 'Recommended by' %}</th>
             </tr>
           </thead>
@@ -50,7 +49,6 @@
               <td>{{ i.first_name }}</td>
               <td>{{ i.last_name }}</td>
               <td>{{ i.date_joined|date:"Y-m-d" }}</td>
-              <td>{{ i.last_login|date:"Y-m-d" }}</td>
               <td>{% if i.uzytkownik.polecajacy %} {{ i.uzytkownik.polecajacy }} {% else %} -- {% endif %}</td>
             </tr>
             {% endfor %}
