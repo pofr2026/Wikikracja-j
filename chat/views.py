@@ -79,12 +79,13 @@ def chat(request: HttpRequest):
     
     # Split public rooms into categories based on title patterns
     # Tasks start with "Task #", Votes start with "Vote #"
-    public_rooms_active = public_active.exclude(title__startswith=_("Task #")).exclude(title__startswith=_("Vote #"))
-    public_rooms_archived = public_archived.exclude(title__startswith=_("Task #")).exclude(title__startswith=_("Vote #"))
-    tasks_active = public_active.filter(title__startswith=_("Task #"))
-    tasks_archived = public_archived.filter(title__startswith=_("Task #"))
-    votes_active = public_active.filter(title__startswith=_("Vote #"))
-    votes_archived = public_archived.filter(title__startswith=_("Vote #"))
+    # Note: We use English prefixes in room titles (not translated) for consistency
+    public_rooms_active = public_active.exclude(title__startswith="Task #").exclude(title__startswith="Vote #")
+    public_rooms_archived = public_archived.exclude(title__startswith="Task #").exclude(title__startswith="Vote #")
+    tasks_active = public_active.filter(title__startswith="Task #")
+    tasks_archived = public_archived.filter(title__startswith="Task #")
+    votes_active = public_active.filter(title__startswith="Vote #")
+    votes_archived = public_archived.filter(title__startswith="Vote #")
     
     # Render that in the chat template
     return render(request, "chat/chat.html", {

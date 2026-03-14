@@ -18,7 +18,8 @@ def create_chat_room_for_referendum(sender, instance, created, **kwargs):
     # Only create room when a new Decyzja is created (status 1 = Proposition)
     if created and instance.status == 1:
         # Create room title based on project ID and title
-        room_title = _("Vote #%(id)s: %(title)s") % {"id": instance.pk, "title": instance.title[:20]}
+        # Use English prefix (not translated) for consistency in room categorization
+        room_title = "Vote #%(id)s: %(title)s" % {"id": instance.pk, "title": instance.title[:20]}
         
         # Check if room already exists (safety check)
         existing_room = Room.objects.filter(title=room_title).first()
@@ -65,7 +66,8 @@ def delete_decyzja_chat_room(sender, instance, **kwargs):
     Note: Currently, Decyzja objects are not deleted in the system, but this signal
     is here for future-proofing in case deletion functionality is added.
     """
-    room_title = _("Vote #%(id)s: %(title)s") % {"id": instance.pk, "title": instance.title[:20]}
+    # Use English prefix (not translated) for consistency
+    room_title = "Vote #%(id)s: %(title)s" % {"id": instance.pk, "title": instance.title[:20]}
     
     try:
         room = Room.objects.get(title=room_title)
