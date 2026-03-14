@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from django.urls import reverse
 
 User = get_user_model()
 from django.core.exceptions import ValidationError
@@ -85,6 +86,39 @@ class Decyzja(models.Model):
         return '%s: %s on %s' % (self.pk, self.tresc, self.status)
 
     objects = models.Manager()
+
+    def get_chat_room_title(self):
+        return _("Vote #%(id)s: %(title)s") % {"id": self.pk, "title": self.title[:20]}
+
+    def get_chat_room(self):
+        from chat.models import Room
+        try:
+            return Room.objects.get(title=self.get_chat_room_title())
+        except Room.DoesNotExist:
+            return None
+
+    def get_chat_room_url(self):
+        room = self.get_chat_room()
+        if room:
+            return f"{reverse('chat:chat')}#room_id={room.id}"
+        return None
+
+    @property
+    def chat_room_url(self):
+        return self.get_chat_room_url()
+
+    @property
+    def chat_room(self):
+        return self.get_chat_room()
+
+    def get_chat_room_pulse_class(self, user):
+        """Return CSS class for chat room pulse indicator if there are unseen messages"""
+        chat_room = self.chat_room
+        if (chat_room and 
+            chat_room.messages.exists() and 
+            not chat_room.seen_by.filter(id=user.id).exists()):
+            return "chat-room-pulse"
+        return ""
 
 
 class Argument(models.Model):

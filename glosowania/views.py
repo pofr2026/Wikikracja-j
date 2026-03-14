@@ -426,21 +426,9 @@ def rejected(request: HttpRequest):
 def proposition(request: HttpRequest):
     votings = Decyzja.objects.filter(status=1).order_by('data_referendum_start')
     
-    # Add chat room info for each voting
+    # Add chat room pulse class for each voting
     for voting in votings:
-        room_title = _("Vote #%(id)s: %(title)s") % {"id": voting.pk, "title": voting.title[:20]}
-        chat_room = Room.objects.filter(title=room_title).first()
-        voting.chat_room = chat_room
-        
-        # Check for unseen messages
-        if chat_room and request.user.is_authenticated:
-            if (chat_room.messages.exists() and 
-                not chat_room.seen_by.filter(id=request.user.id).exists()):
-                voting.chat_room_pulse_class = "chat-room-pulse"
-            else:
-                voting.chat_room_pulse_class = ""
-        else:
-            voting.chat_room_pulse_class = ""
+        voting.chat_room_pulse_class = voting.get_chat_room_pulse_class(request.user)
     
     return render(request, 'glosowania/proposition.html', {'votings': votings})
 
@@ -449,21 +437,9 @@ def proposition(request: HttpRequest):
 def discussion(request: HttpRequest):
     votings = Decyzja.objects.filter(status=2).order_by('data_referendum_start')
     
-    # Add chat room info for each voting
+    # Add chat room pulse class for each voting
     for voting in votings:
-        room_title = _("Vote #%(id)s: %(title)s") % {"id": voting.pk, "title": voting.title[:20]}
-        chat_room = Room.objects.filter(title=room_title).first()
-        voting.chat_room = chat_room
-        
-        # Check for unseen messages
-        if chat_room and request.user.is_authenticated:
-            if (chat_room.messages.exists() and 
-                not chat_room.seen_by.filter(id=request.user.id).exists()):
-                voting.chat_room_pulse_class = "chat-room-pulse"
-            else:
-                voting.chat_room_pulse_class = ""
-        else:
-            voting.chat_room_pulse_class = ""
+        voting.chat_room_pulse_class = voting.get_chat_room_pulse_class(request.user)
     
     return render(request, 'glosowania/discussion.html', {'votings': votings})
 
@@ -472,21 +448,9 @@ def discussion(request: HttpRequest):
 def referendum(request: HttpRequest):
     votings = Decyzja.objects.filter(status=3).order_by('data_referendum_start')
     
-    # Add chat room info for each voting
+    # Add chat room pulse class for each voting
     for voting in votings:
-        room_title = _("Vote #%(id)s: %(title)s") % {"id": voting.pk, "title": voting.title[:20]}
-        chat_room = Room.objects.filter(title=room_title).first()
-        voting.chat_room = chat_room
-        
-        # Check for unseen messages
-        if chat_room and request.user.is_authenticated:
-            if (chat_room.messages.exists() and 
-                not chat_room.seen_by.filter(id=request.user.id).exists()):
-                voting.chat_room_pulse_class = "chat-room-pulse"
-            else:
-                voting.chat_room_pulse_class = ""
-        else:
-            voting.chat_room_pulse_class = ""
+        voting.chat_room_pulse_class = voting.get_chat_room_pulse_class(request.user)
     
     return render(request, 'glosowania/referendum.html', {'votings': votings})
 

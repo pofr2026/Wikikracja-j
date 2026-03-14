@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-14 19:47+0100\n"
+"POT-Creation-Date: 2026-03-14 20:11+0100\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -15,7 +15,9 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
+"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
+"n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
 #: .\board\forms.py:9 .\board\models.py:10
 msgid "Text"
@@ -23,7 +25,7 @@ msgstr "Treść"
 
 #: .\board\models.py:8 .\elibrary\forms.py:7 .\elibrary\models.py:13
 #: .\elibrary\templates\elibrary\book_confirm_delete.html:13
-#: .\events\models.py:40 .\glosowania\models.py:28
+#: .\events\models.py:40 .\glosowania\models.py:29
 #: .\tasks\templates\tasks\task_form.html:19
 msgid "Title"
 msgstr "Tytuł"
@@ -37,7 +39,7 @@ msgstr "Podtytuł"
 #: .\bookkeeping\templates\bookkeeping\transaction_list.html:28
 #: .\elibrary\forms.py:8 .\elibrary\models.py:14
 #: .\elibrary\templates\elibrary\book_confirm_delete.html:15
-#: .\glosowania\models.py:107
+#: .\glosowania\models.py:141
 #: .\glosowania\templates\glosowania\szczegoly.html:214
 #: .\tasks\templates\tasks\task_detail.html:64
 msgid "Author"
@@ -83,13 +85,21 @@ msgstr "Ważne"
 
 #: .\board\signals.py:37
 #, python-format
-msgid "New important announcement by <strong>%(username)s</strong>: <a href='%(post_url)s'>%(title)s</a>"
-msgstr "Nowe ważne ogłoszenie od <strong>%(username)s</strong>: <a href='%(post_url)s'>%(title)s</a>"
+msgid ""
+"New important announcement by <strong>%(username)s</strong>: <a "
+"href='%(post_url)s'>%(title)s</a>"
+msgstr ""
+"Nowe ważne ogłoszenie od <strong>%(username)s</strong>: <a "
+"href='%(post_url)s'>%(title)s</a>"
 
 #: .\board\signals.py:43
 #, python-format
-msgid "Updated important announcement by <strong>%(username)s</strong>: <a href='%(post_url)s'>%(title)s</a>"
-msgstr "Zaktualizowane ważne ogłoszenie od <strong>%(username)s</strong>: <a href='%(post_url)s'>%(title)s</a>"
+msgid ""
+"Updated important announcement by <strong>%(username)s</strong>: <a "
+"href='%(post_url)s'>%(title)s</a>"
+msgstr ""
+"Zaktualizowane ważne ogłoszenie od <strong>%(username)s</strong>: <a "
+"href='%(post_url)s'>%(title)s</a>"
 
 #: .\board\templates\board\archive.html:12
 #: .\board\templates\board\board.html:16
@@ -545,12 +555,20 @@ msgid "Balance"
 msgstr "Balans"
 
 #: .\bookkeeping\views.py:53
-msgid "Cannot delete category because it is in use. Remove all transactions that use it first."
-msgstr "Nie można usunąć kategorii, ponieważ jest w użyciu. Usuń najpierw wszystkie transakcje, które ją wykorzystują."
+msgid ""
+"Cannot delete category because it is in use. Remove all transactions that "
+"use it first."
+msgstr ""
+"Nie można usunąć kategorii, ponieważ jest w użyciu. Usuń najpierw wszystkie "
+"transakcje, które ją wykorzystują."
 
 #: .\bookkeeping\views.py:103
-msgid "Cannot delete partner because it is in use. Remove all transactions that use it first."
-msgstr "Nie można usunąć partnera, ponieważ jest w użyciu. Usuń najpierw wszystkie transakcje, które go wykorzystują."
+msgid ""
+"Cannot delete partner because it is in use. Remove all transactions that use "
+"it first."
+msgstr ""
+"Nie można usunąć partnera, ponieważ jest w użyciu. Usuń najpierw wszystkie "
+"transakcje, które go wykorzystują."
 
 #: .\chat\management\commands\chat_messages.py:32
 #, python-brace-format
@@ -563,8 +581,11 @@ msgid "New messages on {HOST}/chat"
 msgstr "Nowe wiadomości na {HOST}/chat"
 
 #: .\chat\management\commands\chat_messages.py:34
-msgid "You can disable those messages by unchecking bell icon next to chat room name."
-msgstr "Możesz wyłączyć te powiadomienia odznaczając ikonę dzwonka obok nazwy pokoju."
+msgid ""
+"You can disable those messages by unchecking bell icon next to chat room "
+"name."
+msgstr ""
+"Możesz wyłączyć te powiadomienia odznaczając ikonę dzwonka obok nazwy pokoju."
 
 #: .\chat\management\commands\chat_messages.py:35
 #, python-brace-format
@@ -584,8 +605,12 @@ msgid "days. After"
 msgstr "dni. Po"
 
 #: .\chat\templates\chat\chat.html:93
-msgid "days they are deleted. Private messages are archived when user is blocked and deleted after"
-msgstr "dniach są usuwane. Prywatne wiadomości są archiwizowane, gdy użytkownik jest blokowany i usuwany po"
+msgid ""
+"days they are deleted. Private messages are archived when user is blocked "
+"and deleted after"
+msgstr ""
+"dniach są usuwane. Prywatne wiadomości są archiwizowane, gdy użytkownik jest "
+"blokowany i usuwany po"
 
 #: .\chat\templates\chat\chat.html:93
 #: .\obywatele\templates\obywatele\parameters.html:23
@@ -713,8 +738,12 @@ msgid "Are you sure you want to delete this book?"
 msgstr "Czy na pewno chcesz skasować ten ebook?"
 
 #: .\elibrary\templates\elibrary\book_confirm_delete.html:19
-msgid "This action cannot be undone. All associated files will be permanently deleted."
-msgstr "Ten ebook zostanie skasowany i wszystkie związane z nim pliki zostaną usunięte."
+msgid ""
+"This action cannot be undone. All associated files will be permanently "
+"deleted."
+msgstr ""
+"Ten ebook zostanie skasowany i wszystkie związane z nim pliki zostaną "
+"usunięte."
 
 #: .\elibrary\templates\elibrary\book_confirm_delete.html:24
 #: .\glosowania\templates\glosowania\delete_argument.html:29
@@ -809,7 +838,9 @@ msgstr "Zapisz Wydarzenie"
 
 #: .\events\forms.py:114 .\events\forms.py:116
 msgid "This field is required for monthly ordinal events."
-msgstr "To pole jest wymagane dla wydarzeń powtarzających się w określonym dniu tygodnia."
+msgstr ""
+"To pole jest wymagane dla wydarzeń powtarzających się w określonym dniu "
+"tygodnia."
 
 #: .\events\models.py:12
 msgid "One-time"
@@ -890,11 +921,16 @@ msgstr "Jak często się powtarza to wydarzenie?"
 
 #: .\events\models.py:81
 msgid "For monthly ordinal events: which week? (e.g., First, Second, Last)"
-msgstr "Dla wydarzeń powtarzających się w określonym dniu tygodnia: który tydzień? (np., Pierwszy, Drugi, Ostatni)"
+msgstr ""
+"Dla wydarzeń powtarzających się w określonym dniu tygodnia: który tydzień? "
+"(np., Pierwszy, Drugi, Ostatni)"
 
 #: .\events\models.py:88
-msgid "For monthly ordinal events: which day of the week? (e.g., Monday, Tuesday)"
-msgstr "Dla wydarzeń powtarzających się w określonym dniu tygodnia: który dzień tygodnia? (np., Poniedziałek, Wtorek)"
+msgid ""
+"For monthly ordinal events: which day of the week? (e.g., Monday, Tuesday)"
+msgstr ""
+"Dla wydarzeń powtarzających się w określonym dniu tygodnia: który dzień "
+"tygodnia? (np., Poniedziałek, Wtorek)"
 
 #: .\events\models.py:92 .\events\templates\events\event_detail.html:71
 #: .\tasks\models.py:33
@@ -906,8 +942,12 @@ msgid "Uncheck to disable this event"
 msgstr "Odznacz aby wyłączyć to wydarzenie"
 
 #: .\events\models.py:98
-msgid "Public events are visible to everyone. Private events are only visible to logged-in users."
-msgstr "Wydarzenia publiczne są widoczne dla wszystkich. Wydarzenia prywatne są widoczne tylko dla zalogowanych użytkowników."
+msgid ""
+"Public events are visible to everyone. Private events are only visible to "
+"logged-in users."
+msgstr ""
+"Wydarzenia publiczne są widoczne dla wszystkich. Wydarzenia prywatne są "
+"widoczne tylko dla zalogowanych użytkowników."
 
 #: .\events\models.py:105
 msgid "Event"
@@ -1144,124 +1184,140 @@ msgstr "Odrzucone"
 msgid "Why you received this email? Here is explanation: {url}"
 msgstr "Dlaczego otrzymałeś ten e-mail? Tutaj jest wyjaśnienie: {url}"
 
-#: .\glosowania\models.py:16
+#: .\glosowania\models.py:17
 msgid "Enter only existing bill numbers here"
 msgstr "Wpisz tutaj tylko numery istniejących przepisów"
 
-#: .\glosowania\models.py:29
+#: .\glosowania\models.py:30
 msgid "Enter short title describing new law."
 msgstr "Wpisz krótki tytuł opisujący nowe prawo."
 
-#: .\glosowania\models.py:33
+#: .\glosowania\models.py:34
 msgid "Law text"
 msgstr "Treść przepisu"
 
-#: .\glosowania\models.py:34
+#: .\glosowania\models.py:35
 msgid "Enter the exact wording of the law as it is to be applied."
-msgstr "Wpisz treść przepisu dokładnie w takim brzmieniu w jakim ma obowiązywać."
+msgstr ""
+"Wpisz treść przepisu dokładnie w takim brzmieniu w jakim ma obowiązywać."
 
-#: .\glosowania\models.py:38
+#: .\glosowania\models.py:39
 #: .\glosowania\templates\glosowania\discussion.html:42
 #: .\glosowania\templates\glosowania\proposition.html:43
 #: .\glosowania\templates\glosowania\szczegoly.html:40
 msgid "Penalty for non-compliance"
 msgstr "Konsekwencje złamania przepisu"
 
-#: .\glosowania\models.py:39
-msgid "What is the penalty for non-compliance with this rule. This can be, for example: \"Banishment for 3 months\", \"Banishment forever\", etc."
-msgstr "Jakie są konsekwencje za nieprzestrzeganie tej zasady. Może to być na przykład: \"Wygnanie na 3 miesiące\", \"Wygnanie na zawsze itd.\""
+#: .\glosowania\models.py:40
+msgid ""
+"What is the penalty for non-compliance with this rule. This can be, for "
+"example: \"Banishment for 3 months\", \"Banishment forever\", etc."
+msgstr ""
+"Jakie są konsekwencje za nieprzestrzeganie tej zasady. Może to być na "
+"przykład: \"Wygnanie na 3 miesiące\", \"Wygnanie na zawsze itd.\""
 
-#: .\glosowania\models.py:43
+#: .\glosowania\models.py:44
 msgid "Reasoning"
 msgstr "Uzasadnienie"
 
-#: .\glosowania\models.py:44
-msgid "Why do we need this law? What events or thoughts inspired this bill? What are the expected results?"
-msgstr "Dlaczego potrzebujemy tego przepisu? Jakie wydarzenia lub przemyślenia zainspirowały ten projekt? Jakie są oczekiwane efekty?"
+#: .\glosowania\models.py:45
+msgid ""
+"Why do we need this law? What events or thoughts inspired this bill? What "
+"are the expected results?"
+msgstr ""
+"Dlaczego potrzebujemy tego przepisu? Jakie wydarzenia lub przemyślenia "
+"zainspirowały ten projekt? Jakie są oczekiwane efekty?"
 
-#: .\glosowania\models.py:49
+#: .\glosowania\models.py:50
 msgid "Positive Aspects of the Idea"
 msgstr "Pozytywne Aspekty Pomysłu"
 
-#: .\glosowania\models.py:50
-msgid "Enter the benefits for the group, environment, economy, etc. resulting from the introduction of the idea."
-msgstr "Określ korzyści dla grupy, otoczenia, środowiska, ekonomi etc. wynikające z wprowadzenia pomysłu."
+#: .\glosowania\models.py:51
+msgid ""
+"Enter the benefits for the group, environment, economy, etc. resulting from "
+"the introduction of the idea."
+msgstr ""
+"Określ korzyści dla grupy, otoczenia, środowiska, ekonomi etc. wynikające z "
+"wprowadzenia pomysłu."
 
-#: .\glosowania\models.py:55
+#: .\glosowania\models.py:56
 msgid "Negative Aspects of the Idea"
 msgstr "Negatywne Aspekty Pomysłu"
 
-#: .\glosowania\models.py:56
+#: .\glosowania\models.py:57
 msgid "Enter the potential threat associated with the proposal."
 msgstr "Określ potencjalne zagrożenia związane z propozycją."
 
-#: .\glosowania\models.py:61
+#: .\glosowania\models.py:62
 msgid "Abolishes the rules"
 msgstr "Znosi przepis/y"
 
-#: .\glosowania\models.py:62
-msgid "If the proposed law supersedes other bills, enter their comma separated numbers here."
-msgstr "Jeśli proponowane prawo zastępuje inne przepisy, wprowadź tutaj ich numery rozdzielone przecinkami."
+#: .\glosowania\models.py:63
+msgid ""
+"If the proposed law supersedes other bills, enter their comma separated "
+"numbers here."
+msgstr ""
+"Jeśli proponowane prawo zastępuje inne przepisy, wprowadź tutaj ich numery "
+"rozdzielone przecinkami."
 
-#: .\glosowania\models.py:67
+#: .\glosowania\models.py:68
 msgid "The path this bill took."
 msgstr "Historia propozycji"
 
-#: .\glosowania\models.py:92
+#: .\glosowania\models.py:91 .\glosowania\signals.py:21
+#: .\glosowania\signals.py:68 .\glosowania\views.py:228
+#, python-format
+msgid "Vote #%(id)s: %(title)s"
+msgstr "Głosowanie #%(id)s: %(title)s"
+
+#: .\glosowania\models.py:126
 msgid "Positive"
 msgstr "Argument Za"
 
-#: .\glosowania\models.py:93
+#: .\glosowania\models.py:127
 msgid "Negative"
 msgstr "Argument Przeciw"
 
-#: .\glosowania\models.py:100
+#: .\glosowania\models.py:134
 #: .\glosowania\templates\glosowania\delete_argument.html:13
 #: .\glosowania\templates\glosowania\edit_argument.html:10
 msgid "Decision"
 msgstr "Decyzja"
 
-#: .\glosowania\models.py:112
+#: .\glosowania\models.py:146
 #: .\glosowania\templates\glosowania\delete_argument.html:14
 msgid "Argument Type"
 msgstr "Typ argumentu"
 
-#: .\glosowania\models.py:113
+#: .\glosowania\models.py:147
 msgid "Is this a positive or negative argument?"
 msgstr "Czy to argument pozytywny czy negatywny?"
 
-#: .\glosowania\models.py:117
+#: .\glosowania\models.py:151
 msgid "Argument Content"
 msgstr "Treść argumentu"
 
-#: .\glosowania\models.py:118
+#: .\glosowania\models.py:152
 msgid "Enter your argument. You can include links."
 msgstr "Wprowadź swój argument. Możesz dodać linki."
 
-#: .\glosowania\models.py:122
+#: .\glosowania\models.py:156
 msgid "Created At"
 msgstr "Utworzono"
 
-#: .\glosowania\models.py:126
+#: .\glosowania\models.py:160
 #: .\glosowania\templates\glosowania\delete_argument.html:22
 #: .\glosowania\templates\glosowania\edit_argument.html:14
 msgid "Last Modified"
 msgstr "Ostatnia modyfikacja"
 
-#: .\glosowania\models.py:131
+#: .\glosowania\models.py:165
 msgid "Argument"
 msgstr "Argument"
 
-#: .\glosowania\models.py:132
+#: .\glosowania\models.py:166
 msgid "Arguments"
 msgstr "Argumenty"
-
-#: .\glosowania\signals.py:21 .\glosowania\signals.py:68
-#: .\glosowania\views.py:228 .\glosowania\views.py:431
-#: .\glosowania\views.py:454 .\glosowania\views.py:477
-#, python-format
-msgid "Vote #%(id)s: %(title)s"
-msgstr "Głosowanie #%(id)s: %(title)s"
 
 #: .\glosowania\signals.py:44
 #, python-brace-format
@@ -1323,8 +1379,12 @@ msgid "Edit Argument"
 msgstr "Edytuj argument"
 
 #: .\glosowania\templates\glosowania\menu.html:13
-msgid "A referendum is not a one-off decision. The referendum is to pass a law that will be in force all the time."
-msgstr "Referendum nie służy do podejmowania jednorazowych decyzji. Referendum jest po to żeby uchwalić prawo, które będzie obowiązywało cały czas."
+msgid ""
+"A referendum is not a one-off decision. The referendum is to pass a law that "
+"will be in force all the time."
+msgstr ""
+"Referendum nie służy do podejmowania jednorazowych decyzji. Referendum jest "
+"po to żeby uchwalić prawo, które będzie obowiązywało cały czas."
 
 #: .\glosowania\templates\glosowania\menu.html:26
 msgid "Propositions"
@@ -1343,16 +1403,26 @@ msgid "New proposal needs to gather"
 msgstr "Nowa propozycja musi zebrać"
 
 #: .\glosowania\templates\glosowania\parameters.html:19
-msgid "signatures in order to trigger referendum. This number should remain low enough for any sensible proposal to be voted on, and only high enough to filter out obvious spam."
-msgstr "podpisy aby została poddana pod referendum. Ta liczba powinna pozostać wystarczająco niska aby możliwe było głosowanie nad każdą rozsądną propozycją, i tylko na tyle wysoka aby odfiltrować oczywisty spam."
+msgid ""
+"signatures in order to trigger referendum. This number should remain low "
+"enough for any sensible proposal to be voted on, and only high enough to "
+"filter out obvious spam."
+msgstr ""
+"podpisy aby została poddana pod referendum. Ta liczba powinna pozostać "
+"wystarczająco niska aby możliwe było głosowanie nad każdą rozsądną "
+"propozycją, i tylko na tyle wysoka aby odfiltrować oczywisty spam."
 
 #: .\glosowania\templates\glosowania\parameters.html:22
 msgid "Maximum time to gather signatures is"
 msgstr "Maksymalny czas na zebranie podpisów to"
 
 #: .\glosowania\templates\glosowania\parameters.html:22
-msgid "days. If there is not enough signatures - after this time, proposal is rejected."
-msgstr "dni. Jeśli nie ma wystarczającej liczby podpisów - po tym czasie propozycja jest odrzucana."
+msgid ""
+"days. If there is not enough signatures - after this time, proposal is "
+"rejected."
+msgstr ""
+"dni. Jeśli nie ma wystarczającej liczby podpisów - po tym czasie propozycja "
+"jest odrzucana."
 
 #: .\glosowania\templates\glosowania\parameters.html:25
 msgid "Queue and discussion before referendum lasts"
@@ -1587,8 +1657,14 @@ msgid "Your verification code is: %(code)s"
 msgstr "Twój kod weryfikacyjny to: %(code)s"
 
 #: .\glosowania\views.py:171 .\glosowania\views.py:202
-msgid "Write down your code or create screenshot to verify it when the referendum is over. This code will be presented just once and will be not related to you."
-msgstr "Zapisz swój kod na kartce lub zrób zrzut ekranu aby zweryfikować go po zakończeniu referendum. Ten kod zostanie przedstawiony tylko raz i nie będzie powiązany z twoją osobą."
+msgid ""
+"Write down your code or create screenshot to verify it when the referendum "
+"is over. This code will be presented just once and will be not related to "
+"you."
+msgstr ""
+"Zapisz swój kod na kartce lub zrób zrzut ekranu aby zweryfikować go po "
+"zakończeniu referendum. Ten kod zostanie przedstawiony tylko raz i nie "
+"będzie powiązany z twoją osobą."
 
 #: .\glosowania\views.py:196
 msgid "Your vote has been saved. You voted No."
@@ -1633,8 +1709,12 @@ msgstr "Twój argument został usunięty."
 
 #: .\grappelli\templates\registration\password_reset_email.html:2
 #, python-format
-msgid "You're receiving this email because you requested a password reset for your user account at %(site_name)s."
-msgstr "Otrzymujesz tę wiadomość e-mail, ponieważ poprosiłeś(aś) o zresetowanie hasła na stronie %(site_name)s."
+msgid ""
+"You're receiving this email because you requested a password reset for your "
+"user account at %(site_name)s."
+msgstr ""
+"Otrzymujesz tę wiadomość e-mail, ponieważ poprosiłeś(aś) o zresetowanie "
+"hasła na stronie %(site_name)s."
 
 #: .\grappelli\templates\registration\password_reset_email.html:4
 msgid "Please go to the following page and choose a new password:"
@@ -1783,20 +1863,30 @@ msgid "here"
 msgstr "tutaj"
 
 #: .\home\templates\home\password_reset_confirm.html:24
-msgid "The link you used is invalid, possibly because it has already been used."
-msgstr "Użyty link jest nieprawidłowy, prawdopodobnie dlatego, że został już użyty."
+msgid ""
+"The link you used is invalid, possibly because it has already been used."
+msgstr ""
+"Użyty link jest nieprawidłowy, prawdopodobnie dlatego, że został już użyty."
 
 #: .\home\templates\home\password_reset_confirm.html:25
 msgid "You must restart the password change process"
 msgstr "Musisz ponownie uruchomić proces zmiany hasła"
 
 #: .\home\templates\home\password_reset_done.html:7
-msgid "We've emailed you instructions for setting your password, if an account exists with the email you entered. You should receive them shortly."
-msgstr "Wysłaliśmy Ci e-mailem instrukcje dotyczące ustawiania hasła, jeśli istnieje konto z podanym adresem e-mail. Wkrótce powinieneś je otrzymać."
+msgid ""
+"We've emailed you instructions for setting your password, if an account "
+"exists with the email you entered. You should receive them shortly."
+msgstr ""
+"Wysłaliśmy Ci e-mailem instrukcje dotyczące ustawiania hasła, jeśli istnieje "
+"konto z podanym adresem e-mail. Wkrótce powinieneś je otrzymać."
 
 #: .\home\templates\home\password_reset_done.html:11
-msgid "If you don't receive an email, please make sure you've entered the address you registered with, and check your spam folder."
-msgstr "Jeśli nie otrzymasz wiadomości e-mail, upewnij się, że podałeś adres, na który się zarejestrowałeś i sprawdź folder ze spamem."
+msgid ""
+"If you don't receive an email, please make sure you've entered the address "
+"you registered with, and check your spam folder."
+msgstr ""
+"Jeśli nie otrzymasz wiadomości e-mail, upewnij się, że podałeś adres, na "
+"który się zarejestrowałeś i sprawdź folder ze spamem."
 
 #: .\home\templates\home\password_reset_done.html:15
 msgid "Back to login page"
@@ -1816,7 +1906,8 @@ msgstr "Twoje hasło zostało zmienione."
 
 #: .\home\views.py:110
 msgid "You typed something wrong. See what error appeared above and try again."
-msgstr "Coś źle wpisałeś. Zobacz, jaki błąd pojawił się powyżej i spróbuj ponownie."
+msgstr ""
+"Coś źle wpisałeś. Zobacz, jaki błąd pojawił się powyżej i spróbuj ponownie."
 
 #: .\obywatele\forms.py:47
 msgid "The two email addresses fields didn't match."
@@ -1878,7 +1969,9 @@ msgstr "Zawód jest wymagany"
 
 #: .\obywatele\forms.py:157
 msgid "Your candidacy is still in the queue. Please wait for verification."
-msgstr "Twoja kandydatura nadal czeka na zatwierdzenie. Poprosimy jeszcze o trochę cierpliwości."
+msgstr ""
+"Twoja kandydatura nadal czeka na zatwierdzenie. Poprosimy jeszcze o trochę "
+"cierpliwości."
 
 #: .\obywatele\forms.py:161
 msgid "An account with this email address already exists."
@@ -2115,8 +2208,12 @@ msgid "Change your username"
 msgstr "Zmień nazwę użytkownika"
 
 #: .\obywatele\templates\obywatele\dodaj.html:40
-msgid "Below fields are not mandatory but filling them out will help us make the right decision when accepting a new person."
-msgstr "Pola poniżej nie są obowiązkowe, ale ich wypełnienie pomoże nam podjąć właściwą decyzję przy przyjmowaniu nowej osoby."
+msgid ""
+"Below fields are not mandatory but filling them out will help us make the "
+"right decision when accepting a new person."
+msgstr ""
+"Pola poniżej nie są obowiązkowe, ale ich wypełnienie pomoże nam podjąć "
+"właściwą decyzję przy przyjmowaniu nowej osoby."
 
 #: .\obywatele\templates\obywatele\menu.html:33
 #: .\obywatele\templates\obywatele\poczekalnia.html:9
@@ -2176,19 +2273,31 @@ msgid "Edit my assets"
 msgstr "Edytuj moje zasoby"
 
 #: .\obywatele\templates\obywatele\my_profile.html:24
-msgid "You don't have to fill all of them but the more information you'll give - the better we will be able to fullfill our needs. Also we will know each other better."
-msgstr "Nie musisz wypełniać ich wszystkich, ale im więcej informacji podasz tym łatwiej będziemy mogli wypełniać wzajemnie nasze potrzeby. Dzięki również lepiej się poznamy."
+msgid ""
+"You don't have to fill all of them but the more information you'll give - "
+"the better we will be able to fullfill our needs. Also we will know each "
+"other better."
+msgstr ""
+"Nie musisz wypełniać ich wszystkich, ale im więcej informacji podasz tym "
+"łatwiej będziemy mogli wypełniać wzajemnie nasze potrzeby. Dzięki również "
+"lepiej się poznamy."
 
 #: .\obywatele\templates\obywatele\onboarding_details.html:6
 msgid "Onboarding form"
 msgstr "Formularz rejestracyjny"
 
 #: .\obywatele\templates\obywatele\onboarding_details.html:10
-msgid "Remember: your email is not confirmed yet. Please confirm it using the link from your inbox."
-msgstr "Pamiętaj: Twój email nie został jeszcze potwierdzony. Poprosimy o potwierdzenie go poprzez kliknięcie linku w mailu wysłanym do Ciebie."
+msgid ""
+"Remember: your email is not confirmed yet. Please confirm it using the link "
+"from your inbox."
+msgstr ""
+"Pamiętaj: Twój email nie został jeszcze potwierdzony. Poprosimy o "
+"potwierdzenie go poprzez kliknięcie linku w mailu wysłanym do Ciebie."
 
 #: .\obywatele\templates\obywatele\onboarding_details.html:15
-msgid "Please fill in the questions below. This helps the group evaluate your application."
+msgid ""
+"Please fill in the questions below. This helps the group evaluate your "
+"application."
 msgstr "Wypełnij proszę poniższe pytania. To pomoże grupie podjąć decyzję."
 
 #: .\obywatele\templates\obywatele\onboarding_details.html:31
@@ -2200,8 +2309,12 @@ msgid "Application sent"
 msgstr "Zgłoszenie wysłane"
 
 #: .\obywatele\templates\obywatele\onboarding_waiting.html:9
-msgid "You still need to confirm your email address using the link sent to your inbox."
-msgstr "Twój email nie został jeszcze potwierdzony. Poprosimy o potwierdzenie go poprzez kliknięcie linku w mailu wysłanym do Ciebie."
+msgid ""
+"You still need to confirm your email address using the link sent to your "
+"inbox."
+msgstr ""
+"Twój email nie został jeszcze potwierdzony. Poprosimy o potwierdzenie go "
+"poprzez kliknięcie linku w mailu wysłanym do Ciebie."
 
 #: .\obywatele\templates\obywatele\onboarding_waiting.html:13
 msgid "Your email address is confirmed."
@@ -2241,7 +2354,8 @@ msgstr "punktów akceptacji."
 
 #: .\obywatele\templates\obywatele\parameters.html:31
 msgid "Existing person will be banned bellow"
-msgstr "Istniejąca osoba zostanie zablokowane gdy jej reputacja spadnie poniżej"
+msgstr ""
+"Istniejąca osoba zostanie zablokowane gdy jej reputacja spadnie poniżej"
 
 #: .\obywatele\templates\obywatele\parameters.html:35
 msgid "You can check your reputation in your"
@@ -2403,8 +2517,12 @@ msgstr "Wypełnij formularz rejestracyjny"
 
 #: .\obywatele\views.py:697
 #, python-format
-msgid "Your email has been confirmed. Please fill out your onboarding form here: %(link)s"
-msgstr "Twoj email został potwierdzony. Wypełnij proszę formularz rejestracyjny (jeśli jeszcze tego nie zrobiłeś/aś): %(link)s"
+msgid ""
+"Your email has been confirmed. Please fill out your onboarding form here: "
+"%(link)s"
+msgstr ""
+"Twoj email został potwierdzony. Wypełnij proszę formularz rejestracyjny "
+"(jeśli jeszcze tego nie zrobiłeś/aś): %(link)s"
 
 #: .\tasks\forms.py:37
 msgid "Invalid closing status."
@@ -2522,8 +2640,10 @@ msgid "Evaluate outcome"
 msgstr "Oceń rezultat"
 
 #: .\tasks\templates\tasks\task_detail.html:187
-msgid "Are you sure you want to delete this task? This action cannot be undone."
-msgstr "Czy na pewno chcesz skasować to zadanie? To działanie nie może być odwrócone."
+msgid ""
+"Are you sure you want to delete this task? This action cannot be undone."
+msgstr ""
+"Czy na pewno chcesz skasować to zadanie? To działanie nie może być odwrócone."
 
 #: .\tasks\templates\tasks\task_detail.html:193
 msgid "Yes, delete"
@@ -2546,8 +2666,12 @@ msgid "Add task"
 msgstr "Dodaj zadanie"
 
 #: .\tasks\templates\tasks\task_list.html:27
-msgid "This module is used to determine which tasks we should complete as a group and which we should skip."
-msgstr "Ten moduł służy do określenia, które zadania powinniśmy wykonać jako grupa, a które pominąć."
+msgid ""
+"This module is used to determine which tasks we should complete as a group "
+"and which we should skip."
+msgstr ""
+"Ten moduł służy do określenia, które zadania powinniśmy wykonać jako grupa, "
+"a które pominąć."
 
 #: .\tasks\templates\tasks\task_list.html:32
 msgid "Actively handled"
@@ -2598,8 +2722,12 @@ msgid "Your account is inactive"
 msgstr "Twoje konto zostało założone ale nie jest jeszcze aktywne"
 
 #: .\templates\allauth\account\account_inactive.html:10
-msgid "If you are new user you need to wait until community will accept you. You will receive email once it will happen."
-msgstr "Musisz poczekać, aż społeczność zaakceptuje twoją kandydaturę. Gdy to się stanie otrzymasz wiadomość e-mail."
+msgid ""
+"If you are new user you need to wait until community will accept you. You "
+"will receive email once it will happen."
+msgstr ""
+"Musisz poczekać, aż społeczność zaakceptuje twoją kandydaturę. Gdy to się "
+"stanie otrzymasz wiadomość e-mail."
 
 #: .\templates\allauth\account\email.html:5
 #: .\templates\allauth\account\email.html:8
@@ -2639,8 +2767,12 @@ msgid "Warning:"
 msgstr "Ostrzeżenie:"
 
 #: .\templates\allauth\account\email.html:43
-msgid "You currently do not have any e-mail address set up. You should really add an e-mail address so you can receive notifications, reset your password, etc."
-msgstr "Obecnie nie masz skonfigurowanego żadnego adresu e-mail. Naprawdę powinieneś dodać adres e-mail, aby otrzymywać powiadomienia, resetować hasło itp."
+msgid ""
+"You currently do not have any e-mail address set up. You should really add "
+"an e-mail address so you can receive notifications, reset your password, etc."
+msgstr ""
+"Obecnie nie masz skonfigurowanego żadnego adresu e-mail. Naprawdę powinieneś "
+"dodać adres e-mail, aby otrzymywać powiadomienia, resetować hasło itp."
 
 #: .\templates\allauth\account\email.html:48
 msgid "Add E-mail Address"
@@ -2671,11 +2803,13 @@ msgstr ""
 #: .\templates\allauth\account\email\email_confirmation_message.txt:5
 #, python-format
 msgid ""
-"You're receiving this e-mail because user %(user_display)s has given your e-mail address to register an account on %(site_domain)s.\n"
+"You're receiving this e-mail because user %(user_display)s has given your e-"
+"mail address to register an account on %(site_domain)s.\n"
 "\n"
 "To confirm this is correct, go to %(activate_url)s"
 msgstr ""
-"Otrzymujesz tę wiadomość e-mail, ponieważ użytkownik %(user_display)s podał Twój adres e-mail do rejestracji konta na %(site_domain)s.\n"
+"Otrzymujesz tę wiadomość e-mail, ponieważ użytkownik %(user_display)s podał "
+"Twój adres e-mail do rejestracji konta na %(site_domain)s.\n"
 "\n"
 "Aby potwierdzić, że jest to twoje konto kliknij ten link %(activate_url)s"
 
@@ -2685,11 +2819,15 @@ msgstr "Potwierdź proszę swój adres E-mail"
 
 #: .\templates\allauth\account\email\password_reset_key_message.txt:4
 msgid ""
-"You're receiving this e-mail because you or someone else has requested a password for your user account.\n"
-"It can be safely ignored if you did not request a password reset. Click the link below to reset your password."
+"You're receiving this e-mail because you or someone else has requested a "
+"password for your user account.\n"
+"It can be safely ignored if you did not request a password reset. Click the "
+"link below to reset your password."
 msgstr ""
-"Otrzymujesz tę wiadomość e-mail, ponieważ Ty lub ktoś inny zażądał hasło do Twojego konta użytkownika.\n"
-"Można go bezpiecznie zignorować, jeśli nie zażądałeś resetowania hasła. Kliknij link poniżej, aby zresetować hasło."
+"Otrzymujesz tę wiadomość e-mail, ponieważ Ty lub ktoś inny zażądał hasło do "
+"Twojego konta użytkownika.\n"
+"Można go bezpiecznie zignorować, jeśli nie zażądałeś resetowania hasła. "
+"Kliknij link poniżej, aby zresetować hasło."
 
 #: .\templates\allauth\account\email\password_reset_key_message.txt:9
 #, python-format
@@ -2707,8 +2845,11 @@ msgstr "Potwierdź adres email"
 
 #: .\templates\allauth\account\email_confirm.html:18
 #, python-format
-msgid "Please confirm that <a href=\"mailto:%(email)s\">%(email)s</a> is your e-mail."
-msgstr "Potwierdź, że <a href=\"mailto:%(email)s\">%(email)s</a> to twój e-mail"
+msgid ""
+"Please confirm that <a href=\"mailto:%(email)s\">%(email)s</a> is your e-"
+"mail."
+msgstr ""
+"Potwierdź, że <a href=\"mailto:%(email)s\">%(email)s</a> to twój e-mail"
 
 #: .\templates\allauth\account\email_confirm.html:22
 msgid "Confirm"
@@ -2716,8 +2857,12 @@ msgstr "Potwierdzam"
 
 #: .\templates\allauth\account\email_confirm.html:29
 #, python-format
-msgid "This e-mail confirmation link expired or is invalid. Please <a href=\"%(email_url)s\">issue a new e-mail confirmation request</a>."
-msgstr "Ten e-mailowy link potwierdzający wygasł lub jest nieprawidłowy. Proszę <a href=\"%(email_url)s\">wyślij nową prośbę o potwierdzenie emaila</a>."
+msgid ""
+"This e-mail confirmation link expired or is invalid. Please <a "
+"href=\"%(email_url)s\">issue a new e-mail confirmation request</a>."
+msgstr ""
+"Ten e-mailowy link potwierdzający wygasł lub jest nieprawidłowy. Proszę <a "
+"href=\"%(email_url)s\">wyślij nową prośbę o potwierdzenie emaila</a>."
 
 #: .\templates\allauth\account\login.html:6
 #: .\templates\allauth\account\login.html:15
@@ -2752,8 +2897,12 @@ msgstr "Potwierdzenie zostało wysłane na adres %(email)s."
 
 #: .\templates\allauth\account\messages\email_confirmed.txt:2
 #, python-format
-msgid "You have confirmed %(email)s. Please wait until group will accept you. You will receive email when that happen."
-msgstr "Potwierdziłeś email %(email)s. Poczekaj, aż grupa Cię zaakceptuje. Otrzymasz wiadomość, gdy to nastąpi."
+msgid ""
+"You have confirmed %(email)s. Please wait until group will accept you. You "
+"will receive email when that happen."
+msgstr ""
+"Potwierdziłeś email %(email)s. Poczekaj, aż grupa Cię zaakceptuje. Otrzymasz "
+"wiadomość, gdy to nastąpi."
 
 #: .\templates\allauth\account\messages\email_deleted.txt:2
 #, python-format
@@ -2803,8 +2952,12 @@ msgid "Password Reset"
 msgstr "Zresetowanie hasła"
 
 #: .\templates\allauth\account\password_reset.html:15
-msgid "Forgotten your password? Enter your e-mail address below, and we'll send you an e-mail allowing you to reset it."
-msgstr "Zapomniałeś swojego hasła? Wpisz poniżej swój adres e-mail, a wyślemy Ci wiadomość e-mail umożliwiającą jego zresetowanie."
+msgid ""
+"Forgotten your password? Enter your e-mail address below, and we'll send you "
+"an e-mail allowing you to reset it."
+msgstr ""
+"Zapomniałeś swojego hasła? Wpisz poniżej swój adres e-mail, a wyślemy Ci "
+"wiadomość e-mail umożliwiającą jego zresetowanie."
 
 #: .\templates\allauth\account\password_reset.html:20
 msgid "Reset My Password"
@@ -2815,8 +2968,12 @@ msgid "Please contact us if you have any trouble resetting your password."
 msgstr "Skontaktuj się z nami, jeśli masz problemy ze zresetowaniem hasła."
 
 #: .\templates\allauth\account\password_reset_done.html:15
-msgid "We have sent you an e-mail. Please contact us if you do not receive it within a few minutes."
-msgstr "Wysłaliśmy Ci e-mail. Skontaktuj się z nami, jeśli nie otrzymasz go w ciągu kilku minut."
+msgid ""
+"We have sent you an e-mail. Please contact us if you do not receive it "
+"within a few minutes."
+msgstr ""
+"Wysłaliśmy Ci e-mail. Skontaktuj się z nami, jeśli nie otrzymasz go w ciągu "
+"kilku minut."
 
 #: .\templates\allauth\account\password_reset_from_key.html:7
 msgid "Bad Token"
@@ -2824,8 +2981,14 @@ msgstr "Nieprawidłowy token"
 
 #: .\templates\allauth\account\password_reset_from_key.html:11
 #, python-format
-msgid "The password reset link was invalid, possibly because it has already been used.  Please request a <a href=\"%(passwd_reset_url)s\">new password reset</a>."
-msgstr "Link do resetowania hasła był nieprawidłowy, prawdopodobnie dlatego, że został już użyty. Poproś o <a href=\"%(passwd_reset_url)s\">zresetowanie nowego hasła</a>."
+msgid ""
+"The password reset link was invalid, possibly because it has already been "
+"used.  Please request a <a href=\"%(passwd_reset_url)s\">new password reset</"
+"a>."
+msgstr ""
+"Link do resetowania hasła był nieprawidłowy, prawdopodobnie dlatego, że "
+"został już użyty. Poproś o <a href=\"%(passwd_reset_url)s\">zresetowanie "
+"nowego hasła</a>."
 
 #: .\templates\allauth\account\password_reset_from_key.html:17
 msgid "change password"
@@ -2884,11 +3047,17 @@ msgid "Verify Your E-mail Address"
 msgstr "Zweryfikuj swój adres email"
 
 #: .\templates\allauth\account\verification_sent.html:10
-msgid "We have sent an e-mail to you for verification. Follow the link provided to finalize the signup process."
-msgstr "Wysłaliśmy do Ciebie e-mail w celu weryfikacji. Kliknij link z emaila aby dokończyć rejestrację."
+msgid ""
+"We have sent an e-mail to you for verification. Follow the link provided to "
+"finalize the signup process."
+msgstr ""
+"Wysłaliśmy do Ciebie e-mail w celu weryfikacji. Kliknij link z emaila aby "
+"dokończyć rejestrację."
 
 #: .\templates\allauth\account\verification_sent.html:11
-msgid "You can already fill out your onboarding form now. It is available right away after signup."
+msgid ""
+"You can already fill out your onboarding form now. It is available right "
+"away after signup."
 msgstr "Teraz możesz wypełnić formularz (następny krok)."
 
 #: .\templates\allauth\account\verification_sent.html:14
@@ -2896,8 +3065,12 @@ msgid "Open onboarding form"
 msgstr "Otwórz formularz"
 
 #: .\templates\allauth\account\verification_sent.html:17
-msgid "After verifying your email and submitting the onboarding form, you still need to wait for group approval."
-msgstr "Po zweryfikowaniu maila i wypełnieniu formularza, musisz poczekać, aż grupa zaakceptuje Twoje zgłoszenie."
+msgid ""
+"After verifying your email and submitting the onboarding form, you still "
+"need to wait for group approval."
+msgstr ""
+"Po zweryfikowaniu maila i wypełnieniu formularza, musisz poczekać, aż grupa "
+"zaakceptuje Twoje zgłoszenie."
 
 #: .\templates\allauth\account\verified_email_required.html:12
 msgid ""
@@ -2916,13 +3089,18 @@ msgid ""
 "contact us if you do not receive it within a few minutes."
 msgstr ""
 "Wysłaliśmy do Ciebie wiadomość e-mail w celu\n"
-"weryfikacji. Proszę kliknąć na link znajdujący się w tej wiadomości e-mail. Jeśli nie otrzymasz go w ciągu kilku minut,\n"
+"weryfikacji. Proszę kliknąć na link znajdujący się w tej wiadomości e-mail. "
+"Jeśli nie otrzymasz go w ciągu kilku minut,\n"
 "skontaktuj się z nami."
 
 #: .\templates\allauth\account\verified_email_required.html:20
 #, python-format
-msgid "<strong>Note:</strong> you can still <a href=\"%(email_url)s\">change your e-mail address</a>."
-msgstr "<strong>Uwaga:</strong> nadal możesz <a href=\"%(email_url)s\">zmienić swój adres e-mail</a>."
+msgid ""
+"<strong>Note:</strong> you can still <a href=\"%(email_url)s\">change your e-"
+"mail address</a>."
+msgstr ""
+"<strong>Uwaga:</strong> nadal możesz <a href=\"%(email_url)s\">zmienić swój "
+"adres e-mail</a>."
 
 #: .\zzz\settings.py:97
 msgid "English"
