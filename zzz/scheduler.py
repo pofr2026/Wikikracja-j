@@ -43,8 +43,8 @@ def start_scheduler():
     # Chat messages - runs at 12, 18
     scheduler.add_job(
         run_chat_messages,
-        # trigger=CronTrigger(hour='12,18', minute=1),
-        trigger=CronTrigger(minute='*'),
+        trigger=CronTrigger(hour='12,18', minute=1),
+        # trigger=CronTrigger(minute='*'),
         id='chat_messages',
         name='Send chat message emails',
         replace_existing=True,
@@ -54,8 +54,8 @@ def start_scheduler():
     # Chat rooms - runs every 5 minutes
     scheduler.add_job(
         run_chat_rooms,
-        # trigger=CronTrigger(minute='*/5'),
-        trigger=CronTrigger(minute='*'),
+        trigger=CronTrigger(minute='*/5'),
+        # trigger=CronTrigger(minute='*'),
         id='chat_rooms',
         name='Create/Delete/Archive chat rooms',
         replace_existing=True,
@@ -65,8 +65,8 @@ def start_scheduler():
     # Vote - runs daily at 08:05
     scheduler.add_job(
         run_vote,
-        # trigger=CronTrigger(hour=8, minute=5),
-        trigger=CronTrigger(minute='*'),
+        trigger=CronTrigger(hour=8, minute=5),
+        # trigger=CronTrigger(minute='*'),
         id='vote',
         name='Process voting and create 1-to-1 rooms',
         replace_existing=True,
@@ -76,8 +76,8 @@ def start_scheduler():
     # Count citizens - runs every 5 minutes
     scheduler.add_job(
         run_count_citizens,
-        # trigger=CronTrigger(minute='*/5'),
-        trigger=CronTrigger(minute='*'),
+        trigger=CronTrigger(minute='*/5'),
+        # trigger=CronTrigger(minute='*'),
         id='count_citizens',
         name='Count citizens and manage reputation',
         replace_existing=True,
@@ -87,8 +87,8 @@ def start_scheduler():
     # Update site - runs every hour
     scheduler.add_job(
         run_update_site,
-        # trigger=CronTrigger(minute=2),
-        trigger=CronTrigger(minute='*'),
+        trigger=CronTrigger(minute=2),
+        # trigger=CronTrigger(minute='*'),
         id='update_site',
         name='Update Site domain and name from environment variables',
         replace_existing=True,
