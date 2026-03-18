@@ -43,14 +43,7 @@ def create_task_chat_room(sender, instance, created, **kwargs):
         log.info(f"Created chat room '{room_title}' for task #{instance.id}")
         
         # Send initial message with link back to the task
-        from django.contrib.sites.models import Site
-        try:
-            domain =  get_site_domain()
-        except:
-            # Fallback to settings if Site framework is not configured
-            from django.conf import settings
-            domain = getattr(settings, 'DOMAIN', 'localhost:8000')
-        
+        domain = get_site_domain()
         task_path = reverse('tasks:detail', kwargs={'pk': instance.pk})
         task_url = f"https://{domain}{task_path}"
         message_text = _('Discussion room for task: %(task_url)s') % {'task_url': task_url}

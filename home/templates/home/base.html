@@ -135,6 +135,20 @@
 			</div>
 		</nav>
 
+		<!-- Global notification permission banner -->
+		{% if user.is_authenticated %}
+		<div id="notification-permission-banner" class="alert alert-info m-0 text-center" style="display: none; border-radius: 0;">
+			<i class="far fa-bell-slash"></i>
+			<span>{% trans "Enable notifications to stay updated with new messages and activities" %}</span>
+			<button type="button" class="btn btn-sm btn-primary mx-2" id="enable-notifications-global">
+				{% trans "Enable Notifications" %}
+			</button>
+			<button type="button" class="btn btn-sm btn-secondary" id="dismiss-notifications-banner">
+				{% trans "Not now" %}
+			</button>
+		</div>
+		{% endif %}
+
 		<div class="container-fluid">
 			{% block content_fullscreen %}{% endblock content_fullscreen%}
 		</div>
@@ -157,6 +171,58 @@
 {% block notifications_script %}
 	<script src="{% static 'chat/js/notifications.js' %}" type="module"></script>
 {% endblock notifications_script %}
+
+<script>
+// Global notification permission banner handler
+document.addEventListener('DOMContentLoaded', function() {
+	const banner = document.getElementById('notification-permission-banner');
+	if (!banner) return;
+
+	// Check if Notification API is supported
+	if (!('Notification' in window)) {
+		return;
+	}
+
+	// Check if user has already dismissed the banner
+	const dismissed = localStorage.getItem('notification-banner-dismissed');
+	
+	// Show banner if permission is not granted and user hasn't dismissed it
+	if (Notification.permission === 'default' && !dismissed) {
+		banner.style.display = 'block';
+	}
+
+	// Handle "Enable Notifications" button
+	document.getElementById('enable-notifications-global')?.addEventListener('click', async function() {
+		try {
+			const permission = await Notification.requestPermission();
+			if (permission === 'granted') {
+				banner.style.display = 'none';
+				localStorage.removeItem('notification-banner-dismissed');
+				// Reload to initialize push notifications
+				location.reload();
+			}
+		} catch (error) {
+			console.error('Error requesting notification permission:', error);
+		}
+	});
+
+	// Handle "Not now" button
+	document.getElementById('dismiss-notifications-banner')?.addEventListener('click', function() {
+		banner.style.display = 'none';
+		// Remember dismissal for 7 days
+		const dismissedUntil = Date.now() + (7 * 24 * 60 * 60 * 1000);
+		localStorage.setItem('notification-banner-dismissed', dismissedUntil);
+	});
+
+	// Check if dismissal has expired
+	if (dismissed && parseInt(dismissed) < Date.now()) {
+		localStorage.removeItem('notification-banner-dismissed');
+		if (Notification.permission === 'default') {
+			banner.style.display = 'block';
+		}
+	}
+});
+</script>
  
 </body>
 </html>

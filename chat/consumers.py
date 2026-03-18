@@ -583,8 +583,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             title = "Anonymous User" if message.anonymous else message.sender.username
             body = message.text[:100]
             
-            # Build deep link to room
-            site_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
+            # Build deep link to room (get_site_domain does DB query, needs async wrapper)
+            from zzz.utils import get_site_domain
+            domain = await database_sync_to_async(get_site_domain)()
+            site_url = f"https://{domain}"
             deep_link = f"{site_url}/chat#room_id={room_id}"
             
             # Send via django-push-notifications

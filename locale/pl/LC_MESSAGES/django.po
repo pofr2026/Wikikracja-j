@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 17:33+0100\n"
+"POT-Creation-Date: 2026-03-18 18:55+0100\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -643,11 +643,20 @@ msgstr "Historia zmian"
 msgid "Close"
 msgstr "Zamknij"
 
-#: .\chat\templates\chat\room_link.html:20
+#: .\chat\templates\chat\room_link.html:16
+msgid "Toggle notifications (chat and email)"
+msgstr "Przełącz powiadomienia (czat i email)"
+
+#: .\chat\templates\chat\room_link.html:17
+#, python-format
+msgid "Toggle notifications for room %(room_name)s"
+msgstr "Przełącz powiadomienia dla pokoju %(room_name)s"
+
+#: .\chat\templates\chat\room_link.html:23
 msgid "Copy link"
 msgstr "Skopiuj link"
 
-#: .\chat\templates\chat\room_link.html:21
+#: .\chat\templates\chat\room_link.html:24
 #, python-format
 msgid "Copy link to room %(room_name)s"
 msgstr "Skopiuj link do pokoju %(room_name)s"
@@ -1689,6 +1698,18 @@ msgstr "eBiblioteka"
 msgid "Chat"
 msgstr "Czat"
 
+#: .\home\templates\home\base.html:145
+msgid "Enable notifications to stay updated with new messages and activities"
+msgstr "Włącz powiadomienia, aby być na bieżąco z nowymi wiadomościami i aktywnościami"
+
+#: .\home\templates\home\base.html:147
+msgid "Enable Notifications"
+msgstr "Włącz powiadomienia"
+
+#: .\home\templates\home\base.html:150
+msgid "Not now"
+msgstr "Nie teraz"
+
 #: .\home\templates\home\haslo.html:3
 #: .\obywatele\management\commands\count_citizens.py:180
 msgid "Password"
@@ -2413,7 +2434,7 @@ msgstr "Sukces"
 msgid "Failure"
 msgstr "Porażka"
 
-#: .\tasks\signals.py:56
+#: .\tasks\signals.py:49
 #, python-format
 msgid "Discussion room for task: %(task_url)s"
 msgstr "Pokój dyskusyjny dla zadania: %(task_url)s"

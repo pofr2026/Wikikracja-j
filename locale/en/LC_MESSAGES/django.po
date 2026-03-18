@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-18 17:33+0100\n"
+"POT-Creation-Date: 2026-03-18 18:48+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -648,11 +648,20 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: .\chat\templates\chat\room_link.html:20
+#: .\chat\templates\chat\room_link.html:16
+msgid "Toggle notifications (chat and email)"
+msgstr ""
+
+#: .\chat\templates\chat\room_link.html:17
+#, python-format
+msgid "Toggle notifications for room %(room_name)s"
+msgstr ""
+
+#: .\chat\templates\chat\room_link.html:23
 msgid "Copy link"
 msgstr ""
 
-#: .\chat\templates\chat\room_link.html:21
+#: .\chat\templates\chat\room_link.html:24
 #, python-format
 msgid "Copy link to room %(room_name)s"
 msgstr ""
@@ -1715,6 +1724,18 @@ msgstr ""
 msgid "Chat"
 msgstr ""
 
+#: .\home\templates\home\base.html:145
+msgid "Enable notifications to stay updated with new messages and activities"
+msgstr ""
+
+#: .\home\templates\home\base.html:147
+msgid "Enable Notifications"
+msgstr ""
+
+#: .\home\templates\home\base.html:150
+msgid "Not now"
+msgstr ""
+
 #: .\home\templates\home\haslo.html:3
 #: .\obywatele\management\commands\count_citizens.py:180
 msgid "Password"
@@ -2441,7 +2462,7 @@ msgstr ""
 msgid "Failure"
 msgstr ""
 
-#: .\tasks\signals.py:56
+#: .\tasks\signals.py:49
 #, python-format
 msgid "Discussion room for task: %(task_url)s"
 msgstr ""
