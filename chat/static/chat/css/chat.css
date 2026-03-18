@@ -375,39 +375,3 @@ input[type='checkbox'] {
         max-height: 45dvh;
     }
 }
-
-/* Below non chat related */
-
-/* Make table rows clickable */
-td a {
-    display: block;
-    text-decoration: none;
-    color: var(--bs-white);
-}
-
-/* Overwrite bootstrap - borders */
-.list-group-item+.list-group-item {
-    border-top-width: 2;
-}
-
-.list-group-item {
-    color: #00bc8c !important;
-}
-
-/* For Board and TinyMCE. Makes pictures responsive */
-img {
-    max-width: 100%;
-    height: auto;
-}
-
-.board {
-    border: 1px solid gray;
-    border-radius: 10px;
-    margin: 10;
-    padding: 10;
-}
-
-/* Hide Google Translation icon */
-#gtx-trans {
-    display: none !important;
-}

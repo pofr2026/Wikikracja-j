@@ -34,12 +34,11 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Copy Python packages from builder stage
 COPY --from=builder /root/.local /root/.local
+# Copy collected static files from builder stage
+COPY --from=builder /app/static /app/static
 
 # Copy application code
 COPY . /app/
-
-# Copy collected static files from builder stage
-COPY --from=builder /app/static /app/static
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     mc \

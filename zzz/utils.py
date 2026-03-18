@@ -1,9 +1,6 @@
 """
 Project-wide utility functions
 """
-from django.conf import settings as s
-from django.contrib.sites.models import Site
-
 
 def get_site_domain():
     """
@@ -14,6 +11,7 @@ def get_site_domain():
         str: The domain of the current site (e.g., 'test.wikikracja.pl')
     """
     try:
+        from django.contrib.sites.models import Site
         return Site.objects.get_current().domain
     except Exception:
         return 'localhost'
@@ -29,6 +27,7 @@ def build_site_url(path: str) -> str:
     Returns:
         str: Absolute URL including scheme and host.
     """
+    from django.conf import settings as s
     scheme = getattr(s, "SITE_PROTOCOL", "http")
     host = get_site_domain()
     return f"{scheme}://{host}{path}"

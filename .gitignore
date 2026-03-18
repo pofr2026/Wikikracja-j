@@ -1,8 +1,8 @@
 # Folders
-venv/
-.venv/
-myvenv/
-backup/
+venv*/
+.venv*/
+myvenv*/
+backup*/
 _inne_materialy/
 node_modules/
 /static
@@ -46,4 +46,5 @@ notatki.md
 out.sql
 out.csv
 data/*
-scheduler.lock
+*.lock
+*.bak
