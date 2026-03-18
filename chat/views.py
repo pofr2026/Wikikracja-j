@@ -7,14 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
-from chat.models import Room, Message
+from chat.models import Room
 from django.contrib.auth.models import User
 from chat.forms import RoomForm
 from django.http import HttpRequest, JsonResponse
 from datetime import timedelta as td
 from django.utils import timezone
 from django.shortcuts import redirect
-from django.conf import settings as s
+from django.conf import settings
 from django.dispatch import receiver
 from chat.signals import user_accepted, user_deleted
 from django.utils.translation import gettext_lazy as _
@@ -86,7 +86,7 @@ def chat(request: HttpRequest):
     tasks_archived = public_archived.filter(title__startswith="Task #")
     votes_active = public_active.filter(title__startswith="Vote #")
     votes_archived = public_archived.filter(title__startswith="Vote #")
-    
+
     # Render that in the chat template
     return render(request, "chat/chat.html", {
         'last_used_room': json.dumps(None),
@@ -100,8 +100,9 @@ def chat(request: HttpRequest):
         'private_active': private_active,
         'private_archived': private_archived,
         'user': request.user,
-        'ARCHIVE_PUBLIC_CHAT_ROOM': td(days=s.ARCHIVE_PUBLIC_CHAT_ROOM).days,
-        'DELETE_PUBLIC_CHAT_ROOM': td(days=s.DELETE_PUBLIC_CHAT_ROOM).days,})
+        'ARCHIVE_PUBLIC_CHAT_ROOM': td(days=settings.ARCHIVE_PUBLIC_CHAT_ROOM).days,
+        'DELETE_PUBLIC_CHAT_ROOM': td(days=settings.DELETE_PUBLIC_CHAT_ROOM).days,
+    })
 
 
 def check_image_type(file_path):
@@ -121,11 +122,11 @@ def upload_image(request: HttpRequest):
         
         image.seek(0)
         file_bytes = image.read()
-        if len(file_bytes) > (s.UPLOAD_IMAGE_MAX_SIZE_MB * 1000000 * 2):
+        if len(file_bytes) > (settings.UPLOAD_IMAGE_MAX_SIZE_MB * 1000000 * 2):
             return JsonResponse({'error': 'file too big'})
 
         filename = f"{uuid.uuid4()}.{file_type}"
-        with open(f"{s.BASE_DIR}/media/uploads/{filename}", "wb") as f:
+        with open(f"{settings.BASE_DIR}/media/uploads/{filename}", "wb") as f:
             f.write(file_bytes)
         filenames.append(filename)
 
@@ -199,5 +200,60 @@ def delete_one2one_rooms(sender, user, **kwargs):
     private_rooms = Room.objects.filter(public=False)
     for room in private_rooms:
         if user.username in room.title:  # TODO: If Public room have name of the user in it - it will be deleted
-            log.info(f'Room {room} deleted.')
+            log.info(f"Room {room} deleted.")
             room.delete()
+
+
+@login_required
+def toggle_notifications(request: HttpRequest):
+    """
+    Toggle notifications for a room (HTTP fallback for WebSocket handler).
+    POST parameters:
+    - room_id: ID of the room
+    - enabled: boolean (true/false) - true to enable, false to disable
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        room_id = data.get('room_id')
+        enabled = data.get('enabled')
+        
+        if room_id is None or enabled is None:
+            return JsonResponse({'error': 'Missing room_id or enabled parameter'}, status=400)
+        
+        room = Room.objects.get(id=room_id)
+        
+        # Check if user is allowed in this room
+        if not room.allowed.filter(id=request.user.id).exists():
+            return JsonResponse({'error': 'Access denied'}, status=403)
+        
+        # Add or remove user from muted_by list
+        if enabled:
+            # Enable notifications: remove from muted_by
+            if room.muted_by.filter(id=request.user.id).exists():
+                room.muted_by.remove(request.user)
+                log.info(f"User {request.user.id} enabled notifications for room {room_id}")
+        else:
+            # Disable notifications: add to muted_by
+            if not room.muted_by.filter(id=request.user.id).exists():
+                room.muted_by.add(request.user)
+                log.info(f"User {request.user.id} muted notifications for room {room_id}")
+        
+        return JsonResponse({
+            'success': True,
+            'room_id': room_id,
+            'notifications_enabled': not room.muted_by.filter(id=request.user.id).exists()
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Room.DoesNotExist:
+        return JsonResponse({'error': 'Room not found'}, status=404)
+    except Exception as e:
+        log.error(f"Error toggling notifications: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+    
+    
+

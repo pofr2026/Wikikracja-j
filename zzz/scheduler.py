@@ -1,7 +1,7 @@
+import json
 import logging
-import threading
-import fcntl
 import os
+import threading
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from django.conf import settings
@@ -29,13 +29,15 @@ def start_scheduler():
     global _scheduler_lock_fd
     
     # Try to acquire exclusive lock on scheduler lock file
-    lock_file_path = '/tmp/wikikracja_scheduler.lock'
+    lock_file_path = os.getenv("SCHEDULER_LOCK_FILE",  '/tmp/wikikracja_scheduler.lock')
     try:
         _scheduler_lock_fd = open(lock_file_path, 'w')
-        fcntl.flock(_scheduler_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        log.info(f"Acquired scheduler lock: {lock_file_path}")
-    except IOError:
-        log.info("Scheduler already running in another worker/process - skipping initialization")
+        if os.name != 'nt':
+            import fcntl
+            fcntl.flock(_scheduler_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            log.info(f"Acquired scheduler lock: {lock_file_path}")
+    except IOError as e:
+        log.info("Scheduler already running in another worker/process - skipping initialization " + str(e))
         return None
     
     scheduler = BackgroundScheduler(timezone=settings.TIME_ZONE)
@@ -44,7 +46,6 @@ def start_scheduler():
     scheduler.add_job(
         run_chat_messages,
         trigger=CronTrigger(hour='12,18', minute=1),
-        # trigger=CronTrigger(minute='*'),
         id='chat_messages',
         name='Send chat message emails',
         replace_existing=True,
@@ -55,7 +56,6 @@ def start_scheduler():
     scheduler.add_job(
         run_chat_rooms,
         trigger=CronTrigger(minute='*/5'),
-        # trigger=CronTrigger(minute='*'),
         id='chat_rooms',
         name='Create/Delete/Archive chat rooms',
         replace_existing=True,
@@ -66,7 +66,6 @@ def start_scheduler():
     scheduler.add_job(
         run_vote,
         trigger=CronTrigger(hour=8, minute=5),
-        # trigger=CronTrigger(minute='*'),
         id='vote',
         name='Process voting and create 1-to-1 rooms',
         replace_existing=True,
@@ -77,7 +76,6 @@ def start_scheduler():
     scheduler.add_job(
         run_count_citizens,
         trigger=CronTrigger(minute='*/5'),
-        # trigger=CronTrigger(minute='*'),
         id='count_citizens',
         name='Count citizens and manage reputation',
         replace_existing=True,
@@ -88,17 +86,48 @@ def start_scheduler():
     scheduler.add_job(
         run_update_site,
         trigger=CronTrigger(minute=2),
-        # trigger=CronTrigger(minute='*'),
         id='update_site',
         name='Update Site domain and name from environment variables',
         replace_existing=True,
     )
     log.info("Scheduled job: update_site every hour")
     
+    meeting_notification_cron = os.getenv('MEETING_NOTIFICATION_CRON', '50 19 * * 3')
+    # meeting_notification_cron ='* * * * *'
+    scheduler.add_job(
+        run_meeting_notification,
+        trigger=CronTrigger.from_crontab(meeting_notification_cron),
+        id='meeting_notification',
+        name='Send notification about meeteing',
+        replace_existing=True,
+    )
+    
     scheduler.start()
     log.info("APScheduler started successfully")
     
     return scheduler
+
+def run_meeting_notification():
+    from push_notifications.models import WebPushDevice
+    webpush_devices = WebPushDevice.objects.filter(active=True)
+    if webpush_devices.exists():
+        try:
+            message = json.dumps({
+                "title": "Przypomnienie",
+                "body": "Zapraszam na spotkanie",
+                "icon":'/static/favicon.ico',
+                "badge":'/static/favicon.ico',                
+                "data": {
+                    'click_action': "https://rozmowy.wikikracja.pl/otwarte",
+                    'room_id': 1,
+                    }
+                }
+            )
+            # WebPush requires VAPID signing
+            webpush_devices.send_message(message)
+            log.info(f"Push notification sent")
+        except Exception as e:
+            log.error(f"WebPush failed: {e}")
 
 def _run_command(command_name):
     """Generic command runner with error handling"""

@@ -9,6 +9,14 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 	<title>{{ request.site.name }}</title>
+	<meta name="description" content="{{ site_description|default:'' }}">
+
+	<!-- PWA Meta Tags -->
+	<link rel="manifest" href="{% url 'manifest' %}">
+	<meta name="theme-color" content="#375a7f">
+	<link rel="apple-touch-icon" href="{% static 'home/images/favicon.ico' %}">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 	<!-- Citizens and Voting - question mark and trash can: -->
 	<link rel="stylesheet" type="text/css" href="{% static 'home/css/bootstrap-icons.css' %}">
@@ -18,140 +26,136 @@
 	<link rel="stylesheet" type="text/css" href="{% static 'chat/webfonts/fontawesome.css' %}">
 
 	<!-- Chat rooms styling: -->
-    <link rel="stylesheet" type="text/css" href="{% static 'home/css/darkly.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'chat/css/chat.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'home/css/app.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'home/css/darkly.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'home/css/app.css' %}">
 
 	<!-- Chat rooms engine: -->
+	<script src="{% static 'chat/js/jquery-4.0.0.min.js' %}"></script>
 	<script src="{% static 'chat/js/reconnecting-websocket.js' %}"></script>
 
-	<script src="{% static 'chat/js/jquery-4.0.0.min.js' %}"></script>
+	<!-- Firebase SDK (for FCM on Android) -->
+  {% comment %} <script type="module" src="https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/12.10.0/firebase-messaging.js"></script> {% endcomment %}
+  
+  <!-- Push notifications manager -->
+  <script src="{% static 'chat/js/push-notifications.js' %}" type="module"></script>
 
-	<style>
-		body {
-			min-height: 100vh;
-			display: flex;
-			flex-direction: column;
-		}
-
-		.page-main {
-			flex: 1 0 auto;
-		}
-
-		.page-footer {
-			margin-top: auto;
-		}
-	</style>
-
+  <script>
+    // Firebase configuration for FCM (Android)
+    // window.FIREBASE_CONFIG = {{ firebase_config|safe }};
+    
+    // VAPID public key for WebPush
+    window.VAPID_PUBLIC_KEY = "{{ vapid_public_key|default:'' }}";
+  </script>
+	
   {% bootstrap_messages %}
   {% bootstrap_javascript %}
-
 </head>
 
-<body class="app-body">
+<body>
 	<div class="page-main">
-	<nav class="navbar navbar-expand-md navbar-dark bg-primary justify-content-end">
-		<button class="navbar-toggler mx-2 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-		{{ request.site.name }}
-			<span class="navbar-toggler-icon"></span>
-		</button>
+		<nav class="navbar navbar-expand-md navbar-dark bg-primary justify-content-end">
+			<button class="navbar-toggler mx-2 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+			{{ request.site.name }}
+				<span class="navbar-toggler-icon"></span>
+			</button>
 
-		<div class="collapse navbar-collapse justify-content-center" id="navbarNavAltMarkup">
-			<div class="navbar-nav text-end">
-				
-				<a {% if request.resolver_match.url_name == 'home' %} class="nav-item nav-link active mx-1 px-2" 
-				{% else %} class="nav-item nav-link mx-1 px-2" 
-				{% endif %} href="{% url 'home' %}">{% trans 'Start' %}</a>
-				
-				<a {% if request.resolver_match.namespace == 'board' %} class="nav-item nav-link active mx-1 px-2" 
-				{% else %} class="nav-item nav-link mx-1 px-2" 
-				{% endif %} href="{% url 'board:start' %}">{% trans "Board" %}</a>
+			<div class="collapse navbar-collapse justify-content-center" id="navbarNavAltMarkup">
+				<div class="navbar-nav text-end">
 					
-				<a {% if request.resolver_match.namespace == 'events' %} class="nav-item nav-link active mx-1 px-2" 
-				{% else %} class="nav-item nav-link mx-1 px-2" 
-				{% endif %} href="{% url 'events:list' %}">{% trans "Calendar" %}</a>
-				
-				{% if user.is_authenticated %}
-				<a {% if request.resolver_match.namespace == 'tasks' %} class="nav-item nav-link active mx-1 px-2" 
-				{% else %} class="nav-item nav-link mx-1 px-2" 
-				{% endif %} href="{% url 'tasks:list' %}">{% trans "Tasks" %}</a>
-				{% endif %}
-				
-				{% if not user.is_authenticated %}
-					<a {% if request.resolver_match.url_name == 'login' %} class="nav-item nav-link active mx-1 px-2" 
+					<a {% if request.resolver_match.url_name == 'home' %} class="nav-item nav-link active mx-1 px-2" 
 					{% else %} class="nav-item nav-link mx-1 px-2" 
-					{% endif %} href="{% url 'login' %}">{% trans "Login" %}</a>
-				
-					<a {% if request.resolver_match.url_name == 'account_signup' %} class="nav-item nav-link active mx-1 px-2" 
-					{% else %} class="nav-item nav-link mx-1 px-2" 
-					{% endif %} href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
-				{% endif %}
-
-				{% if user.is_authenticated %}
-					{% comment %} OBYWATELE: Has to be one by one because User Profile is Obywatele too: {% endcomment %}
-					<a {% if request.resolver_match.namespace == 'obywatele' %} class="nav-item nav-link active mx-1 px-2"
-					{% else %} class="nav-item nav-link mx-1 px-2"
-					{% endif %} href="{% url 'obywatele:obywatele' %}">{% trans "Citizens" %}</a>
-
-					{% comment %} GŁOSOWANIA: {% endcomment %}
-					<a {% if request.resolver_match.namespace == 'glosowania' %} class="nav-item nav-link active mx-1 px-2" 
-					{% else %} class="nav-item nav-link mx-1 px-2" 
-					{% endif %} href="{% url 'glosowania:approved' %}">{% trans "Voting" %}</a>
+					{% endif %} href="{% url 'home' %}">{% trans 'Start' %}</a>
 					
-					<a {% if request.resolver_match.namespace == 'bookkeeping' %} class="nav-item nav-link active mx-1 px-2" 
+					<a {% if request.resolver_match.namespace == 'board' %} class="nav-item nav-link active mx-1 px-2" 
 					{% else %} class="nav-item nav-link mx-1 px-2" 
-					{% endif %} href="{% url 'bookkeeping:transaction_list' %}">{% trans 'Bookkeeping' %}</a>
-
-					<a {% if request.resolver_match.namespace == 'elibrary' %} class="nav-item nav-link active mx-1 px-2" 
+					{% endif %} href="{% url 'board:start' %}">{% trans "Board" %}</a>
+						
+					<a {% if request.resolver_match.namespace == 'events' %} class="nav-item nav-link active mx-1 px-2" 
 					{% else %} class="nav-item nav-link mx-1 px-2" 
-					{% endif %} href="{% url 'elibrary:book_list' %}">{% trans "eLibrary" %}</a>
-
+					{% endif %} href="{% url 'events:list' %}">{% trans "Calendar" %}</a>
 					
-					<a class="nav-item nav-link rounded mx-1 px-2 
-					{% if request.resolver_match.namespace == 'chat' %}
-						active 
-					{% else %}
-						{{ request.user|has_messages }} 
-					{% endif %}"
-					data-route="chat" href="/chat/">{% trans "Chat" %}</a>
+					{% if user.is_authenticated %}
+					<a {% if request.resolver_match.namespace == 'tasks' %} class="nav-item nav-link active mx-1 px-2" 
+					{% else %} class="nav-item nav-link mx-1 px-2" 
+					{% endif %} href="{% url 'tasks:list' %}">{% trans "Tasks" %}</a>
+					{% endif %}
+					
+					{% if not user.is_authenticated %}
+						<a {% if request.resolver_match.url_name == 'login' %} class="nav-item nav-link active mx-1 px-2" 
+						{% else %} class="nav-item nav-link mx-1 px-2" 
+						{% endif %} href="{% url 'login' %}">{% trans "Login" %}</a>
+					
+						<a {% if request.resolver_match.url_name == 'account_signup' %} class="nav-item nav-link active mx-1 px-2" 
+						{% else %} class="nav-item nav-link mx-1 px-2" 
+						{% endif %} href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
+					{% endif %}
 
-					<a {% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'haslo' or request.resolver_match.url_name == 'my_assets' or request.resolver_match.url_name == 'change_email' or request.resolver_match.url_name == 'change_username' %}
-						class="nav-item nav-link mx-1 px-2 fas fa-user active fs-3"
-				 	{% else %}
-						class="nav-item nav-link mx-1 px-2 fas fa-user fs-3"
-					{% endif %} 
-					href="{% url 'obywatele:my_profile' %}"></a>
+					{% if user.is_authenticated %}
+						{% comment %} OBYWATELE: Has to be one by one because User Profile is Obywatele too: {% endcomment %}
+						<a {% if request.resolver_match.namespace == 'obywatele' %} class="nav-item nav-link active mx-1 px-2"
+						{% else %} class="nav-item nav-link mx-1 px-2"
+						{% endif %} href="{% url 'obywatele:obywatele' %}">{% trans "Citizens" %}</a>
 
-					<a class="nav-item nav-link mx-1 px-2" href="{% url 'account_logout' %}">
-						<i class="fas fa-solid fa-right-from-bracket fs-3"></i>
-					</a>
+						{% comment %} GŁOSOWANIA: {% endcomment %}
+						<a {% if request.resolver_match.namespace == 'glosowania' %} class="nav-item nav-link active mx-1 px-2" 
+						{% else %} class="nav-item nav-link mx-1 px-2" 
+						{% endif %} href="{% url 'glosowania:approved' %}">{% trans "Voting" %}</a>
+						
+						<a {% if request.resolver_match.namespace == 'bookkeeping' %} class="nav-item nav-link active mx-1 px-2" 
+						{% else %} class="nav-item nav-link mx-1 px-2" 
+						{% endif %} href="{% url 'bookkeeping:transaction_list' %}">{% trans 'Bookkeeping' %}</a>
 
-				{% endif %}
+						<a {% if request.resolver_match.namespace == 'elibrary' %} class="nav-item nav-link active mx-1 px-2" 
+						{% else %} class="nav-item nav-link mx-1 px-2" 
+						{% endif %} href="{% url 'elibrary:book_list' %}">{% trans "eLibrary" %}</a>
+
+						
+						<a class="nav-item nav-link rounded mx-1 px-2 
+						{% if request.resolver_match.namespace == 'chat' %}
+							active 
+						{% else %}
+							{{ request.user|has_messages }} 
+						{% endif %}"
+						data-route="chat" href="/chat/">{% trans "Chat" %}</a>
+
+						<a {% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'haslo' or request.resolver_match.url_name == 'my_assets' or request.resolver_match.url_name == 'change_email' or request.resolver_match.url_name == 'change_username' %}
+							class="nav-item nav-link mx-1 px-2 fas fa-user active fs-3"
+						{% else %}
+							class="nav-item nav-link mx-1 px-2 fas fa-user fs-3"
+						{% endif %} 
+						href="{% url 'obywatele:my_profile' %}"></a>
+
+						<a class="nav-item nav-link mx-1 px-2" href="{% url 'account_logout' %}">
+							<i class="fas fa-solid fa-right-from-bracket fs-3"></i>
+						</a>
+
+					{% endif %}
+				</div>
 			</div>
+		</nav>
+
+		<div class="container-fluid">
+			{% block content_fullscreen %}{% endblock content_fullscreen%}
 		</div>
-	</nav>
 
-	<div class="container-fluid">
-		{% block content_fullscreen %}{% endblock content_fullscreen%}
-	</div>
-
-	<div class="container body-content">
-		<p>{% block content %}{% endblock content %}</p>
-	</div>
-
-	</div>
-
-	{% if request.resolver_match.namespace != 'chat' %}
-		<div class="container page-footer">
-			{{ footer.text|safe }}
+		<div class="container body-content">
+			<p>{% block content %}{% endblock content %}</p>
 		</div>
-	{% endif %}
+
+	</div>
+
+{% if request.resolver_match.namespace != 'chat' %}
+	<div class="container page-footer">
+		{{ footer.text|safe }}
+	</div>
+{% endif %}
 
 {% comment %} Needed for chat {% endcomment %}
 {% block extra_body %}{% endblock %}
 
 {% block notifications_script %}
-	<script type="module" src="{% static 'chat/js/notifications.js' %}"></script>
+	<script src="{% static 'chat/js/notifications.js' %}" type="module"></script>
 {% endblock notifications_script %}
  
 </body>

@@ -27,7 +27,7 @@ def build_site_url(path: str) -> str:
     Returns:
         str: Absolute URL including scheme and host.
     """
-    from django.conf import settings as s
-    scheme = getattr(s, "SITE_PROTOCOL", "http")
+    from django.conf import settings
+    scheme = getattr(settings, "SITE_PROTOCOL", "http")
     host = get_site_domain()
     return f"{scheme}://{host}{path}"

@@ -1,8 +1,10 @@
-import mimetypes
+import json
 import logging
+import mimetypes
 from os import getenv, path
-from django.utils.translation import gettext_lazy as _
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
+from zzz.settings_base import *
 
 # Register additional MIME types not recognized by default
 mimetypes.add_type('image/webp', '.webp')
@@ -29,18 +31,18 @@ def env_list(name, default=None, sep=","):
     parts = [p.strip() for p in value.split(sep)]
     return [p for p in parts if p]
 
-PROJECT_DIR = path.dirname(path.abspath(__file__))
-PROJECT_ROOT = path.dirname(path.abspath(path.dirname(__file__)))
-BASE_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 STATIC_ROOT = path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
-STATICFILES_DIRS = []
 MEDIA_URL = '/media/'
-MEDIA_ROOT = path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = path.join(BASE_DIR, 'media')
+
 load_dotenv(path.join(BASE_DIR, '.env'))
 
 DEBUG = env_bool("DEBUG", False)
 SITE_PROTOCOL = "http" if DEBUG else "https"
+SITE_NAME = getenv("SITE_NAME", "")
+SITE_NAME_MAX_12_CHARS = getenv("SITE_NAME_MAX_12_CHARS", SITE_NAME[:12])
+SITE_DESCRIPTION = getenv("SITE_DESCRIPTION", SITE_NAME)
 
 SECRET_KEY = getenv("SECRET_KEY")
 if not SECRET_KEY:
@@ -54,6 +56,7 @@ CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     default=["http://localhost", "http://127.0.0.1"],
 )
+INTERNAL_IPS = ['127.0.0.1', '192.168.1.3', '192.168.178.79', '10.1.77.31', '10.0.0.0/8']
 
 CSRF_COOKIE_SECURE = False if DEBUG else True
 CSRF_COOKIE_SAMESITE = "Lax"
@@ -71,22 +74,15 @@ USE_X_FORWARDED_PORT = True
 TIME_ZONE = getenv("TIME_ZONE", "Europe/Warsaw")
 LANGUAGE_CODE = getenv("LANGUAGE_CODE", "pl")
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': path.join(BASE_DIR, 'db', 'db.sqlite3'),
-    }
-}
-
 SITE_ID = 1
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 LOCALE_PATHS = (path.join(BASE_DIR, 'locale'),)
 DATE_FORMAT = "Y-m-d"
-INTERNAL_IPS = ['127.0.0.1', '192.168.1.3', '192.168.178.79', '10.1.77.31', '10.0.0.0/8']
+
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = 'bootstrap5'  # TODO: template?
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 ASGI_APPLICATION = 'zzz.routing.application'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ROOT_URLCONF = 'zzz.urls'
@@ -176,6 +172,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
                 'zzz.context_processors.footer',
+                'zzz.context_processors.site_description',
+                'zzz.context_processors.vapid_public_key',
             ],
             'debug': False
         },
@@ -222,6 +220,7 @@ INSTALLED_APPS = [
     'events',
     'tasks',
     'captcha',
+    'push_notifications',
 ]
 
 if DEBUG:
@@ -237,6 +236,7 @@ if DEBUG:
         *MIDDLEWARE,
         'django_browser_reload.middleware.BrowserReloadMiddleware',
     ]
+
 
 # LOGGING_DESTINATION: 'console' (default) or 'file'
 # When 'file', logs are written to LOG_FILE (default: /var/log/wiki.log)
@@ -275,45 +275,50 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s',
+            'datefmt': '%D %H:%M:%S'
         },
     },
     'handlers': LOGGING_HANDLERS,
     'loggers': {
         '': {
             'handlers': [_active_handler],
-            'level': LOG_LEVEL,
-            'propagate': True
+            'level': LOG_LEVEL
         },
         # 'django': {
         #     'handlers': [_active_handler],
-        #     'level': 'INFO',
-        #     'propagate': True
+        #     'level': 'INFO'
         # },
         # Urls:
         'django.channels.server': {
             'handlers': [_active_handler],
-            'level': 'ERROR',
-            'propagate': True
+            'level': 'ERROR'
         },
         # SQL logs:
         # 'django.db.backends': {
         #     'handlers': [_active_handler],
-        #     'level': 'DEBUG',
-        #     'propagate': True
+        #     'level': 'DEBUG'
         # }
         # 'glosowania': {
         #     'handlers': [_active_handler],
-        #     'level': 'INFO',
-        #     'propagate': True
+        #     'level': 'INFO'
         # },
         # 'obywatele': {
         #     'handlers': [_active_handler],
-        #     'level': 'INFO',
-        #     'propagate': True
+        #     'level': 'INFO'
         # },
     },
 }
+
+# Allow complete LOGGING override via JSON environment variable
+LOGGING_JSON = getenv("LOGGING_JSON")
+if LOGGING_JSON:
+    try:
+        LOGGING = json.loads(LOGGING_JSON)
+    except json.JSONDecodeError as e:
+        err = "LOGGING_JSON contains invalid JSON: " + LOGGING_JSON + " Stack: " + e.args[0]
+        print(err)
+        raise RuntimeError(err)
 
 EMAIL_BACKEND = getenv(
     "EMAIL_BACKEND",
@@ -362,7 +367,7 @@ ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/obywatele/onboarding/'
 ACCOUNT_PASSWORD_MIN_LENGTH = 8
 # ACCOUNT_RATE_LIMITS = True  # doesn't work despite documentation
 RATE_LIMITS = 5  # at least doesn't break signup
-ACCOUNT_SESSION_REMEMBER = True  # Controls the life time of the session. Set to None to ask the user (“Remember me?”), False to not remember, and True to always remember.
+ACCOUNT_SESSION_REMEMBER = True  # Controls the life time of the session. Set to None to ask the user ("Remember me?"), False to not remember, and True to always remember.
 ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = False
 
 # Captcha https://django-simple-captcha.readthedocs.io/en/latest/advanced.html
@@ -389,8 +394,48 @@ WHITENOISE_MAX_AGE = 31536000
 # Don't let WhiteNoise handle /media/ URLs - Django will serve them
 WHITENOISE_STATIC_PREFIX = '/static/'
 
+
 DEBUG_SKIP_AUTH = env_bool("DEBUG_SKIP_AUTH", False)
 
-from pathlib import Path
-BASE_DIR2 = Path(__file__).resolve().parent.parent
-(BASE_DIR2 / "media" / "uploads").mkdir(parents=True, exist_ok=True)
+(BASE_DIR / "media" / "uploads").mkdir(parents=True, exist_ok=True)
+
+#########################
+# Push Notifications Configuration
+#########################
+
+PUSH_NOTIFICATIONS = {
+    # 'APNS': {
+    #     'USE_SANDBOX': env_bool('APNS_USE_SANDBOX', DEBUG),
+    #     'CERTIFICATE': getenv('APNS_CERTIFICATE', ''),  # Path to certificate file
+    #     'KEY_FILE': getenv('APNS_KEY_FILE', ''),  # Path to private key file
+    #     'TEAM_ID': getenv('APNS_TEAM_ID', ''),
+    #     'KEY_ID': getenv('APNS_KEY_ID', ''),
+    #     'TOPIC': getenv('APNS_TOPIC', ''),  # Bundle ID
+    # },
+    # 'FCM': {
+    #     'API_KEY': getenv('FCM_API_KEY', ''),
+    #     'SERVER_KEY': getenv('FCM_SERVER_KEY', ''),
+    #     'PROJECT_ID': getenv('FCM_PROJECT_ID', ''),
+    # },
+    'WEBPUSH': {
+        'VAPID_PUBLIC_KEY': getenv('VAPID_PUBLIC_KEY', ''),
+    }
+}
+
+# Import the firebase service
+# from firebase_admin import auth
+
+# Initialize the default app (either use `GOOGLE_APPLICATION_CREDENTIALS` environment variable, or pass a firebase_admin.credentials.Certificate instance)
+# You can also pass options. One of them is httpTimeout: This sets the timeout (in seconds) for outgoing HTTP connections initiated by the SDK.
+# import firebase_admin
+# default_app = firebase_admin.initialize_app()
+
+# FIREBASE_APP: Firebase app instance that is used to send the push notification. If not provided, the app will be using the default app instance that you’ve instantiated with firebase_admin.initialize_app().
+PUSH_NOTIFICATIONS_SETTINGS = {
+        # "APNS_CERTIFICATE": getenv('APNS_CERTIFICATE', ''),  # Path to certificate file
+        # "APNS_TOPIC": getenv('APNS_TOPIC', ''),  # Bundle ID like "com.example.push_test",
+        # "WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
+        # "WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
+        "WP_PRIVATE_KEY": getenv('VAPID_PRIVATE_KEY', ''), #"/path/to/your/private.pem", # Absolute path to your private certificate file: os.path.join(BASE_DIR, “private_key.pem”)
+        "WP_CLAIMS": {'sub': f"mailto:{getenv('VAPID_ADMIN_EMAIL', 'admin@example.com')}"}
+}

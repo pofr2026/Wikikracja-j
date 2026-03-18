@@ -13,7 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).parent.parent
 ENV_FILE = BASE_DIR / ".env"
 ENV_EXAMPLE = BASE_DIR / ".env.example"
 DB_DEFAULT = BASE_DIR / "db" / "db.sqlite3"
@@ -53,9 +53,8 @@ def load_env():
 def db_path():
     try:
         sys.path.insert(0, str(BASE_DIR))
-        from zzz.settings import DATABASES  # type: ignore
-
-        return str(DATABASES["default"]["NAME"])
+        from zzz.settings_base import DATABASES
+        return str(DATABASES["default"]["NAME"])        
     except Exception:
         return str(DB_DEFAULT)
 
@@ -105,7 +104,8 @@ def main():
 
     print("\nDevelopment instance started\n")
     # run(["daphne", "zzz.asgi:application"])
-    run(manage + ["runserver", "0.0.0.0:8000"]) 
+    run(manage + ["runserver", "0.0.0.0:8000"])
+    # run(manage + ["runserver_plus", "--cert", "cert", "0.0.0.0:8000"]) # ssl
 
 
 if __name__ == "__main__":

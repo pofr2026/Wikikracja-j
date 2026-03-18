@@ -4,10 +4,20 @@
 {% load filters %}
 
 {% block content_fullscreen %}
+	<link rel="stylesheet" href="{% static 'chat/css/chat.css' %}">
   <link rel="stylesheet" href="{% static 'chat/css/photoswipe/photoswipe.css' %}" />
   <link rel="stylesheet" href="{% static 'chat/css/photoswipe/default-skin.css' %}" />
   <script src="{% static 'chat/js/photoswipe/photoswipe.min.js' %}"></script>
   <script src="{% static 'chat/js/photoswipe/photoswipe-ui-default.min.js' %}"></script>
+
+  <!-- Main chat script -->
+  <script src="{% static 'chat/js/chat.js' %}" type="module"></script>
+  <script src="{% static 'chat/js/ejs.min.js' %}"></script>
+
+  <script>
+    const LAST_USED_ROOM_ID = {{ last_used_room|default:"null"|safe }};
+    const TRANSLATIONS = {{ translations|default:"{}"|safe }};    
+  </script>
 
   <script>
     $(document).ready(function () {
@@ -277,14 +287,6 @@
       </div>
     </div>
   </div>
-
-  <script>
-    const LAST_USED_ROOM_ID = {{ last_used_room|default:"null"|safe }};
-    const TRANSLATIONS = {{ translations|default:"{}"|safe }};
-  </script>
 {% endblock %}
 
-{% block extra_body %}
-  <script type="module" src="{% static 'chat/js/chat.js' %}"></script>
-  <script src="{% static 'chat/js/ejs.min.js' %}"></script>
-{% endblock %}
+{% block extra_body %}{% endblock %}

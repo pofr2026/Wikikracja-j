@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -271,14 +272,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             raise ClientError("ANONYMOUS_IN_PRIVATE")
 
         # Save message to DB
-        u = await self.get_user_by_name(self.scope["user"].username)  # ???
-        r = await self.get_room(room_id)
+        user = await self.get_user_by_name(self.scope["user"].username)  # ???
+        room = await self.get_room(room_id)
 
         # escape HTML - this is second excaping, no need for that
         # message = escape(message)
 
-        msg = Message(sender=u, text=message, room=r, anonymous=is_anonymous)  # time is added in a models.py
+        msg = Message(sender=user, text=message, room=room, anonymous=is_anonymous)  # time is added in a models.py
         message_id = await self.save_message(msg)
+        msg.id = message_id
 
         await self.save_attachments(message_id, attachments)
 
@@ -305,11 +307,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
 
         # Make rooms appear unseen for some users
-        for member in await database_sync_to_async(lambda x: list(x.allowed.all()))(room):
-            if not ChatConsumer.online_registry.is_online(member):
-                continue
-
+        for member in await database_sync_to_async(lambda x: list(x.allowed.all()))(room):            
             if member.id == self.scope['user'].id:
+                continue
+            
+            if not ChatConsumer.online_registry.is_online(member):
+                # Send push notification for offline users
+                # We'll do this asynchronously to not block the main flow
+                await self.send_push_notification_async(proxy, member, msg, room_id)
+                    
                 continue
 
             consumer = ChatConsumer.online_registry.get_consumer(member)
@@ -561,6 +567,122 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         proxy.send_json({
             "unsee_room": room.id,
         })
+
+    @helper_method
+    async def send_push_notification_async(self, proxy, user, message, room_id):
+        """
+        Send push notification via django-push-notifications.
+        This runs asynchronously and fires regardless of WebSocket connection state.
+        """
+        try:                        
+            # Check if user has muted room
+            if await self.user_has_muted_room(user.id, room_id):
+                return
+             
+            # Prepare notification data
+            title = "Anonymous User" if message.anonymous else message.sender.username
+            body = message.text[:100]
+            
+            # Build deep link to room
+            site_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
+            deep_link = f"{site_url}/chat#room_id={room_id}"
+            
+            # Send via django-push-notifications
+            # Use sync_to_async to call the synchronous push notification API
+            success = await self.send_push_notification_sync(
+                user=user,
+                title=title,
+                body=body,
+                deep_link=deep_link,
+                room_id=room_id
+            )
+            
+            if success:
+                log.info(f"Push notification sent to user {user.id} for message {message.id}")
+            else:
+                log.debug(f"No push devices active for user {user.id}")
+                
+        except Exception as e:
+            log.error(f"Error sending push notification: {e}")
+
+    @database_sync_to_async
+    def send_push_notification_sync(self, user, title, body, deep_link, room_id):
+        """
+        Synchronous push notification sending using django-push-notifications.
+        This is called via database_sync_to_async.
+        """
+        try:
+            from push_notifications.models import WebPushDevice, GCMDevice, APNSDevice
+           
+            # Track if any notification was sent
+            any_sent = False
+                                
+            # Send to WebPush devices (browser)
+            webpush_devices = WebPushDevice.objects.filter(user=user, active=True)
+            if webpush_devices.exists():
+                try:                                
+                    message = json.dumps({
+                        "title": title,
+                        "body": body,
+                        "icon":'/static/favicon.ico',
+                        "badge":'/static/favicon.ico',
+                        "data": {
+                            'click_action': deep_link,
+                            'room_id': room_id,
+                            }
+                        }
+                    )
+                    # WebPush requires VAPID signing
+                    webpush_devices.send_message(message)
+                    any_sent = True
+                except Exception as e:
+                    log.error(f"WebPush failed for user {user.id}: {e}")
+            
+            # Send to FCM devices (Android)
+            # fcm_devices = GCMDevice.objects.filter(user=user, active=True)
+            # if fcm_devices.exists():
+            #     try:
+            #         message = json.dumps({
+            #             "title": title,
+            #             "body": body,
+            #             "icon":'/static/favicon.ico',
+            #             "data": {
+            #                 'click_action': deep_link,
+            #                 'room_id': room_id,
+            #                 }
+            #             }
+            #         )
+            #         fcm_devices.send_message(message)
+            #         any_sent = True
+            #     except Exception as e:
+            #         log.error(f"FCM failed for user {user.id}: {e}")
+            
+            # # Send to APNS devices (iOS)
+            # apns_devices = APNSDevice.objects.filter(user=user, active=True)
+            # if apns_devices.exists():
+            #     try:
+            #         message = json.dumps({
+            #             "title": title,
+            #             "body": body,
+            #             "icon":'/static/favicon.ico',
+            #             "badge":1,
+            #             "sound":'default',
+            #             "data": {
+            #                 'click_action': deep_link,
+            #                 'room_id': room_id,
+            #                 }
+            #             }
+            #         )
+            #         apns_devices.send_message(message)
+            #         any_sent = True
+            #     except Exception as e:
+            #         log.error(f"APNS failed for user {user.id}: {e}")
+            
+            return any_sent
+            
+        except Exception as e:
+            log.error(f"Error in _send_push_notification_sync: {e}")
+            return False
 
     ###################
     # Utility methods #
@@ -849,7 +971,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def has_muted_room(self, room_id):
         room = Room.objects.get(pk=room_id)
-        return room.muted_by.filter(id=self.scope['user'].id).exists()
+        return room.muted_by.filter(id=self.scope['user'].id).exists()    
+    
+    @database_sync_to_async
+    def user_has_muted_room(self, user_id, room_id):
+        room = Room.objects.get(pk=room_id)
+        return room.muted_by.filter(id=user_id).exists()
 
     @database_sync_to_async
     def unmute_room(self, room_id):

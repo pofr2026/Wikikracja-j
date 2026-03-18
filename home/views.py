@@ -1,3 +1,5 @@
+import logging
+import os
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
@@ -16,11 +18,10 @@ from django.utils.translation import gettext_lazy as _
 from datetime import datetime as dt
 from datetime import timedelta as td
 from django.utils import timezone
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from tasks.models import Task
 from chat.models import Room
 from .forms import RememberLoginForm
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -113,3 +114,61 @@ def haslo(request: HttpRequest):
     return render(request, 'home/haslo.html', {
         'form': form
     })
+
+
+def manifest(request):
+    """Serve dynamic PWA manifest JSON"""
+    data = {
+        'name': settings.SITE_NAME,
+        'short_name': settings.SITE_NAME_MAX_12_CHARS,
+        'description': settings.SITE_DESCRIPTION,
+        'start_url': '/',
+        'display': 'standalone',
+        'orientation': 'any',
+        'theme_color': '#375a7f',
+        'background_color': '#000',
+        "prefer_related_applications": False,
+        "related_applications": [],
+        'icons': [
+            {
+                'src': '/static/home/images/favicon.ico',
+                'sizes': "16x16 32x32 48x48",
+                'type': 'image/x-icon',
+                "purpose": "any"
+            },
+            {
+                'src': '/static/home/images/icon-192.png',
+                'sizes': "192x192",
+                'type': 'image/png',
+                "purpose": "any"
+            },
+            {
+                'src': '/static/home/images/icon-512.png',
+                'sizes': "512x512",
+                'type': 'image/png',
+                "purpose": "any"
+            }
+        ],
+    }
+    return JsonResponse(data, json_dumps_params={'ensure_ascii': False})
+
+
+def service_worker(request):
+    """Serve the service worker JavaScript file with correct MIME type"""
+    sw_path = os.path.join(settings.BASE_DIR, 'chat', 'static', 'chat','js','sw.js')
+    
+    # For development, serve from staticfiles dirs
+    if not os.path.exists(sw_path):
+        # Try finding in staticfiles dirs
+        from django.contrib.staticfiles import finders
+        sw_path = finders.find('chat/js/sw.js')
+        if not sw_path:
+            return HttpResponse("Service Worker not found", status=404)
+    
+    with open(sw_path, 'rb') as f:
+        response = HttpResponse(f.read(), content_type='application/javascript')
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        response['Service-Worker-Allowed'] = "/"
+        return response

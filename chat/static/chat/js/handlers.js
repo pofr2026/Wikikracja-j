@@ -224,8 +224,11 @@ $(function() {
         return;
     }
 
-    if (Notification.permission !== 'granted' && localStorage.notifications !== "No") {
+    if (Notification.permission !== 'granted') {
         DOM_API.addPermissionBanner();
     }
+    // if (Notification.permission !== 'granted' && localStorage.notifications !== "No") {
+    //     DOM_API.addPermissionBanner();
+    // }
 
 })

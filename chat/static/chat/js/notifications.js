@@ -1,17 +1,14 @@
-import { makeNotification } from '../js/utility.js';
+import { makeNotification } from './utility.js';
 
 $(document).ready( ()=> {
-   if (window.location.pathname !== "/chat/") {
-
-      if (!Notification) {
-          // console.log("Connecting aborted in !Notification");
-          return;
-      }
-      if (Notification.permission !== 'granted' && localStorage.notifications !== "No") {
-          // console.log("Connecting aborted in permission !==granted");
-          return;
-      }
-   }
+  if (!Notification) {
+      // console.log("Connecting aborted in !Notification");
+      return;
+  }
+  if (Notification.permission !== 'granted' && localStorage.notifications !== "No") {
+      // console.log("Connecting aborted in permission !==granted");
+      return;
+  }   
       
   let ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
   let ws_path = ws_scheme + '://' + window.location.host + "/chat/stream/";
@@ -21,7 +18,7 @@ $(document).ready( ()=> {
 
   socket.onmessage = (e) => {
     let data = JSON.parse(e.data);
-    console.log("Got websocket message ", data);
+    // console.log("Got websocket message ", data);
 
     // Handle errors
     if (data.error) {
@@ -37,7 +34,7 @@ $(document).ready( ()=> {
        onRoomUnsee(data.unsee_room);
 
     } else {
-         console.log("Cannot handle message!");
+        //  console.log("Cannot handle message!");
     }
   }
 });
