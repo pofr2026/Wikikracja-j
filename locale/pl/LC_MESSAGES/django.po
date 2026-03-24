@@ -542,7 +542,7 @@ msgstr "Dodaj Transakcję"
 
 #: .\bookkeeping\templates\bookkeeping\transaction_list.html:27
 msgid "Balance"
-msgstr "Balans"
+msgstr "Bilans"
 
 #: .\bookkeeping\views.py:53
 msgid "Cannot delete category because it is in use. Remove all transactions that use it first."
