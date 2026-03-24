@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.urls import reverse
+from django.db import transaction
 import logging
 from zzz.utils import get_site_domain
 
@@ -18,44 +19,47 @@ def create_task_chat_room(sender, instance, created, **kwargs):
     Automatically create a public chat room for each new task
     """
     if created:
-        from chat.models import Room, Message
+        def _create_room():
+            from chat.models import Room, Message
+            
+            room_title = instance.get_chat_room_title()
+            
+            # Check if room already exists
+            if Room.objects.filter(title=room_title).exists():
+                log.info(f"Chat room '{room_title}' already exists")
+                return
+            
+            # Create new public room
+            room = Room.objects.create(
+                title=room_title,
+                public=True,
+                archived=False,
+                protected=True,
+                last_activity=timezone.now()
+            )
+            
+            # Allow all active users access to the room
+            active_users = User.objects.filter(is_active=True)
+            room.allowed.set(active_users)
+            
+            log.info(f"Created chat room '{room_title}' for task #{instance.id}")
+            
+            # Send initial message with link back to the task
+            domain = get_site_domain()
+            task_path = reverse('tasks:detail', kwargs={'pk': instance.pk})
+            task_url = f"https://{domain}{task_path}"
+            message_text = _('Discussion room for task: %(task_url)s') % {'task_url': task_url}
+            
+            Message.objects.create(
+                sender=instance.created_by,
+                text=message_text,
+                room=room,
+                anonymous=False
+            )
+            
+            log.info(f"Sent initial message to chat room '{room_title}'")
         
-        room_title = instance.get_chat_room_title()
-        
-        # Check if room already exists
-        if Room.objects.filter(title=room_title).exists():
-            log.info(f"Chat room '{room_title}' already exists")
-            return
-        
-        # Create new public room
-        room = Room.objects.create(
-            title=room_title,
-            public=True,
-            archived=False,
-            protected=True,
-            last_activity=timezone.now()
-        )
-        
-        # Allow all active users access to the room
-        active_users = User.objects.filter(is_active=True)
-        room.allowed.set(active_users)
-        
-        log.info(f"Created chat room '{room_title}' for task #{instance.id}")
-        
-        # Send initial message with link back to the task
-        domain = get_site_domain()
-        task_path = reverse('tasks:detail', kwargs={'pk': instance.pk})
-        task_url = f"https://{domain}{task_path}"
-        message_text = _('Discussion room for task: %(task_url)s') % {'task_url': task_url}
-        
-        Message.objects.create(
-            sender=instance.created_by,
-            text=message_text,
-            room=room,
-            anonymous=False
-        )
-        
-        log.info(f"Sent initial message to chat room '{room_title}'")
+        transaction.on_commit(_create_room)
 
 
 @receiver(pre_delete, sender=Task)
