@@ -115,8 +115,8 @@ def run_meeting_notification():
             message = json.dumps({
                 "title": "Przypomnienie",
                 "body": "Zapraszam na spotkanie",
-                "icon":'/static/favicon.ico',
-                "badge":'/static/favicon.ico',                
+                "icon":'/favicon.ico',
+                "badge":'/favicon.ico',                
                 "data": {
                     'click_action': "https://rozmowy.wikikracja.pl/otwarte",
                     'room_id': 1,

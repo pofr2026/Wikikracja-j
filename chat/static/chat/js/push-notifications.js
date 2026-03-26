@@ -359,8 +359,8 @@ const PushNotificationManager = {
             
             const notif = new Notification(notification.title || 'Chat Message', {
                 body: notification.body || '',
-                icon: notification.icon || '/static/favicon.ico',
-                badge: notification.badge || '/static/favicon.ico',
+                icon: notification.icon || '/favicon.ico',
+                badge: notification.badge || '/favicon.ico',
                 tag: `chat-${notification.room_id || 'general'}`,
                 requireInteraction: true
             });

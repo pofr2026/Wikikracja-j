@@ -65,8 +65,8 @@ self.addEventListener('push', (event) => {
     const title = notificationData.title || 'Chat Message';
     const options = {
         body: notificationData.body || '',
-        icon: notificationData.icon || '/static/favicon.ico',
-        badge: notificationData.badge || '/static/favicon.ico',
+        icon: notificationData.icon || '/favicon.ico',
+        badge: notificationData.badge || '/favicon.ico',
         vibrate: [200, 100, 200],
         requireInteraction: true,
         data: {

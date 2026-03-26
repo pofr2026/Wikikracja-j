@@ -626,8 +626,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     message = json.dumps({
                         "title": title,
                         "body": body,
-                        "icon":'/static/favicon.ico',
-                        "badge":'/static/favicon.ico',
+                        "icon":'/favicon.ico',
+                        "badge":'/favicon.ico',
                         "data": {
                             'click_action': deep_link,
                             'room_id': room_id,
@@ -647,7 +647,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             #         message = json.dumps({
             #             "title": title,
             #             "body": body,
-            #             "icon":'/static/favicon.ico',
+            #             "icon":'/favicon.ico',
             #             "data": {
             #                 'click_action': deep_link,
             #                 'room_id': room_id,
@@ -666,7 +666,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             #         message = json.dumps({
             #             "title": title,
             #             "body": body,
-            #             "icon":'/static/favicon.ico',
+            #             "icon":'/favicon.ico',
             #             "badge":1,
             #             "sound":'default',
             #             "data": {
