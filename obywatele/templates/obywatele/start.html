@@ -6,7 +6,9 @@
 <div class="container section">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <span class="section-heading">{% trans 'Citizens' %}</span>
+            <span class="section-heading">
+                {% trans 'Citizens' %} ({{ uid|length }})
+            </span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -74,6 +76,16 @@
                                 </a>
                             </th>
                             <th scope="col">
+                                <a href="?sort={{ sort_meta.joined.next_param }}">
+                                    {% trans 'Joined at' %}
+                                    {% if sort_meta.joined.is_current %}
+                                        <span aria-hidden="true">
+                                            {% if sort_meta.joined.direction == 'asc' %}&uarr;{% else %}&darr;{% endif %}
+                                        </span>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th scope="col">
                                 <a href="?sort={{ sort_meta.last_login.next_param }}">
                                     {% trans 'Last login' %}
                                     {% if sort_meta.last_login.is_current %}
@@ -83,8 +95,6 @@
                                     {% endif %}
                                 </a>
                             </th>
-                            {% comment %} Trzeba by dodać citizens żeby wyświetlić datę przyjęcia. date_joined to data zaproponowania kandydata. {% endcomment %}
-                            {% comment %} <th scope="col">{% trans 'Joined at' %}</th> {% endcomment %}
                         	</tr>
                     	</thead>
                     	<tbody>
@@ -99,11 +109,10 @@
                         			</td>
                         			<td>{{ i.uzytkownik.phone|default:"—" }}</td>
                         			<td>{{ i.uzytkownik.city|default:"—" }}</td>
-                        			<td>{{ i.first_name }}</td>
-                        			<td>{{ i.last_name }}</td>
-                        			<td>{{ i.last_login|date:"Y-m-d"|default:_("Never") }}</td>
-                        			{% comment %} Trzeba by dodać citizens żeby wyświetlić datę przyjęcia. date_joined to data zaproponowania kandydata. {% endcomment %}
-                        			{% comment %} <td><a href="{{ i.pk }}">{{ i.date_joined|date:"Y-m-d" }}</a></td> {% endcomment %}
+                        			<td>{{ i.first_name|default:"—" }}</td>
+                                    <td>{{ i.last_name|default:"—" }}</td>
+                                    <td>{{ i.uzytkownik.data_przyjecia|date:"Y-m-d"|default:"—" }}</td>
+                                    <td>{{ i.last_login|date:"Y-m-d"|default:_("Never") }}</td>
                         		</tr>
                         	{% endfor %}
                     	</tbody>
