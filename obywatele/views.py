@@ -291,6 +291,11 @@ def poczekalnia(request: HttpRequest):
         rate, created = Rate.objects.get_or_create(kandydat=candidate_profile, obywatel=citizen_profile)
         # Add rating directly to user object as a custom attribute
         user.rating = rate.rate
+        
+        # Count number of reputation votes from all citizens
+        votes_count = Rate.objects.filter(kandydat=candidate_profile).count()
+        user.votes_count = votes_count
+        
         user.email_confirmed = (user.id in verified_user_ids) or bool(candidate_profile.polecajacy)
         user.form_completed = candidate_profile.onboarding_status == Uzytkownik.OnboardingStatus.FORM_COMPLETED
         users_with_ratings.append(user)
@@ -593,6 +598,9 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
         rate.save()
         return redirect('obywatele:obywatele_szczegoly', pk)
 
+    # Get total number of votes for this candidate
+    votes_count = Rate.objects.filter(kandydat=candidate_profile).count()
+
     # Previous and Next
     obj = get_object_or_404(User, pk=pk)
     # kandydaci czy obywatele? Na razie wszyscy.
@@ -614,6 +622,7 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
             'active': obj.is_active,
             'email_confirmed': email_confirmed,
             'form_completed': form_completed,
+            'votes_count': votes_count,
         })
 
 
