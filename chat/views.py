@@ -89,7 +89,6 @@ def chat(request: HttpRequest):
 
     # Render that in the chat template
     return render(request, "chat/chat.html", {
-        'last_used_room': json.dumps(None),
         'translations': get_translations(),
         'public_rooms_active': public_rooms_active,
         'public_rooms_archived': public_rooms_archived,

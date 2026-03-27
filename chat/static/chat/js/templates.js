@@ -1,5 +1,17 @@
+/**
+ * @file
+ * EJS template definitions for chat UI components.
+ * Contains template literals for room layout, message display, and history modal.
+ * Templates are compiled using EJS (Embedded JavaScript Templates).
+ */
+
 import { _ } from './utility.js';
 
+/**
+ * Room template - main chat room layout
+ * Contains message container, image preview, and input controls
+ * @type {string}
+ */
 const room_template = `
 <div id='room'>
 
@@ -46,6 +58,11 @@ const room_template = `
 </div>
 `;
 
+/**
+ * Message template - individual message display
+ * Shows username, timestamp, content, attachments, and voting controls
+ * @type {string}
+ */
 const message_template = `
 <div class='message <% if (own) { %> own <% } %>' data-message-id="<%-message_id%>" data-room-id="<%-room_id%>">
   <div class='message-content'>
@@ -101,6 +118,11 @@ const message_template = `
 </div>
 `;
 
+/**
+ * Message history template - table showing edit history
+ * Displays timestamped table of message edits
+ * @type {string}
+ */
 const history_template = `
 <table class='table' style='border-bottom: 1px solid #dee2e6;'>
 <% for (let [i, entry] of Object.entries(history)) { %>
@@ -115,6 +137,20 @@ const history_template = `
 </table>
 `;
 
+/**
+ * Compiles room template into a render function
+ * @returns {Function} - EJS template function
+ */
 export const Room = ejs.compile(room_template);
+
+/**
+ * Compiles message template into a render function
+ * @returns {Function} - EJS template function
+ */
 export const Message = ejs.compile(message_template);
+
+/**
+ * Compiles history template into a render function
+ * @returns {Function} - EJS template function
+ */
 export const MessageHistory = ejs.compile(history_template);

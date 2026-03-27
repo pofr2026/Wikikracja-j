@@ -1,17 +1,55 @@
 /**
+ * @file
  * Push Notification Manager for Chat
  * Supports WebPush (browsers), FCM (Android), and APNS (iOS)
+ * Provides comprehensive push notification handling including registration,
+ * permissions, service worker management, and device lifecycle.
  */
 
-// Push notification state
+/**
+ * Push Notification Manager object
+ * Manages all aspects of push notifications including platform detection,
+ * registration, permissions, and lifecycle events.
+ * @namespace
+ */
 const PushNotificationManager = {
+    /**
+     * Whether the manager has been initialized
+     * @type {boolean}
+     */
     isInitialized: false,
+    
+    /**
+     * Array of supported platform names
+     * @type {Array<'webpush'|'fcm'|'apns'>}
+     */
     supportedPlatforms: [],
+    
+    /**
+     * Currently active notification platform
+     * @type {'webpush'|'fcm'|'apns'|null}
+     */
     currentPlatform: null,
+    
+    /**
+     * Registered device ID from server
+     * @type {string|null}
+     */
     registrationId: null,
+    
+    /**
+     * Whether push notifications are currently enabled
+     * @type {boolean}
+     */
     isEnabled: false,
     
-    // Platform detection
+    /**
+     * Detects available push notification platforms in the current browser
+     * @returns {Object} - Platform detection results
+     * @returns {boolean} returns.webpush - WebPush support status
+     * @returns {boolean} returns.fcm - FCM support status (Firebase)
+     * @returns {boolean} returns.apns - APNS support status (Safari/iOS)
+     */
     detectPlatform() {
         const platform = {
             webpush: 'Notification' in window && 'serviceWorker' in navigator,
@@ -23,7 +61,12 @@ const PushNotificationManager = {
         return platform;
     },
     
-    // Initialize push notifications
+    /**
+     * Initialize push notification system
+     * Detects platform and initializes appropriate notification handler
+     * @async
+     * @returns {Promise<boolean>} - true if notifications enabled successfully, false otherwise
+     */
     async initialize() {
         if (this.isInitialized) {
             console.log('PushNotificationManager already initialized');
@@ -49,7 +92,13 @@ const PushNotificationManager = {
         return this.isEnabled;
     },
     
-    // WebPush initialization (VAPID)
+    /**
+     * Initialize WebPush (VAPID) notifications
+     * Registers service worker, requests permissions, and subscribes to push
+     * @async
+     * @private
+     * @returns {Promise<boolean>} - true if WebPush initialized successfully, false otherwise
+     */
     async initWebPush() {
         try {
             // Check if Notification is supported
@@ -91,31 +140,6 @@ const PushNotificationManager = {
                 return false;
             }
             
-            // Convert VAPID key to Uint8Array
-            // let convertedVapidKey;
-            // try {
-            //     convertedVapidKey = this.urlBase64ToUint8Array(vapidPublicKey);
-                
-            //     // VAPID public key MUST be exactly 65 bytes for P-256 (0x04 + 32-byte X + 32-byte Y)
-            //     if (convertedVapidKey.length !== 65) {
-            //         console.error(`Invalid VAPID key length: ${convertedVapidKey.length} bytes (expected 65 bytes)`);
-            //         this.isEnabled = false;
-            //         return false;
-            //     }
-                
-            //     // Verify it starts with 0x04 (uncompressed point indicator)
-            //     if (convertedVapidKey[0] !== 0x04) {
-            //         console.error('Invalid VAPID key: first byte should be 0x04 (uncompressed point), got:', convertedVapidKey[0]);
-            //         this.isEnabled = false;
-            //         return false;
-            //     }
-            // } catch (conversionError) {
-            //     console.error('Failed to convert VAPID key to Uint8Array:', conversionError);
-            //     console.error('Key may be malformed. Ensure it is valid base64 or base64url encoded.');
-            //     this.isEnabled = false;
-            //     return false;
-            // }            
-            
             const subscription = await swRegistration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: vapidPublicKey
@@ -140,7 +164,14 @@ const PushNotificationManager = {
         }
     },
     
-    // Helper: Wait for service worker to become active
+    /**
+     * Wait for service worker to become active
+     * @async
+     * @private
+     * @param {ServiceWorkerRegistration} registration - Service worker registration
+     * @param {number} timeout - Timeout in milliseconds (default 5000)
+     * @returns {Promise<void>}
+     */
     async waitForServiceWorkerActive(registration, timeout = 5000) {
         return new Promise((resolve, reject) => {
             // If already has controller, it's active
@@ -209,83 +240,101 @@ const PushNotificationManager = {
         });
     },
     
-    // // APNS initialization (Safari/iOS)
-    // async initAPNS() {
-    //     try {
-    //         // Safari uses a different API for push notifications
-    //         // Note: APNS for web requires Apple Developer account and specific setup
+    /**
+     * APNS initialization (Safari/iOS)
+     * @async
+     * @private
+     * @returns {Promise<boolean>} - true if APNS initialized successfully, false otherwise
+     */
+    async initAPNS() {
+        try {
+            // Safari uses a different API for push notifications
+            // Note: APNS for web requires Apple Developer account and specific setup
             
-    //         // For now, fall back to WebPush if available
-    //         if (this.supportedPlatforms.includes('webpush')) {
-    //             console.log('Falling back to WebPush for Safari');
-    //             this.currentPlatform = 'webpush';
-    //             return this.initWebPush();
-    //         }
+            // For now, fall back to WebPush if available
+            if (this.supportedPlatforms.includes('webpush')) {
+                console.log('Falling back to WebPush for Safari');
+                this.currentPlatform = 'webpush';
+                return this.initWebPush();
+            }
             
-    //         console.warn('APNS web push not configured');
-    //         this.isEnabled = false;
-    //         return false;
+            console.warn('APNS web push not configured');
+            this.isEnabled = false;
+            return false;
             
-    //     } catch (error) {
-    //         console.error('Error initializing APNS:', error);
-    //         this.isEnabled = false;
-    //         return false;
-    //     }
-    // },
+        } catch (error) {
+            console.error('Error initializing APNS:', error);
+            this.isEnabled = false;
+            return false;
+        }
+    },
     
-    // // FCM initialization (Firebase Cloud Messaging)
-    // async initFCM() {
-    //     try {
-    //         // Check if Firebase is loaded
-    //         if (typeof firebase === 'undefined') {
-    //             console.warn('Firebase SDK not loaded');
-    //             return false;
-    //         }
+    /**
+     * FCM initialization (Firebase Cloud Messaging)
+     * @async
+     * @private
+     * @returns {Promise<boolean>} - true if FCM initialized successfully, false otherwise
+     */
+    async initFCM() {
+        try {
+            // Check if Firebase is loaded
+            if (typeof firebase === 'undefined') {
+                console.warn('Firebase SDK not loaded');
+                return false;
+            }
             
-    //         // Initialize Firebase if not already done
-    //         if (!firebase.apps.length) {
-    //             // Firebase config should be provided by Django template
-    //             const firebaseConfig = window.FIREBASE_CONFIG || {};
-    //             firebase.initializeApp(firebaseConfig);
-    //         }
+            // Initialize Firebase if not already done
+            if (!firebase.apps.length) {
+                // Firebase config should be provided by Django template
+                const firebaseConfig = window.FIREBASE_CONFIG || {};
+                firebase.initializeApp(firebaseConfig);
+            }
             
-    //         // Get FCM token
-    //         const messaging = firebase.messaging();
-    //         const token = await messaging.getToken({
-    //             vapidKey: window.FCM_VAPID_KEY // Optional for web
-    //         });
+            // Get FCM token
+            const messaging = firebase.messaging();
+            const token = await messaging.getToken({
+                vapidKey: window.FCM_VAPID_KEY // Optional for web
+            });
             
-    //         if (!token) {
-    //             console.warn('FCM token retrieval failed');
-    //             return false;
-    //         }
+            if (!token) {
+                console.warn('FCM token retrieval failed');
+                return false;
+            }
             
-    //         // Send token to server
-    //         await this.registerDevice('fcm', token, 'Firebase');
+            // Send token to server
+            await this.registerDevice('fcm', token, 'Firebase');
             
-    //         // Set up foreground message handler
-    //         messaging.onMessage((payload) => {
-    //             console.log('FCM foreground message:', payload);
-    //             this.showNotification(payload.notification);
-    //         });
+            // Set up foreground message handler
+            messaging.onMessage((payload) => {
+                console.log('FCM foreground message:', payload);
+                this.showNotification(payload.notification);
+            });
             
-    //         this.isEnabled = true;
-    //         this.currentPlatform = 'fcm';
-    //         console.log('FCM initialized successfully');
-    //         return true;
+            this.isEnabled = true;
+            this.currentPlatform = 'fcm';
+            console.log('FCM initialized successfully');
+            return true;
             
-    //     } catch (error) {
-    //         console.error('Error initializing FCM:', error);
-    //         return false;
-    //     }
-    // },
+        } catch (error) {
+            console.error('Error initializing FCM:', error);
+            return false;
+        }
+    },
     
-    // Register device with server
+    /**
+     * Register device with server
+     * @async
+     * @private
+     * @param {'webpush'|'fcm'|'apns'} platform - Platform name
+     * @param {PushSubscription|string} registration - Push subscription or token
+     * @param {string} [deviceType=''] - Device type identifier
+     * @returns {Promise<Object|null>} - Server response on success, null on failure
+     */
     async registerDevice(platform, registration, deviceType = '') {
         try {
-            const registrationJson = registration.toJSON();
-            const p256dh = registrationJson.keys.p256dh;
-            const auth = registrationJson.keys.auth;
+            const registrationJson = registration.toJSON ? registration.toJSON() : registration;
+            const p256dh = registrationJson.keys?.p256dh || '';
+            const auth = registrationJson.keys?.auth || '';
             const response = await fetch('/chat/api/push/register/', {
                 method: 'POST',
                 headers: {
@@ -294,10 +343,10 @@ const PushNotificationManager = {
                 },
                 body: JSON.stringify({
                     platform: platform,
-                    registration_id: registration.endpoint,
+                    registration_id: registration.endpoint || registration,
                     device_type: deviceType,
-                    p256dh: p256dh || '',
-                    auth: auth || ''
+                    p256dh: p256dh,
+                    auth: auth
                 })
             });
             const data = await response.json();
@@ -317,7 +366,13 @@ const PushNotificationManager = {
         }
     },
     
-    // Unregister device from server
+    /**
+     * Unregister device from server
+     * @async
+     * @param {'webpush'|'fcm'|'apns'} platform - Platform name
+     * @param {string} registrationId - Device registration ID
+     * @returns {Promise<Object|null>} - Server response on success, null on failure
+     */
     async unregisterDevice(platform, registrationId) {
         try {
             const response = await fetch('/chat/api/push/unregister/', {
@@ -348,7 +403,17 @@ const PushNotificationManager = {
         }
     },
     
-    // Show notification
+    /**
+     * Display a push notification
+     * Shows notification using Web Push API or basic Notification constructor
+     * @param {Object} notification - Notification data
+     * @param {string} notification.title - Notification title
+     * @param {string} notification.body - Notification body text
+     * @param {string} [notification.icon] - URL to notification icon
+     * @param {string} [notification.badge] - URL to notification badge
+     * @param {Object} [notification.data] - Additional data (room_id, click_action, url)
+     * @returns {Notification|null} - Notification object if shown, null otherwise
+     */
     showNotification(notification) {
         if (Notification.permission === 'granted') {
             // Use Web Push API if available, otherwise use basic Notification
@@ -376,51 +441,14 @@ const PushNotificationManager = {
         }
     },
     
-    // Utility: Convert base64 or base64url string to Uint8Array for VAPID
-    // Accepts both standard base64 (with +, /, =) and base64url (with -, _, no padding)
-    // urlBase64ToUint8Array(base64String) {
-    //     try {
-    //         // Remove any whitespace
-    //         let base64 = base64String.trim();
-            
-    //         // Convert base64url to base64 if needed (replace URL-safe characters)
-    //         // This handles both formats: if already standard base64, these replacements do nothing
-    //         base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
-            
-    //         // Add padding if needed (base64 length must be multiple of 4)
-    //         const padding = '='.repeat((4 - base64.length % 4) % 4);
-    //         base64 = base64 + padding;
-            
-    //         // Decode base64 to binary string
-    //         const rawData = window.atob(base64);
-    //         const outputArray = new Uint8Array(rawData.length);
-            
-    //         for (let i = 0; i < rawData.length; ++i) {
-    //             outputArray[i] = rawData.charCodeAt(i);
-    //         }
-            
-    //         return outputArray;
-    //     } catch (error) {
-    //         console.error('urlBase64ToUint8Array error:', error);
-    //         console.error('Input key:', base64String);
-    //         throw error; // Re-throw to be caught by caller
-    //     }
-    // },
-    
-    // Utility: Get CSRF token from cookie
-    getCSRFToken() {
-        const name = 'csrftoken';
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            const [key, value] = cookie.trim().split('=');
-            if (key === name) {
-                return decodeURIComponent(value);
-            }
-        }
-        return '';
-    },
-    
-    // Toggle notifications for a room (muted_by logic still in DB)
+    /**
+     * Toggle notifications for a specific room
+     * Sends request to server to enable/disable notifications for room
+     * @async
+     * @param {number} roomId - The room ID
+     * @param {boolean} enabled - Whether to enable (true) or disable (false) notifications
+     * @returns {Promise<boolean>} - true if server responded OK, false otherwise
+     */
     async toggleRoomNotifications(roomId, enabled) {
         try {
             const response = await fetch('/chat/api/toggle-notifications/', {
@@ -440,6 +468,23 @@ const PushNotificationManager = {
             console.error('Error toggling notifications:', error);
             return false;
         }
+    },
+    
+    /**
+     * Utility: Get CSRF token from cookies
+     * @private
+     * @returns {string} - CSRF token or empty string if not found
+     */
+    getCSRFToken() {
+        const name = 'csrftoken';
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) {
+                return decodeURIComponent(value);
+            }
+        }
+        return '';
     }
 };
 

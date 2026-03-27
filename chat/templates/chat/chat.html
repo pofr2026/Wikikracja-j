@@ -15,7 +15,6 @@
   <script src="{% static 'chat/js/ejs.min.js' %}"></script>
 
   <script>
-    const LAST_USED_ROOM_ID = {{ last_used_room|default:"null"|safe }};
     const TRANSLATIONS = {{ translations|default:"{}"|safe }};    
   </script>
 
@@ -53,33 +52,6 @@
         acc[i].addEventListener('click', function () {
           this.classList.toggle('activated')
         })
-      }
-    }
-    
-    // Function to expand category containing the active room
-    window.expandCategoryForRoom = function(room_id) {
-      const roomLink = $(`.room-link[data-room-id="${room_id}"]`)
-      if (roomLink.length === 0) return
-      
-      const container = roomLink.closest('.list-of-rooms, .list-of-pms')
-      if (container.length === 0) return
-      
-      const containerId = container.attr('id')
-      const categoryMap = {
-        'content-pub-rooms-active': '#toggleButtonPubRoomsActive',
-        'content-pub-rooms-archive': '#toggleButtonPubRoomsArchive',
-        'content-tasks-active': '#toggleButtonTasksActive',
-        'content-tasks-archive': '#toggleButtonTasksArchive',
-        'content-votes-active': '#toggleButtonVotesActive',
-        'content-votes-archive': '#toggleButtonVotesArchive',
-        'content-prv-active': '#toggleButtonPrvActive',
-        'content-prv-archive': '#toggleButtonPrvArchive'
-      }
-      
-      const toggleButton = categoryMap[containerId]
-      if (toggleButton && !$(toggleButton).hasClass('activated')) {
-        container.show()
-        $(toggleButton).addClass('activated')
       }
     }
   </script>
