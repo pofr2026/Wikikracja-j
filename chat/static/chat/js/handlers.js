@@ -219,14 +219,26 @@ $(document).on("click", ".remove-new-attachment", function(e) {
     }
 });
 
-// Room join/leave
-$(".room-name").click(function() {
+// Room join/leave - using event delegation for better mobile support
+$(document).on('click touchstart', '.room-name', function(e) {
+    // Prevent default to avoid double-tap zoom on mobile
+    if (e.type === 'touchstart') {
+        e.preventDefault();
+    }
+    
     let room_id = $(this).parent().attr("data-room-id");
 
     if ($(this).hasClass("joined")) {
         // ignore second click on active room
         //onRoomTryLeave(true);
     } else {
+        // Add visual feedback immediately
+        $(this).parent().addClass('room-tapping');
+        // Remove feedback after a short delay
+        setTimeout(() => {
+            $(this).parent().removeClass('room-tapping');
+        }, 300);
+        
         // Join room
         onRoomTryJoin(room_id);
     }

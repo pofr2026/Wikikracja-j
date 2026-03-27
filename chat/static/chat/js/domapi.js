@@ -116,7 +116,7 @@ export default class DomApi {
     }
 
     getRoomType(room_id) {
-        return $(`.room-link[data-room-id="${room_id}"`).attr("data-room-type");
+        return $(`.room-link[data-room-id="${room_id}"]`).attr("data-room-type");
     }
 
     getLastMessageBanner() {

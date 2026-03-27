@@ -278,9 +278,14 @@
     display: flex;
     font-family: 'Noto Sans Mono', monospace;
     font-size: 0.9rem;
-    margin: .1rem;
-    padding: .1rem .2rem .2rem .2rem;
+    margin: .2rem;
+    padding: .5dvh;
     width: 100%;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+    touch-action: manipulation;
+    /* Improve touch response on mobile */
+    -webkit-tap-highlight-color: transparent;
+    /* Remove default tap highlight */
 
     &.online {
         color: var(--bs-yellow);
@@ -306,6 +311,13 @@
         color: var(--bs-success);
     }
 
+    /* Visual feedback for touch/click on mobile */
+    &.room-tapping {
+        background-color: rgba(51, 153, 243, 0.3);
+        border-color: var(--bs-info);
+        transform: scale(0.98);
+    }
+
     /* &[data-room-type="public"] {
         text-transform: uppercase !important;
     } */
@@ -321,7 +333,7 @@
     .room-controls {
         display: flex;
         align-items: center;
-        gap: .15rem;
+        gap: 1dvh;
         flex-shrink: 0;
         white-space: nowrap;
     }
@@ -370,8 +382,8 @@
 /* Mobile only */
 @media (max-width: 767px) {
     #room .messages {
-        min-height: 45dvh;
-        max-height: 70dvh;
+        min-height: 15dvh;
+        max-height: 60dvh;
     }
 
     .room-list {
