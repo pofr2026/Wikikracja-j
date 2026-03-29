@@ -291,6 +291,11 @@ def poczekalnia(request: HttpRequest):
         rate, created = Rate.objects.get_or_create(kandydat=candidate_profile, obywatel=citizen_profile)
         # Add rating directly to user object as a custom attribute
         user.rating = rate.rate
+        
+        # Count number of reputation votes from all citizens
+        votes_count = Rate.objects.filter(kandydat=candidate_profile).count()
+        user.votes_count = votes_count
+        
         user.email_confirmed = (user.id in verified_user_ids) or bool(candidate_profile.polecajacy)
         user.form_completed = candidate_profile.onboarding_status == Uzytkownik.OnboardingStatus.FORM_COMPLETED
         users_with_ratings.append(user)
@@ -593,7 +598,12 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
         rate.save()
         return redirect('obywatele:obywatele_szczegoly', pk)
 
+<<<<<<< HEAD
     total_rate_count = Rate.objects.filter(kandydat=candidate_profile).count()
+=======
+    # Get total number of votes for this candidate
+    votes_count = Rate.objects.filter(kandydat=candidate_profile).count()
+>>>>>>> e0e6daf8ed79b0ecd77d59d22b6e648095da14ae
 
     # Previous and Next
     obj = get_object_or_404(User, pk=pk)
@@ -616,7 +626,11 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
             'active': obj.is_active,
             'email_confirmed': email_confirmed,
             'form_completed': form_completed,
+<<<<<<< HEAD
             'total_rate_count': total_rate_count,
+=======
+            'votes_count': votes_count,
+>>>>>>> e0e6daf8ed79b0ecd77d59d22b6e648095da14ae
         })
 
 

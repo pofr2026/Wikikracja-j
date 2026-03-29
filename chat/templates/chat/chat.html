@@ -15,7 +15,6 @@
   <script src="{% static 'chat/js/ejs.min.js' %}"></script>
 
   <script>
-    const LAST_USED_ROOM_ID = {{ last_used_room|default:"null"|safe }};
     const TRANSLATIONS = {{ translations|default:"{}"|safe }};    
   </script>
 
@@ -55,33 +54,6 @@
         })
       }
     }
-    
-    // Function to expand category containing the active room
-    window.expandCategoryForRoom = function(room_id) {
-      const roomLink = $(`.room-link[data-room-id="${room_id}"]`)
-      if (roomLink.length === 0) return
-      
-      const container = roomLink.closest('.list-of-rooms, .list-of-pms')
-      if (container.length === 0) return
-      
-      const containerId = container.attr('id')
-      const categoryMap = {
-        'content-pub-rooms-active': '#toggleButtonPubRoomsActive',
-        'content-pub-rooms-archive': '#toggleButtonPubRoomsArchive',
-        'content-tasks-active': '#toggleButtonTasksActive',
-        'content-tasks-archive': '#toggleButtonTasksArchive',
-        'content-votes-active': '#toggleButtonVotesActive',
-        'content-votes-archive': '#toggleButtonVotesArchive',
-        'content-prv-active': '#toggleButtonPrvActive',
-        'content-prv-archive': '#toggleButtonPrvArchive'
-      }
-      
-      const toggleButton = categoryMap[containerId]
-      if (toggleButton && !$(toggleButton).hasClass('activated')) {
-        container.show()
-        $(toggleButton).addClass('activated')
-      }
-    }
   </script>
 
   <!-- ============================================================= -->
@@ -97,7 +69,7 @@
       <div class="row">
         <div class="col p-1">
           <!-- Public rooms active -->
-          <p class="mt-0 mb-0 text-muted">
+          <p class="mb-0 py-1 text-muted">
             <button class="btn accordion" id="toggleButtonPubRoomsActive">{% trans 'Public' %}</button>
             <a class="btn" href="{% url 'chat:add_room' %}"><i class="fas fa-plus"></i></a>
             <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="left" title="{% trans 'Public chat rooms are archived if they are not used for' %} {{ ARCHIVE_PUBLIC_CHAT_ROOM }} {% trans 'days. After' %} {{ DELETE_PUBLIC_CHAT_ROOM }} {% trans 'days they are deleted. Private messages are archived when user is blocked and deleted after' %} {{ DELETE_PUBLIC_CHAT_ROOM }} {% trans 'days' %}."></i>
@@ -113,7 +85,7 @@
           </div>
 
           <!-- Public rooms archived -->
-          <p class="mt-0 mb-0 text-muted">
+          <p class="mb-0 py-1 text-muted">
             <button class="btn accordion" id="toggleButtonPubRoomsArchive">{% trans 'Public Archived' %}</button>
           </p>
           <div id="content-pub-rooms-archive" class="list-of-rooms">
@@ -127,7 +99,7 @@
           </div>
 
           <!-- Tasks active -->
-          <p class="mt-0 mb-0 text-muted">
+          <p class="mb-0 py-1 text-muted">
             <button class="btn accordion" id="toggleButtonTasksActive">{% trans 'Tasks' %}</button>
           </p>
           <div id="content-tasks-active" class="list-of-rooms">
@@ -141,7 +113,7 @@
           </div>
 
           <!-- Tasks archived -->
-          <p class="mt-0 mb-0 text-muted">
+          <p class="mb-0 py-1 text-muted">
             <button class="btn accordion" id="toggleButtonTasksArchive">{% trans 'Tasks Archived' %}</button>
           </p>
           <div id="content-tasks-archive" class="list-of-rooms">
@@ -155,7 +127,7 @@
           </div>
 
           <!-- Votes active -->
-          <p class="mt-0 mb-0 text-muted">
+          <p class="mb-0 py-1 text-muted">
             <button class="btn accordion" id="toggleButtonVotesActive">{% trans 'Referendums' %}</button>
           </p>
           <div id="content-votes-active" class="list-of-rooms">
@@ -169,7 +141,7 @@
           </div>
 
           <!-- Votes archived -->
-          <p class="mt-0 mb-0 text-muted">
+          <p class="mb-0 py-1 text-muted">
             <button class="btn accordion" id="toggleButtonVotesArchive">{% trans 'Referendums Archived' %}</button>
           </p>
           <div id="content-votes-archive" class="list-of-rooms">
@@ -188,7 +160,7 @@
       <div class="row">
         <div class="col p-1">
           <!-- Private active -->
-          <p class="mt-0 mb-0 text-muted">
+          <p class="mb-0 py-1 text-muted">
             <button class="btn accordion" id="toggleButtonPrvActive">{% trans 'Private Messages' %}</button>
           </p>
           <div id="content-prv-active" class="list-of-pms">
@@ -201,7 +173,7 @@
             {% endfor %}
           </div>
           <!-- Private archived -->
-          <p class="mt-0 mb-0 text-muted">
+          <p class="mb-0 py-1 text-muted">
             <button class="btn accordion" id="toggleButtonPrvArchive">{% trans 'Private Archived' %}</button>
           </p>
           <div id="content-prv-archive" class="list-of-pms">

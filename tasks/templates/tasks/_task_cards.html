@@ -48,7 +48,7 @@
       </div>
 
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <p class="small text-muted mb-0 pe-3 text-break" style="display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">{{ task.description|linebreaksbr|truncatechars_html:150|safe }}</p>
+        <p class="small text-muted mb-0 pe-3 text-break" style="display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">{{ task.description|linebreaksbr|truncatechars_html:600|safe }}</p>
         {% if show_take_button %}
           {% if task.assigned_to == request.user %}
             <form method="post" action="{% url 'tasks:resign' task.pk %}">

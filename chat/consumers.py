@@ -146,7 +146,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     await self.channel_layer.group_send(group, message)
         except ClientError as e:
             # Catch any errors and send it back
-            await self.send_json({"error": e.code})
+            await self.send_json({"error": e.code, "__TRACE_ID": trace_id}) # fix exceptions
 
     #################################################
     # Command helper methods called by receive_json #

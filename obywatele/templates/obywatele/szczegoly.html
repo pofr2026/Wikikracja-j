@@ -15,7 +15,9 @@
   <div class="row">
     <div class="col-md-8 p-3">
       {{ b.uid }} | {{ b.uid.email }}<br>
+      {% trans 'First name' %} {% trans 'Last name' %}: {{ b.uid.first_name|default:"-" }} {{ b.uid.last_name|default:"-" }}<br>
       {% trans 'Recommended by' %}: {{ b.polecajacy|default:"-" }}<br>
+      {% trans 'Votes' %}: {{ votes_count }}<br>
       {% trans 'Joined at' %}: {{ b.data_przyjecia|date:"Y-m-d"|default:"-" }}<br>
       {% trans 'Email confirmed' %}: {% if email_confirmed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}<br>
       {% trans 'Form completed' %}: {% if form_completed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}<br>

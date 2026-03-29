@@ -21,6 +21,7 @@
           <thead>
             <tr>
               <th scope="col">{% trans 'Nick' %}</th>
+              <th scope="col">{% trans 'Votes' %}</th>
               <th scope="col">{% trans 'Email confirmed' %}</th>
               <th scope="col">{% trans 'Form completed' %}</th>
               <th scope="col">{% trans 'First name' %}</th>
@@ -44,6 +45,7 @@
                   {{ i.username }}
                 </span>
               </td>
+              <td class="text-center">{{ i.votes_count }}</td>
               <td>{% if i.email_confirmed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</td>
               <td>{% if i.form_completed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</td>
               <td>{{ i.first_name }}</td>
