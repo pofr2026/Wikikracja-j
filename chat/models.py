@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Prefetch
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
@@ -142,6 +143,71 @@ class Room(models.Model):
                 if other_user.id in other_user_ids:
                     result[other_user.id] = room
         
+        return result
+
+    @classmethod
+    def get_members_excluding(cls, room_id, user_id):
+        """
+        Get all room members except a specific user.
+        Uses a single query with prefetch_related for efficiency.
+        
+        Args:
+            room_id: The room ID
+            user_id: User ID to exclude
+            
+        Returns:
+            QuerySet[User]: Allowed users except the excluded one
+        """
+        try:
+            room = cls.objects.get(id=room_id)
+            return room.allowed.exclude(id=user_id)
+        except cls.DoesNotExist:
+            return User.objects.none()
+
+    @classmethod
+    def get_membership_preferences_bulk(cls, room_id, user_ids):
+        """
+        Bulk fetch membership preferences (seen/muted status) for multiple users in a room.
+        Returns dict: {user_id: {'seen': bool, 'muted': bool}}
+        Uses 2 queries regardless of number of users.
+        
+        Args:
+            room_id: The room ID
+            user_ids: List of user IDs to check
+            
+        Returns:
+            dict: Mapping user_id to their preferences
+        """
+        if not user_ids:
+            return {}
+            
+        # try:
+        #     room = cls.objects.get(id=room_id)
+        # except cls.DoesNotExist:
+        #     return {user_id: {'seen': False, 'muted': False} for user_id in user_ids}
+        
+        # Get all users with their relationships in 2 queries
+        users = User.objects.filter(id__in=user_ids).prefetch_related(
+            Prefetch('seen_rooms', 
+                    queryset=cls.objects.filter(id=room_id),
+                    to_attr='prefetched_seen_rooms'),
+            Prefetch('muted_rooms',
+                    queryset=cls.objects.filter(id=room_id),
+                    to_attr='prefetched_muted_rooms')
+        )
+        
+        result = {}
+        for user in users:
+            result[user.id] = {
+                'seen': bool(user.prefetched_seen_rooms),
+                'muted': bool(user.prefetched_muted_rooms)
+            }
+        
+        # Fill in missing users (shouldn't happen but defensive)
+        for user_id in user_ids:
+            if user_id not in result:
+                result[user_id] = {'seen': False, 'muted': False}
+                
         return result
 
 

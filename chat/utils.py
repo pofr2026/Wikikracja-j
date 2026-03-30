@@ -1,37 +1,10 @@
 import datetime
 import inspect
 import logging
-
 from typing import Union
-from channels.db import database_sync_to_async
-from .exceptions import ClientError
-from django.utils import timezone
 from .models import Room, Message
 
 log = logging.getLogger(__name__)
-
-# This decorator turns this function from a synchronous function into an async
-# one we can call from our async consumers, that handles Django DBs correctly.
-# For more, see http://channels.readthedocs.io/en/latest/topics/databases.html
-@database_sync_to_async
-def get_room_or_error(room_id, user):
-    """
-    Tries to fetch a room for the user, checking permissions along the way.
-    """
-    # Check if the user is logged in
-    if not user.is_authenticated:
-        raise ClientError("USER_HAS_TO_LOGIN")
-    
-    # Find the room they requested (by ID)
-    try:
-        room = Room.objects.get(pk=room_id)
-        # room = Room.objects.filter(pk=room_id, allowed=user.id).first()
-    except Room.DoesNotExist:
-        # raise ClientError("ROOM_INVALID")  # Blocks user from clicking on different room so not the best approach
-        room = Room.objects.first()
-        # TODO: Create room START autmatically if there is no public rooms at all
-    return room
-
 
 # added those wrappers to encapsulate underlying data structure
 # in case we want to change a way data is stored
@@ -65,7 +38,7 @@ class OnlineUserRegistry:
         return list(self._reg.keys())
 
     def get_consumer(self, user):
-        return self._reg[user.id]
+        return self._reg.get(user.id)
 
 
 class RoomRegistry:
@@ -212,7 +185,7 @@ def send_message_to_room(room_title, message_text, sender=None, anonymous=True):
         try:
             room = Room.objects.get(title=room_title)
         except Room.DoesNotExist:
-            logger.error(f"Room '{room_title}' does not exist")
+            log.error(f"Room '{room_title}' does not exist")
             return None
         message = Message.objects.create(
             sender=sender,
