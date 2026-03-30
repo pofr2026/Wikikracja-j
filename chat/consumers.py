@@ -5,7 +5,7 @@ import os
 from django.conf import settings
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from .exceptions import ClientError
-from .utils import get_room_or_error, OnlineUserRegistry, RoomRegistry, HandledMessage, Handlers, helper_method
+from .utils import OnlineUserRegistry, RoomRegistry, HandledMessage, Handlers, helper_method
 from .models import Message, Room, MessageVote, MessageHistory, MessageHistoryEntry, MessageAttachment
 from datetime import datetime as dt
 from django.contrib.auth.models import User
@@ -14,6 +14,7 @@ from django.utils.html import escape
 from .group_messages import format_chat_message
 
 log = logging.getLogger(__name__)
+
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     """
@@ -109,7 +110,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             if arg is None:
                 return await self.send_json({"error": "DATA_MISSING"})
             args[arg_name] = arg
-        
+
         # Add optional parameters if provided
         for arg_name in arg_names:
             if arg_name not in args:
@@ -159,7 +160,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
         # The logged-in user is in our scope thanks to
         # the authentication ASGI middleware
-        room = await get_room_or_error(room_id, self.scope["user"])
+        room = await self.get_room_or_error(room_id, self.scope["user"])
 
         user_id = self.scope["user"].id
         is_allowed = await self.allowed_in_room(room)
@@ -235,7 +236,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
         # The logged-in user is in our scope thanks to
         # the authentication ASGI middleware
-        room = await get_room_or_error(room_id, self.scope["user"])
+        room = await self.get_room_or_error(room_id, self.scope["user"])
 
         await self.handle_leave_room(room)
 
@@ -243,13 +244,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         proxy.send_json({"leave": str(room.id)})
 
     @handlers.register("send")
-    async def send_room(self, proxy: HandledMessage, room_id, message, is_anonymous, attachments):
+    async def send_message_to_room(self, proxy: HandledMessage, room_id, message, is_anonymous, attachments):
         """
         Called by receive_json when someone
         sends a message to a room.
         """
+        # VALIDATION START
 
-        # Check they are in this room
+        # Check if room is registry cache (make erros in dev coz of restarts, why not using present fun?)
         if int(room_id) not in self.rooms.items():
             raise ClientError("ROOM_ACCESS_DENIED")
 
@@ -264,21 +266,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if not message.lstrip() and not attachments:
             raise ClientError("EMPTY_MESSAGE")
 
-        # Get the room...
-        room = await get_room_or_error(room_id, self.scope["user"])
+        sender = self.scope["user"]
+        room = await self.get_room_or_error(room_id, sender)
 
         # impossible to send anonymous messages in private chat
         if not room.public and is_anonymous:
             raise ClientError("ANONYMOUS_IN_PRIVATE")
 
+        # VALIDATION END
+
         # Save message to DB
-        user = await self.get_user_by_name(self.scope["user"].username)  # ???
+        user = await self.get_user_by_name(sender.username)  # ???
         room = await self.get_room(room_id)
 
         # escape HTML - this is second excaping, no need for that
         # message = escape(message)
 
-        msg = Message(sender=user, text=message, room=room, anonymous=is_anonymous)  # time is added in a models.py
+        msg = Message(sender=user, text=message, room=room,
+                      anonymous=is_anonymous)  # time is added in a models.py
         message_id = await self.save_message(msg)
         msg.id = message_id
 
@@ -292,7 +297,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             room.group_name,
             format_chat_message(
                 room_id=room_id,
-                user_id=self.scope['user'].id,
+                user_id=sender.id,
                 anonymous=is_anonymous,
                 message=message,
                 message_id=message_id,
@@ -306,33 +311,49 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             )
         )
 
-        # Make rooms appear unseen for some users
-        for member in await database_sync_to_async(lambda x: list(x.allowed.all()))(room):            
-            if member.id == self.scope['user'].id:
-                continue
-            
-            if not ChatConsumer.online_registry.is_online(member):
-                # Send push notification for offline users
-                # We'll do this asynchronously to not block the main flow
-                await self.send_push_notification_async(proxy, member, msg, room_id)
-                    
-                continue
-
+        # Make rooms appear unseen for online room members, send push for offline
+        room_members = await database_sync_to_async(lambda x: list(x.allowed.all()))(room)
+        
+        # Skip notification processing for sender
+        other_members = [m for m in room_members if m.id != sender.id]
+        if not other_members:
+            return
+        # Bulk fetch membership preferences (seen/muted status) for all other members
+        other_member_ids = [m.id for m in other_members]
+        
+        online_ids = ChatConsumer.online_registry.get_online()        
+        offline_ids = [mid for mid in other_member_ids if mid not in online_ids]
+        # Delete seen_by entries for offline users (mark room as unseen), online will be handled later in code
+        if offline_ids:
+            await database_sync_to_async(
+                lambda: Room.seen_by.through.objects.filter(room_id=room_id, user_id__in=offline_ids).delete()
+            )()
+        
+        membership_prefs = await database_sync_to_async(
+            lambda: Room.get_membership_preferences_bulk(room_id, other_member_ids)
+        )()
+        
+        # Process each member with pre-fetched preferences
+        for member in other_members:
+            prefs = membership_prefs.get(member.id, {'seen': False, 'muted': True})
             consumer = ChatConsumer.online_registry.get_consumer(member)
 
-            # room is not seen at the moment
-            if await consumer.room_is_seen(room):
-                # update database
-                await consumer.unsee_room(room)
+            # OFFLINE: Send push notification
+            if not consumer:
+                await self.send_push_notification_async(proxy, member, msg, room_id)
+                continue
 
-                # send message to user
-                await consumer.send_unsee_room(proxy=proxy, room=room)
-
+            # ONLINE: Skip if user is currently in this room (they'll see the message directly)
             if consumer.rooms.present(room):
                 continue
 
-            # if room is not muted send notification
-            if not await consumer.has_muted_room(room_id):
+            # Unsee room if it was previously seen (mark as unread)
+            if prefs['seen']:
+                await consumer.unsee_room(room)
+                await consumer.send_unsee_room(proxy=proxy, room=room)
+
+            # Send notification if room is not muted
+            if not prefs['muted']:
                 await consumer.send_notification(proxy, message_id)
 
     @handlers.register("get-online-users")
@@ -346,7 +367,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         
         # Use optimized batch query to get all private rooms at once
         rooms_dict = await self.find_private_rooms_for_user_pairs(scoped_user, other_user_ids)
-        
+
         online_data = []
         for online_user_id in other_user_ids:
             room = rooms_dict.get(online_user_id)
@@ -526,7 +547,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 continue
 
             consumer = ChatConsumer.online_registry.get_consumer(user_to_notify)
-
             proxy.send_json({
                 'online_data': [{
                     'user_id': updated_user.id,
@@ -574,21 +594,21 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         Send push notification via django-push-notifications.
         This runs asynchronously and fires regardless of WebSocket connection state.
         """
-        try:                        
+        try:
             # Check if user has muted room
             if await self.user_has_muted_room(user.id, room_id):
                 return
-             
+
             # Prepare notification data
             title = "Anonymous User" if message.anonymous else message.sender.username
             body = message.text[:100]
-            
+
             # Build deep link to room (get_site_domain does DB query, needs async wrapper)
             from zzz.utils import get_site_domain
             domain = await database_sync_to_async(get_site_domain)()
             site_url = f"https://{domain}"
             deep_link = f"{site_url}/chat#room_id={room_id}"
-            
+
             # Send via django-push-notifications
             # Use sync_to_async to call the synchronous push notification API
             success = await self.send_push_notification_sync(
@@ -598,14 +618,33 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 deep_link=deep_link,
                 room_id=room_id
             )
-            
+
             if success:
                 log.info(f"Push notification sent to user {user.id} for message {message.id}")
             else:
                 log.debug(f"No push devices active for user {user.id}")
-                
+
         except Exception as e:
             log.error(f"Error sending push notification: {e}")
+
+    @database_sync_to_async
+    def get_room_or_error(self, room_id, user):
+        """
+        Tries to fetch a room for the user, checking permissions along the way.
+        """
+        # Check if the user is logged in
+        if not user.is_authenticated:
+            raise ClientError("USER_HAS_TO_LOGIN")
+
+        # Find the room they requested (by ID)
+        try:
+            room = Room.objects.get(pk=room_id)
+            # room = Room.objects.filter(pk=room_id, allowed=user.id).first()
+        except Room.DoesNotExist:
+            # raise ClientError("ROOM_INVALID")  # Blocks user from clicking on different room so not the best approach
+            room = Room.objects.first()
+            # TODO: Create room START autmatically if there is no public rooms at all
+        return room
 
     @database_sync_to_async
     def send_push_notification_sync(self, user, title, body, deep_link, room_id):
@@ -681,7 +720,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             #         log.error(f"APNS failed for user {user.id}: {e}")
             
             return any_sent
-            
+
         except Exception as e:
             log.error(f"Error in _send_push_notification_sync: {e}")
             return False
@@ -705,62 +744,41 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         vote = await self.get_vote(event['message_id'])
 
         event_copy = {**event}
-        del event_copy["user_id"]  # delete user id to not give away author of anonymous message
+        del event_copy["user_id"] # delete user id to not give away author of anonymous message
         del event_copy["type"]
 
         return {
-            **event_copy,  # copy event
+            **event_copy, # copy event
             # Override some of fields based on receiver
             'username': 'Anonymous User' if event["anonymous"] else user.username if user else None,
             "new": event["new"] if self.scope['user'] != user else False,
-            "your_vote": vote.vote if vote is not None else None, "own": self.scope['user'] == user
+            "your_vote": vote.vote if vote is not None else None,
+            "own": self.scope['user'] == user
         }
 
     ###########################################################
     # Handlers for messages sent over the channel layer       #
-    #                                                         #
-    # These helper methods are named by the types             #
-    # we send - so: chat.join    becomes chat_join (removed)  #
-    #               chat.leave   becomes chat_leave (removed) #
-    #               chat.message becomes chat_message         #
-    #               chat.vote    becomes chat_vote            #
     ###########################################################
 
     async def chat_message(self, event):
-        """
-        Called when someone has messaged our chat
-        """
+        """Called when someone has messaged our chat"""
         message = await self.format_chat_message_data(event)
-        await self.send_json({
-            "messages": [message],
-        })
+        await self.send_json({"messages": [message]})
 
     async def chat_vote(self, event):
-        """
-        Send vote updates to each interested client.
-        """
-
+        """Send vote updates to each interested client."""
         # copy sub dictionary, as same event object is sent to every consumer
         update = {**event['update_votes']}
-
         who_triggered = update['user_id']
-
         # Tell client if it was this client who triggered update to highlight button
         # None if it was not this client, event name string e.g. 'upvote' if it was
         update["your_vote"] = update['vote'] if who_triggered == self.scope["user"].id else None
-
-        # delete unused field
         del update['vote']
-
-        await self.send_json({
-            "update_votes": update,
-        })
+        await self.send_json({"update_votes": update})
 
     async def chat_edit(self, event):
         edit = event['edit_message']
-        await self.send_json({
-            "edit_message": edit,
-        })
+        await self.send_json({"edit_message": edit})
 
     ###########################
     # Sync to async functions #
@@ -768,7 +786,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def get_recent_messages(self, room_id, limit=100):
-        from django.db.models import Count, Q, Prefetch, Case, When, IntegerField
+        from django.db.models import Count, Q, Prefetch
         
         messages = Message.objects.filter(room=room_id).select_related(
             'sender'
@@ -779,7 +797,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             upvotes=Count('votes', filter=Q(votes__vote='upvote')),
             downvotes=Count('votes', filter=Q(votes__vote='downvote'))
         ).order_by('-time')[:limit]
-        
+
         result = []
         for msg in reversed(list(messages)):
             edited = hasattr(msg, 'messagehistory')
@@ -804,7 +822,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             })
         
         return result
-    
+
     @database_sync_to_async
     def get_room(self, room_id):
         try:
@@ -922,12 +940,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Update current text
         message.text = new_message
         message.save(update_fields=('text',))
-
         return state
 
     @database_sync_to_async
     def get_message_sender(self, message):
-        # message_id was passed
         if isinstance(message, (int, str)):
             return Message.objects.get(pk=message).sender
         return message.sender
@@ -937,11 +953,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         history = MessageHistory.objects.filter(message_id=message_id)
         if not history.exists():
             return []
-
         history = history.first()
-
         states = [
-            {"text": state.text, "timestamp": int(state.time.timestamp()) * 1000} for state in history.entries.all().order_by("time")
+            {"text": state.text, "timestamp": int(state.time.timestamp()) * 1000}
+            for state in history.entries.all().order_by("time")
         ]
         return states
 
@@ -973,8 +988,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def has_muted_room(self, room_id):
         room = Room.objects.get(pk=room_id)
-        return room.muted_by.filter(id=self.scope['user'].id).exists()    
-    
+        return room.muted_by.filter(id=self.scope['user'].id).exists()
+
     @database_sync_to_async
     def user_has_muted_room(self, user_id, room_id):
         room = Room.objects.get(pk=room_id)
@@ -1001,8 +1016,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         Returns list of rooms where:
         1. User is in the allowed list
         2. User has NOT muted notifications for the room
-        
-        Optimized to use a single database query instead of iterating over all rooms.
         """
         user = self.scope['user']
         return list(Room.objects.filter(allowed=user).exclude(muted_by=user))
