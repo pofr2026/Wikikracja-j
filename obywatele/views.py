@@ -293,8 +293,8 @@ def poczekalnia(request: HttpRequest):
         user.rating = rate.rate
 
         # Count number of reputation votes from all citizens
-        votes_count = Rate.objects.filter(kandydat=candidate_profile).count()
-        user.votes_count = votes_count
+        ratings_count = Rate.objects.filter(kandydat=candidate_profile).count()
+        user.ratings_count = ratings_count
 
         user.email_confirmed = (user.id in verified_user_ids) or bool(candidate_profile.polecajacy)
         user.form_completed = candidate_profile.onboarding_status == Uzytkownik.OnboardingStatus.FORM_COMPLETED

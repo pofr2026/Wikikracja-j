@@ -8,7 +8,7 @@ from os import getenv, path
 from dotenv import load_dotenv
 
 # First party imports
-from zzz.settings_base import BASE_DIR
+from zzz.settings_base import BASE_DIR, DATABASES  # noqa: F401
 
 # Register additional MIME types not recognized by default
 mimetypes.add_type('image/webp', '.webp')
