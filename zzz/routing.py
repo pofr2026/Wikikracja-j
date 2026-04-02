@@ -1,8 +1,12 @@
-from django.urls import path
-from channels.routing import ProtocolTypeRouter, URLRouter
+# Third party imports
 from channels.auth import AuthMiddlewareStack
-from chat.consumers import ChatConsumer
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
+from django.urls import path
+
+# First party imports
+from chat.consumers import ChatConsumer
+
 # from channels.http import AsgiHandler
 # from chat.consumers import Consumer
 

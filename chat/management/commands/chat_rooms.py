@@ -1,14 +1,19 @@
+# Standard library imports
 import logging
 from datetime import timedelta as td
-from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+
+# Third party imports
 from django.conf import settings as s
+from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from chat.models import Room, Message
+# First party imports
+from chat.models import Message, Room
 
 log = logging.getLogger(__name__)
-        
+
+
 # chat_rooms command
 class Command(BaseCommand):
     help = 'Create/Delete/Archive chat rooms'
@@ -24,7 +29,7 @@ class Command(BaseCommand):
 
         for pr in public_rooms:
             pr.allowed.set(active_users)
-        
+
         # create_one2one_rooms(user_accepted)  # use it if there is no private rooms
 
         # Archive/Delete old public chat rooms
@@ -41,11 +46,11 @@ class Command(BaseCommand):
             elif last_message.time > (timezone.now() - td(days=s.ARCHIVE_PUBLIC_CHAT_ROOM)):  # unarchive
                 room.archived = False  # unarchive
                 room.save()
-            
+
             # Skip deletion for protected rooms (for tasks, voting) - they should only be deleted when the task/vote is deleted
             if room.protected:
                 continue
-                
+
             if last_message.time < (timezone.now() - td(days=s.DELETE_PUBLIC_CHAT_ROOM)):  # delete after 1 year
                 log.info(f'Chat room {room.title} deleted.')
                 room.delete()  # delete

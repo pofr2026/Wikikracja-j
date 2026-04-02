@@ -1,10 +1,14 @@
+# Standard library imports
 import json
 import logging
 import mimetypes
 from os import getenv, path
+
+# Third party imports
 from dotenv import load_dotenv
-from django.utils.translation import gettext_lazy as _
-from zzz.settings_base import *
+
+# First party imports
+from zzz.settings_base import BASE_DIR
 
 # Register additional MIME types not recognized by default
 mimetypes.add_type('image/webp', '.webp')
@@ -30,6 +34,7 @@ def env_list(name, default=None, sep=","):
         return default if default is not None else []
     parts = [p.strip() for p in value.split(sep)]
     return [p for p in parts if p]
+
 
 STATIC_ROOT = path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
@@ -109,8 +114,8 @@ CHANNEL_LAYERS = {
     },
 }
 
-CACHES={
-    'default':{
+CACHES = {
+    'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': REDIS_HOST
     }
@@ -133,14 +138,14 @@ DELETE_INACTIVE_USER_AFTER = env_int("DELETE_INACTIVE_USER_AFTER", 30)
 GROUP_IS_PUBLIC = env_bool("GROUP_IS_PUBLIC", True)
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
-#X_FRAME_OPTIONS = 'ALLOW'
+# X_FRAME_OPTIONS = 'ALLOW'
 # TODO: Na produkcji jest:
 X_FRAME_OPTIONS = 'DENY'
 # Dlaczego?
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # above all other middleware apart from Django’s SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # above all other middleware apart from Django’s SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -237,16 +242,13 @@ if DEBUG:
         'django_browser_reload.middleware.BrowserReloadMiddleware',
     ]
 
-
 # LOGGING_DESTINATION: 'console' (default) or 'file'
 # When 'file', logs are written to LOG_FILE (default: /var/log/wiki.log)
 LOGGING_DESTINATION = getenv("LOGGING_DESTINATION", "console")
 LOG_FILE = getenv("LOG_FILE", "/var/log/wiki.log")
 LOG_LEVEL = getenv("LOG_LEVEL", "DEBUG" if DEBUG else "INFO").strip().upper()
 if LOG_LEVEL not in {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"}:
-    raise RuntimeError(
-        "LOG_LEVEL must be one of: CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET"
-    )
+    raise RuntimeError("LOG_LEVEL must be one of: CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET")
 _log_to_file = LOGGING_DESTINATION == "file"
 _active_handler = "file" if _log_to_file else "console"
 
@@ -318,7 +320,7 @@ if LOGGING_JSON:
     except json.JSONDecodeError as e:
         err = "LOGGING_JSON contains invalid JSON: " + LOGGING_JSON + " Stack: " + e.args[0]
         print(err)
-        raise RuntimeError(err)
+        raise RuntimeError(err) from None
 
 EMAIL_BACKEND = getenv(
     "EMAIL_BACKEND",
@@ -343,9 +345,7 @@ if not DEBUG and EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
     if not EMAIL_HOST_PASSWORD:
         missing.append("EMAIL_HOST_PASSWORD")
     if missing:
-        raise RuntimeError(
-            "SMTP email is enabled but required settings are missing: " + ", ".join(missing)
-        )
+        raise RuntimeError("SMTP email is enabled but required settings are missing: " + ", ".join(missing))
 
 #########################
 # AllAuth Configuration #
@@ -358,7 +358,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/board/'
 ACCOUNT_SIGNUP_REDIRECT_URL = '/obywatele/onboarding/'
 ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*'] #, 'password2*'*/]
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*']  # , 'password2*'*/]
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
@@ -372,7 +372,7 @@ ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = False
 
 # Captcha https://django-simple-captcha.readthedocs.io/en/latest/advanced.html
 CAPTCHA_FONT_SIZE = 40
-CAPTCHA_IMAGE_SIZE = (170,50)
+CAPTCHA_IMAGE_SIZE = (170, 50)
 CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
 # CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'
 
@@ -393,7 +393,6 @@ WHITENOISE_USE_FINDERS = DEBUG
 WHITENOISE_MAX_AGE = 28800  # 8 hours
 # Don't let WhiteNoise handle /media/ URLs - Django will serve them
 WHITENOISE_STATIC_PREFIX = '/static/'
-
 
 DEBUG_SKIP_AUTH = env_bool("DEBUG_SKIP_AUTH", False)
 
@@ -432,10 +431,12 @@ PUSH_NOTIFICATIONS = {
 
 # FIREBASE_APP: Firebase app instance that is used to send the push notification. If not provided, the app will be using the default app instance that you’ve instantiated with firebase_admin.initialize_app().
 PUSH_NOTIFICATIONS_SETTINGS = {
-        # "APNS_CERTIFICATE": getenv('APNS_CERTIFICATE', ''),  # Path to certificate file
-        # "APNS_TOPIC": getenv('APNS_TOPIC', ''),  # Bundle ID like "com.example.push_test",
-        # "WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
-        # "WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
-        "WP_PRIVATE_KEY": getenv('VAPID_PRIVATE_KEY', ''), #"/path/to/your/private.pem", # Absolute path to your private certificate file: os.path.join(BASE_DIR, “private_key.pem”)
-        "WP_CLAIMS": {'sub': f"mailto:{getenv('VAPID_ADMIN_EMAIL', 'admin@example.com')}"}
+    # "APNS_CERTIFICATE": getenv('APNS_CERTIFICATE', ''),  # Path to certificate file
+    # "APNS_TOPIC": getenv('APNS_TOPIC', ''),  # Bundle ID like "com.example.push_test",
+    # "WNS_PACKAGE_SECURITY_ID": "[your package security id, e.g: 'ms-app://e-3-4-6234...']",
+    # "WNS_SECRET_KEY": "[your app secret key, e.g.: 'KDiejnLKDUWodsjmewuSZkk']",
+    "WP_PRIVATE_KEY": getenv('VAPID_PRIVATE_KEY', ''),
+    "WP_CLAIMS": {
+        'sub': f"mailto:{getenv('VAPID_ADMIN_EMAIL', 'admin@example.com')}"
+    }
 }

@@ -1,10 +1,10 @@
+# Third party imports
 from django.conf import settings
 from django.db import models
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-
 
 User = settings.AUTH_USER_MODEL
 
@@ -81,7 +81,10 @@ class Task(models.Model):
 
     def get_chat_room_title(self):
         # Use English prefix (not translated) for consistency in room categorization
-        return "Task #%(id)s: %(title)s" % {"id": self.id, "title": self.title[:50]}
+        return "Task #%(id)s: %(title)s" % {
+            "id": self.id,
+            "title": self.title[:50]
+        }
 
     def get_chat_room_url(self):
         if self.chat_room_id:
@@ -95,9 +98,7 @@ class Task(models.Model):
     def get_chat_room_pulse_class(self, user):
         """Return CSS class for chat room pulse indicator if there are unseen messages"""
         room = self.chat_room
-        if (room and
-            room.messages.exists() and
-            not room.seen_by.filter(id=user.id).exists()):
+        if (room and room.messages.exists() and not room.seen_by.filter(id=user.id).exists()):
             return "chat-room-pulse"
         return ""
 

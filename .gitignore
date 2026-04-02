@@ -1,7 +1,5 @@
 # Folders
-venv*/
-.venv*/
-myvenv*/
+*venv*/
 backup*/
 _inne_materialy/
 node_modules/
@@ -19,7 +17,8 @@ node_modules/
 
 .directory
 .project
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
 .env
 .python-version

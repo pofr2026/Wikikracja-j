@@ -6,6 +6,7 @@ run migrations and start Daphne.
 With --full: additionally pip install -r requirements.txt, makemigrations for
 listed apps, makemessages/compilemessages and collectstatic.
 """
+# Standard library imports
 import argparse
 import os
 import secrets
@@ -53,8 +54,9 @@ def load_env():
 def db_path():
     try:
         sys.path.insert(0, str(BASE_DIR))
+        # First party imports
         from zzz.settings_base import DATABASES
-        return str(DATABASES["default"]["NAME"])        
+        return str(DATABASES["default"]["NAME"])
     except Exception:
         return str(DB_DEFAULT)
 

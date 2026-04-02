@@ -1,17 +1,26 @@
+# Standard library imports
 import json
 import logging
 import os
+from datetime import datetime
 
-from django.conf import settings
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from .exceptions import ClientError
-from .utils import OnlineUserRegistry, RoomRegistry, HandledMessage, Handlers, helper_method
-from .models import Message, Room, MessageVote, MessageHistory, MessageHistoryEntry, MessageAttachment
-from datetime import datetime as dt
-from django.contrib.auth.models import User
+# Third party imports
 from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db.models import Count, Prefetch, Q
 from django.utils.html import escape
+from push_notifications.models import APNSDevice, GCMDevice, WebPushDevice
+
+# First party imports
+from zzz.utils import get_site_domain
+
+# Local folder imports
+from .exceptions import ClientError
 from .group_messages import format_chat_message
+from .models import Message, MessageAttachment, MessageHistory, MessageHistoryEntry, MessageVote, Room
+from .utils import HandledMessage, Handlers, OnlineUserRegistry, RoomRegistry, helper_method
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +41,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     online_registry = OnlineUserRegistry()
 
     # WebSocket event handlers
-
     async def connect(self):
         """
         Called when the websocket is handshaking as part of initial connection.
@@ -108,7 +116,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         for arg_name in required_args:
             arg = content.get(arg_name)
             if arg is None:
-                return await self.send_json({"error": "DATA_MISSING"})
+                return await self.send_json({
+                    "error": "DATA_MISSING"
+                })
             args[arg_name] = arg
 
         # Add optional parameters if provided
@@ -147,7 +157,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     await self.channel_layer.group_send(group, message)
         except ClientError as e:
             # Catch any errors and send it back
-            await self.send_json({"error": e.code, "__TRACE_ID": trace_id}) # fix exceptions
+            await self.send_json({
+                "error": e.code,
+                "__TRACE_ID": trace_id
+            })  # fix exceptions
 
     #################################################
     # Command helper methods called by receive_json #
@@ -165,7 +178,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         user_id = self.scope["user"].id
         is_allowed = await self.allowed_in_room(room)
         log.info(f"User {user_id} trying to join room {room_id} ({room.title}): allowed={is_allowed}")
-        
+
         if not is_allowed:
             log.warning(f"ACCESS_DENIED: User {user_id} not in room.allowed for room {room_id}")
             raise ClientError("ACCESS_DENIED")
@@ -184,14 +197,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Add them to the group so they get room messages
         await self.channel_layer.group_add(
-            room.group_name,    # room-1
+            room.group_name,  # room-1
             self.channel_name,  # specific.BZcPrnWw!vvvelNWGEgbE
         )
 
         # Instruct their client to finish opening the room
         proxy.send_json({
             "join": str(room.id),  # 1
-            "title": room.title,   # "Room 1"
+            "title": room.title,  # "Room 1"
             "public": room.public,
             "notifications": not await self.has_muted_room(room.id)
         })
@@ -204,7 +217,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             downvotes = msg_data['downvotes']
             edited = msg_data['edited']
             attachments = msg_data['attachments']
-            
+
             try:
                 data = format_chat_message(
                     room_id=room_id,
@@ -219,7 +232,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     date=msg_data['time'],
                     latest_date=msg_data['time'],
                     attachments=attachments,
-            )
+                )
             except TypeError:
                 data = None
                 continue
@@ -227,7 +240,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             to_send.append(await self.format_chat_message_data(data))
 
         if to_send:
-            proxy.send_json({'messages': to_send})
+            proxy.send_json({
+                'messages': to_send
+            })
 
     @handlers.register("leave")
     async def leave_room(self, proxy: HandledMessage, room_id):
@@ -241,7 +256,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.handle_leave_room(room)
 
         # Instruct their client to finish closing the room
-        proxy.send_json({"leave": str(room.id)})
+        proxy.send_json({
+            "leave": str(room.id)
+        })
 
     @handlers.register("send")
     async def send_message_to_room(self, proxy: HandledMessage, room_id, message, is_anonymous, attachments):
@@ -282,8 +299,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # escape HTML - this is second excaping, no need for that
         # message = escape(message)
 
-        msg = Message(sender=user, text=message, room=room,
-                      anonymous=is_anonymous)  # time is added in a models.py
+        msg = Message(sender=user, text=message, room=room, anonymous=is_anonymous)  # time is added in a models.py
         message_id = await self.save_message(msg)
         msg.id = message_id
 
@@ -293,49 +309,45 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         upvotes, downvotes = await self.add_vote("upvote", message_id)
 
         # ...and send to the group info about it
-        proxy.group_send(
-            room.group_name,
-            format_chat_message(
-                room_id=room_id,
-                user_id=sender.id,
-                anonymous=is_anonymous,
-                message=message,
-                message_id=message_id,
-                upvotes=upvotes,
-                downvotes=downvotes,
-                new=True,
-                edited=False,
-                date=msg.time,
-                latest_date=msg.time,
-                attachments=attachments,
-            )
-        )
+        proxy.group_send(room.group_name, format_chat_message(
+            room_id=room_id,
+            user_id=sender.id,
+            anonymous=is_anonymous,
+            message=message,
+            message_id=message_id,
+            upvotes=upvotes,
+            downvotes=downvotes,
+            new=True,
+            edited=False,
+            date=msg.time,
+            latest_date=msg.time,
+            attachments=attachments,
+        ))
 
         # Make rooms appear unseen for online room members, send push for offline
         room_members = await database_sync_to_async(lambda x: list(x.allowed.all()))(room)
-        
+
         # Skip notification processing for sender
         other_members = [m for m in room_members if m.id != sender.id]
         if not other_members:
             return
         # Bulk fetch membership preferences (seen/muted status) for all other members
         other_member_ids = [m.id for m in other_members]
-        
-        online_ids = ChatConsumer.online_registry.get_online()        
+
+        online_ids = ChatConsumer.online_registry.get_online()
         offline_ids = [mid for mid in other_member_ids if mid not in online_ids]
         # Delete seen_by entries for offline users (mark room as unseen), online will be handled later in code
         if offline_ids:
-            await database_sync_to_async(
-                lambda: Room.seen_by.through.objects.filter(room_id=room_id, user_id__in=offline_ids).delete()
-            )()
-        
-        membership_prefs = await database_sync_to_async(
-            lambda: Room.get_membership_preferences_bulk(room_id, other_member_ids)
-        )()
-        
+            await database_sync_to_async(lambda: Room.seen_by.through.objects.filter(room_id=room_id, user_id__in=offline_ids).delete())()
+
+        membership_prefs = await database_sync_to_async(lambda: Room.get_membership_preferences_bulk(room_id, other_member_ids))()
+
         # Process each member with pre-fetched preferences
         for member in other_members:
-            prefs = membership_prefs.get(member.id, {'seen': False, 'muted': True})
+            prefs = membership_prefs.get(member.id, {
+                'seen': False,
+                'muted': True
+            })
             consumer = ChatConsumer.online_registry.get_consumer(member)
 
             # OFFLINE: Send push notification
@@ -361,10 +373,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """ Send list of private chats with online user in it. Sent on request. """
         scoped_user = self.scope['user']
         online_users = ChatConsumer.online_registry.get_online()
-        
+
         # Filter out self from online users
         other_user_ids = [uid for uid in online_users if uid != scoped_user.id]
-        
+
         # Use optimized batch query to get all private rooms at once
         rooms_dict = await self.find_private_rooms_for_user_pairs(scoped_user, other_user_ids)
 
@@ -415,20 +427,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         upvotes, downvotes = await self.add_vote(vote, message_id)
         room = await self.get_room_by_message(message_id)
 
-        proxy.group_send(
-            room.group_name,
-            {
-                "type": "chat.vote",
-                "update_votes": {
-                    "message_id": message_id,
-                    "upvotes": upvotes,
-                    "downvotes": downvotes,
-                    "user_id": self.scope['user'].id,
-                    "vote": vote,
-                    "add": True,
-                }
+        proxy.group_send(room.group_name, {
+            "type": "chat.vote",
+            "update_votes": {
+                "message_id": message_id,
+                "upvotes": upvotes,
+                "downvotes": downvotes,
+                "user_id": self.scope['user'].id,
+                "vote": vote,
+                "add": True,
             }
-        )
+        })
 
     @handlers.register("message-remove-vote")
     async def handle_remove_vote(self, proxy: HandledMessage, vote: str, message_id: int):
@@ -436,20 +445,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         room = await self.get_room_by_message(message_id)
 
-        proxy.group_send(
-            room.group_name,
-            {
-                "type": "chat.vote",
-                "update_votes": {
-                    "message_id": message_id,
-                    "upvotes": upvotes,
-                    "downvotes": downvotes,
-                    "user_id": self.scope['user'].id,
-                    "vote": vote,
-                    "add": False,
-                }
+        proxy.group_send(room.group_name, {
+            "type": "chat.vote",
+            "update_votes": {
+                "message_id": message_id,
+                "upvotes": upvotes,
+                "downvotes": downvotes,
+                "user_id": self.scope['user'].id,
+                "vote": vote,
+                "add": False,
             }
-        )
+        })
 
     @handlers.register("edit-message")
     async def handle_edit_message(self, proxy: HandledMessage, message_id: int, new_message: str = None, attachments: dict = None, removed_attachments: list = None):
@@ -501,27 +507,25 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             timestamp = int(state.time.timestamp()) * 1000
         else:
             # If only attachments changed, use current timestamp
-            from datetime import datetime
             timestamp = int(datetime.now().timestamp()) * 1000
 
-        proxy.group_send(
-            room.group_name,
-            {
-                "type": "chat.edit",
-                "edit_message": {
-                    "message_id": message_id,
-                    "user_id": self.scope['user'].id,
-                    "text": new_message,
-                    "timestamp": timestamp,
-                    "attachments": updated_attachments
-                }
+        proxy.group_send(room.group_name, {
+            "type": "chat.edit",
+            "edit_message": {
+                "message_id": message_id,
+                "user_id": self.scope['user'].id,
+                "text": new_message,
+                "timestamp": timestamp,
+                "attachments": updated_attachments
             }
-        )
+        })
 
     @handlers.register("get-message-history")
     async def send_message_history(self, proxy: HandledMessage, message_id):
         message_states = await self.get_message_states(message_id)
-        proxy.send_json({"message_history": message_states})
+        proxy.send_json({
+            "message_history": message_states
+        })
 
     @handlers.register("toggle-notifications")
     async def toggle_notifications(self, proxy, room_id, enabled):
@@ -539,9 +543,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         updated_user = self.scope['user']
         for room_with_user in await self.find_rooms_with(updated_user):
 
-            user_to_notify = await database_sync_to_async(
-                lambda x: room_with_user.get_other(x)
-            )(updated_user)
+            user_to_notify = await database_sync_to_async(lambda x: room_with_user.get_other(x))(updated_user)
 
             if not ChatConsumer.online_registry.is_online(user_to_notify):
                 continue
@@ -561,7 +563,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             Returns list of rooms that have notifications enabled
         """
         rooms = await self.get_rooms_with_notifications_enabled()
-        proxy.send_json({'rooms': [room.id for room in rooms]})
+        proxy.send_json({
+            'rooms': [room.id for room in rooms]
+        })
 
     @helper_method
     async def send_notification(self, proxy: HandledMessage, message_id):
@@ -604,20 +608,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             body = message.text[:100]
 
             # Build deep link to room (get_site_domain does DB query, needs async wrapper)
-            from zzz.utils import get_site_domain
             domain = await database_sync_to_async(get_site_domain)()
             site_url = f"https://{domain}"
             deep_link = f"{site_url}/chat#room_id={room_id}"
 
             # Send via django-push-notifications
             # Use sync_to_async to call the synchronous push notification API
-            success = await self.send_push_notification_sync(
-                user=user,
-                title=title,
-                body=body,
-                deep_link=deep_link,
-                room_id=room_id
-            )
+            success = await self.send_push_notification_sync(user=user, title=title, body=body, deep_link=deep_link, room_id=room_id)
 
             if success:
                 log.info(f"Push notification sent to user {user.id} for message {message.id}")
@@ -653,32 +650,29 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         This is called via database_sync_to_async.
         """
         try:
-            from push_notifications.models import WebPushDevice, GCMDevice, APNSDevice
-           
             # Track if any notification was sent
             any_sent = False
-                                
+
             # Send to WebPush devices (browser)
             webpush_devices = WebPushDevice.objects.filter(user=user, active=True)
             if webpush_devices.exists():
-                try:                                
+                try:
                     message = json.dumps({
                         "title": title,
                         "body": body,
-                        "icon":'/favicon.ico',
-                        "badge":'/favicon.ico',
+                        "icon": '/favicon.ico',
+                        "badge": '/favicon.ico',
                         "data": {
                             'click_action': deep_link,
                             'room_id': room_id,
-                            }
                         }
-                    )
+                    })
                     # WebPush requires VAPID signing
                     webpush_devices.send_message(message)
                     any_sent = True
                 except Exception as e:
                     log.error(f"WebPush failed for user {user.id}: {e}")
-            
+
             # Send to FCM devices (Android)
             # fcm_devices = GCMDevice.objects.filter(user=user, active=True)
             # if fcm_devices.exists():
@@ -697,7 +691,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             #         any_sent = True
             #     except Exception as e:
             #         log.error(f"FCM failed for user {user.id}: {e}")
-            
+
             # # Send to APNS devices (iOS)
             # apns_devices = APNSDevice.objects.filter(user=user, active=True)
             # if apns_devices.exists():
@@ -718,7 +712,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             #         any_sent = True
             #     except Exception as e:
             #         log.error(f"APNS failed for user {user.id}: {e}")
-            
+
             return any_sent
 
         except Exception as e:
@@ -743,12 +737,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         user = await self.get_user_by_id(event["user_id"])
         vote = await self.get_vote(event['message_id'])
 
-        event_copy = {**event}
-        del event_copy["user_id"] # delete user id to not give away author of anonymous message
+        event_copy = {
+            **event
+        }
+        del event_copy["user_id"]  # delete user id to not give away author of anonymous message
         del event_copy["type"]
 
         return {
-            **event_copy, # copy event
+            **event_copy,  # copy event
             # Override some of fields based on receiver
             'username': 'Anonymous User' if event["anonymous"] else user.username if user else None,
             "new": event["new"] if self.scope['user'] != user else False,
@@ -763,22 +759,30 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def chat_message(self, event):
         """Called when someone has messaged our chat"""
         message = await self.format_chat_message_data(event)
-        await self.send_json({"messages": [message]})
+        await self.send_json({
+            "messages": [message]
+        })
 
     async def chat_vote(self, event):
         """Send vote updates to each interested client."""
         # copy sub dictionary, as same event object is sent to every consumer
-        update = {**event['update_votes']}
+        update = {
+            **event['update_votes']
+        }
         who_triggered = update['user_id']
         # Tell client if it was this client who triggered update to highlight button
         # None if it was not this client, event name string e.g. 'upvote' if it was
         update["your_vote"] = update['vote'] if who_triggered == self.scope["user"].id else None
         del update['vote']
-        await self.send_json({"update_votes": update})
+        await self.send_json({
+            "update_votes": update
+        })
 
     async def chat_edit(self, event):
         edit = event['edit_message']
-        await self.send_json({"edit_message": edit})
+        await self.send_json({
+            "edit_message": edit
+        })
 
     ###########################
     # Sync to async functions #
@@ -786,28 +790,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def get_recent_messages(self, room_id, limit=100):
-        from django.db.models import Count, Q, Prefetch
-        
-        messages = Message.objects.filter(room=room_id).select_related(
-            'sender'
-        ).prefetch_related(
-            Prefetch('attachments', queryset=MessageAttachment.objects.all()),
-            'messagehistory'
-        ).annotate(
-            upvotes=Count('votes', filter=Q(votes__vote='upvote')),
-            downvotes=Count('votes', filter=Q(votes__vote='downvote'))
-        ).order_by('-time')[:limit]
+        messages = Message.objects.filter(room=room_id).select_related('sender').prefetch_related(Prefetch('attachments', queryset=MessageAttachment.objects.all()), 'messagehistory').annotate(upvotes=Count('votes', filter=Q(votes__vote='upvote')), downvotes=Count('votes', filter=Q(votes__vote='downvote'))).order_by('-time')[:limit]
 
         result = []
         for msg in reversed(list(messages)):
             edited = hasattr(msg, 'messagehistory')
-            
+
             attachments = {}
             for attachment in msg.attachments.all():
                 attachments_of_type = attachments.get(attachment.type, [])
                 attachments_of_type.append(attachment.filename)
                 attachments[attachment.type] = attachments_of_type
-            
+
             result.append({
                 'id': msg.id,
                 'sender_id': msg.sender_id,
@@ -820,7 +814,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 'edited': edited,
                 'attachments': attachments,
             })
-        
+
         return result
 
     @database_sync_to_async
@@ -828,7 +822,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         try:
             return Room.objects.get(id=room_id)
         except Room.DoesNotExist:
-            raise ClientError("ROOM_INVALID")
+            raise ClientError("ROOM_INVALID") from None
 
     @database_sync_to_async
     def find_room_with(self, *users):
@@ -843,8 +837,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def find_private_rooms_for_user_pairs(self, user, other_user_ids):
-        """ 
-        Optimized batch version: Find all private 1-to-1 rooms between the given user 
+        """
+        Optimized batch version: Find all private 1-to-1 rooms between the given user
         and multiple other users. Returns a dictionary mapping other_user_id to Room.
         """
         return Room.find_private_rooms_for_user_pairs(user, other_user_ids)
@@ -954,10 +948,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if not history.exists():
             return []
         history = history.first()
-        states = [
-            {"text": state.text, "timestamp": int(state.time.timestamp()) * 1000}
-            for state in history.entries.all().order_by("time")
-        ]
+        states = [{
+            "text": state.text,
+            "timestamp": int(state.time.timestamp()) * 1000
+        } for state in history.entries.all().order_by("time")]
         return states
 
     @database_sync_to_async

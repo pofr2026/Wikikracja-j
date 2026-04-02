@@ -1,13 +1,8 @@
+# Standard library imports
 from datetime import datetime
 
-def format_chat_message(
-        room_id: int, user_id: int,
-        anonymous: bool,
-        message: str, message_id: int,
-        upvotes: int, downvotes: int,
-        new: bool, edited: bool,
-        date: datetime, latest_date: datetime,
-        attachments: dict):
+
+def format_chat_message(room_id: int, user_id: int, anonymous: bool, message: str, message_id: int, upvotes: int, downvotes: int, new: bool, edited: bool, date: datetime, latest_date: datetime, attachments: dict):
     """
     Return formatted dict with message data.
     Used to format messages loaded from DB or messages sent by user to chat

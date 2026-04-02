@@ -1,11 +1,15 @@
+# Standard library imports
 import json
 import logging
 import os
 import threading
+
+# Third party imports
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from django.conf import settings
 from django.core.management import call_command
+from push_notifications.models import WebPushDevice
 
 log = logging.getLogger(__name__)
 
@@ -14,6 +18,7 @@ _db_lock = threading.Lock()
 
 # Global variable to hold the lock file descriptor
 _scheduler_lock_fd = None
+
 
 def start_scheduler():
     """
@@ -27,21 +32,22 @@ def start_scheduler():
     - 2 * * * * -> update_site (every hour)
     """
     global _scheduler_lock_fd
-    
+
     # Try to acquire exclusive lock on scheduler lock file
-    lock_file_path = os.getenv("SCHEDULER_LOCK_FILE",  '/tmp/wikikracja_scheduler.lock')
+    lock_file_path = os.getenv("SCHEDULER_LOCK_FILE", '/tmp/wikikracja_scheduler.lock')
     try:
         _scheduler_lock_fd = open(lock_file_path, 'w')
         if os.name != 'nt':
+            # Standard library imports
             import fcntl
             fcntl.flock(_scheduler_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             log.info(f"Acquired scheduler lock: {lock_file_path}")
     except IOError as e:
         log.info("Scheduler already running in another worker/process - skipping initialization " + str(e))
         return None
-    
+
     scheduler = BackgroundScheduler(timezone=settings.TIME_ZONE)
-    
+
     # Chat messages - runs at 12, 18
     scheduler.add_job(
         run_chat_messages,
@@ -51,7 +57,7 @@ def start_scheduler():
         replace_existing=True,
     )
     log.info("Scheduled job: chat_messages at 12, 18")
-    
+
     # Chat rooms - runs every 5 minutes
     scheduler.add_job(
         run_chat_rooms,
@@ -61,7 +67,7 @@ def start_scheduler():
         replace_existing=True,
     )
     log.info("Scheduled job: chat_rooms every 5 minutes")
-    
+
     # Vote - runs daily at 08:05
     scheduler.add_job(
         run_vote,
@@ -71,7 +77,7 @@ def start_scheduler():
         replace_existing=True,
     )
     log.info("Scheduled job: vote at 08:05 daily")
-    
+
     # Count citizens - runs every 5 minutes
     scheduler.add_job(
         run_count_citizens,
@@ -81,7 +87,7 @@ def start_scheduler():
         replace_existing=True,
     )
     log.info("Scheduled job: count_citizens every 5 minutes")
-    
+
     # Update site - runs every hour
     scheduler.add_job(
         run_update_site,
@@ -91,7 +97,7 @@ def start_scheduler():
         replace_existing=True,
     )
     log.info("Scheduled job: update_site every hour")
-    
+
     meeting_notification_cron = os.getenv('MEETING_NOTIFICATION_CRON', '50 19 * * 3')
     # meeting_notification_cron ='* * * * *'
     scheduler.add_job(
@@ -101,33 +107,34 @@ def start_scheduler():
         name='Send notification about meeteing',
         replace_existing=True,
     )
-    
+
     scheduler.start()
     log.info("APScheduler started successfully")
-    
+
     return scheduler
 
+
 def run_meeting_notification():
-    from push_notifications.models import WebPushDevice
+
     webpush_devices = WebPushDevice.objects.filter(active=True)
     if webpush_devices.exists():
         try:
             message = json.dumps({
                 "title": "Przypomnienie",
                 "body": "Zapraszam na spotkanie",
-                "icon":'/favicon.ico',
-                "badge":'/favicon.ico',                
+                "icon": '/favicon.ico',
+                "badge": '/favicon.ico',
                 "data": {
                     'click_action': "https://rozmowy.wikikracja.pl/otwarte",
                     'room_id': 1,
-                    }
                 }
-            )
+            })
             # WebPush requires VAPID signing
             webpush_devices.send_message(message)
-            log.info(f"Push notification sent")
+            log.info("Push notification sent")
         except Exception as e:
             log.error(f"WebPush failed: {e}")
+
 
 def _run_command(command_name):
     """Generic command runner with error handling"""
@@ -138,25 +145,30 @@ def _run_command(command_name):
     except Exception as e:
         log.error(f"Error running {command_name}: {e}", exc_info=True)
 
+
 def run_chat_messages():
     """Execute chat_messages management command"""
     with _db_lock:
         _run_command('chat_messages')
+
 
 def run_chat_rooms():
     """Execute chat_rooms management command"""
     with _db_lock:
         _run_command('chat_rooms')
 
+
 def run_vote():
     """Execute vote management command"""
     with _db_lock:
         _run_command('vote')
 
+
 def run_count_citizens():
     """Execute count_citizens management command"""
     with _db_lock:
         _run_command('count_citizens')
+
 
 def run_update_site():
     """Execute update_site management command"""

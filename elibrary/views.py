@@ -1,20 +1,17 @@
-from django.http import HttpRequest
-from elibrary.forms import UpdateBookForm
-from elibrary.models import Book
-from django.shortcuts import render
-from django.shortcuts import redirect
-# from django.views.generic import FormView, CreateView, 
-from django.views.generic import UpdateView, DeleteView, DetailView, ListView
-from django.urls import reverse_lazy
-# from django.views import generic
-from django.contrib.auth.models import User
-# from django.core.files.storage import FileSystemStorage
+# Third party imports
 from django.contrib.auth.decorators import login_required
-from PIL import Image
+
 # import os
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
-from django.shortcuts import get_object_or_404
+from django.views.generic import DeleteView, DetailView, ListView, UpdateView
+from PIL import Image
+
+# First party imports
+from elibrary.forms import UpdateBookForm
+from elibrary.models import Book
 
 
 @login_required
@@ -38,7 +35,9 @@ def add(request: HttpRequest):
             return redirect('elibrary:book_list')
     else:
         form = UpdateBookForm()
-    return render(request, 'elibrary/add.html', {'form': form})
+    return render(request, 'elibrary/add.html', {
+        'form': form
+    })
 
 
 class BookList(LoginRequiredMixin, ListView):
@@ -53,7 +52,7 @@ class BookDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'elibrary/book_confirm_delete.html'
     # Files are not physicaly deleted. This needs to be changed
     success_url = reverse_lazy('elibrary:book_list')
-    
+
     def dispatch(self, request, *args, **kwargs):
         # Ensure only the uploader can delete their own book
         obj = self.get_object()
@@ -101,4 +100,6 @@ class BookUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('elibrary:book-detail', kwargs={'pk': self.object.pk})
+        return reverse('elibrary:book-detail', kwargs={
+            'pk': self.object.pk
+        })

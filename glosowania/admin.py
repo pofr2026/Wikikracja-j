@@ -1,8 +1,11 @@
+# Third party imports
 from django.contrib import admin
+
+# First party imports
 from glosowania.models import Decyzja
 
 
-class NoweGlosowanie(admin.ModelAdmin): # type: ignore
+class NoweGlosowanie(admin.ModelAdmin):  # type: ignore
     pass
     # fields = ('tresc',)
     # inlines = [CommentInline]

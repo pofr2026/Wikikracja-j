@@ -1,6 +1,8 @@
+# Third party imports
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+# Local folder imports
 from .models import Task
 
 
@@ -9,10 +11,13 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = ["title", "description"]
         widgets = {
-            "title": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(
-                attrs={"class": "form-control", "rows": 6}
-            ),
+            "title": forms.TextInput(attrs={
+                "class": "form-control"
+            }),
+            "description": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 6
+            }),
         }
 
 
@@ -28,7 +33,9 @@ class TaskStatusForm(forms.ModelForm):
         model = Task
         fields = ["status"]
         widgets = {
-            "status": forms.Select(attrs={"class": "form-control"}),
+            "status": forms.Select(attrs={
+                "class": "form-control"
+            }),
         }
 
     def clean_status(self):

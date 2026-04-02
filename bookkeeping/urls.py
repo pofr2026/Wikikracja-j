@@ -1,23 +1,24 @@
-from django.views.generic.base import RedirectView
+# Third party imports
 from django.urls import path
 
-app_name = 'bookkeeping'
-
+# Local folder imports
 from .views import (
-    CategoryListView,
     CategoryCreateView,
-    CategoryUpdateView,
     CategoryDeleteView,
-    PartnerListView,
+    CategoryListView,
+    CategoryUpdateView,
     PartnerCreateView,
-    PartnerUpdateView,
     PartnerDeleteView,
-    TransactionListView,
-    TransactionCreateView,
-    TransactionUpdateView,
-    TransactionDeleteView,
+    PartnerListView,
+    PartnerUpdateView,
     ReportView,
+    TransactionCreateView,
+    TransactionDeleteView,
+    TransactionListView,
+    TransactionUpdateView,
 )
+
+app_name = 'bookkeeping'
 
 urlpatterns = [
     # Transaction URL (combined incoming/outgoing)
@@ -25,7 +26,7 @@ urlpatterns = [
     path('transaction/create/', TransactionCreateView.as_view(), name='transaction_create'),
     path('transaction/<int:pk>/update/', TransactionUpdateView.as_view(), name='transaction_update'),
     path('transaction/<int:pk>/delete/', TransactionDeleteView.as_view(), name='transaction_delete'),
-    
+
     # Partner URLs
     path('partner/', PartnerListView.as_view(), name='partner_list'),
     path('partner/create/', PartnerCreateView.as_view(), name='partner_create'),
@@ -37,11 +38,11 @@ urlpatterns = [
     path('category/create/', CategoryCreateView.as_view(), name='category_create'),
     path('category/<int:pk>/update/', CategoryUpdateView.as_view(), name='category_update'),
     path('category/<int:pk>/delete/', CategoryDeleteView.as_view(), name='category_delete'),
-    
+
     # Report URLs
     path('report/', ReportView.as_view(), name='report_list'),
     path('report/<int:year>/', ReportView.as_view(), name='report_by_year'),
-    
+
     # Default view
     path('', TransactionListView.as_view(), name='index'),
 ]

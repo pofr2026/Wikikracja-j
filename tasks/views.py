@@ -1,20 +1,22 @@
+# Standard library imports
 import math
+
+# Third party imports
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models, transaction
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DetailView, TemplateView, UpdateView
 
+# Local folder imports
 from .forms import TaskForm, TaskStatusForm
 from .models import Task, TaskEvaluation, TaskVote
-
 
 PRIORITY_LABELS = {
     "critical": gettext_lazy("Critical"),
@@ -68,29 +70,13 @@ class TaskListView(LoginRequiredMixin, TemplateView):
         _assign_priorities(active_tasks)
         rejected_active = [task for task in active_tasks if task.priority_category == "rejected"]
         active_non_rejected = [task for task in active_tasks if task.priority_category != "rejected"]
-        active_with_owner = [
-            task
-            for task in active_non_rejected
-            if task.assigned_to and ((task.votes_up or 0) - (task.votes_down or 0) >= 2)
-        ]
-        awaiting_tasks = [
-            task
-            for task in active_non_rejected
-            if task not in active_with_owner
-        ]
+        active_with_owner = [task for task in active_non_rejected if task.assigned_to and ((task.votes_up or 0) - (task.votes_down or 0) >= 2)]
+        awaiting_tasks = [task for task in active_non_rejected if task not in active_with_owner]
         finished_tasks = list(queryset.exclude(status=Task.Status.ACTIVE))
         _assign_priorities(finished_tasks)
         rejected_tasks = [task for task in finished_tasks if task.priority_category == "rejected"]
-        completed_tasks = [
-            task
-            for task in finished_tasks
-            if task.priority_category != "rejected" and task.status == Task.Status.COMPLETED
-        ]
-        cancelled_tasks = [
-            task
-            for task in finished_tasks
-            if task.priority_category != "rejected" and task.status == Task.Status.CANCELLED
-        ]
+        completed_tasks = [task for task in finished_tasks if task.priority_category != "rejected" and task.status == Task.Status.COMPLETED]
+        cancelled_tasks = [task for task in finished_tasks if task.priority_category != "rejected" and task.status == Task.Status.CANCELLED]
 
         all_tasks = active_tasks + finished_tasks
         if self.request.user.is_authenticated:
@@ -107,15 +93,13 @@ class TaskListView(LoginRequiredMixin, TemplateView):
             for task in all_tasks:
                 task.chat_room_pulse_class = task.get_chat_room_pulse_class(self.request.user)
 
-        context.update(
-            {
-                "active_tasks": active_with_owner,
-                "awaiting_tasks": awaiting_tasks,
-                "finished_completed": completed_tasks,
-                "finished_rejected": rejected_tasks + rejected_active,
-                "finished_cancelled": cancelled_tasks,
-            }
-        )
+        context.update({
+            "active_tasks": active_with_owner,
+            "awaiting_tasks": awaiting_tasks,
+            "finished_completed": completed_tasks,
+            "finished_rejected": rejected_tasks + rejected_active,
+            "finished_cancelled": cancelled_tasks,
+        })
         return context
 
 
@@ -168,27 +152,20 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         task = context["task"]
         if task.is_active:
-            reference_tasks = list(
-                Task.objects.with_metrics()
-                .filter(status=Task.Status.ACTIVE)
-                .order_by("-votes_score", "-updated_at")
-            )
+            reference_tasks = list(Task.objects.with_metrics().filter(status=Task.Status.ACTIVE).order_by("-votes_score", "-updated_at"))
         else:
-            reference_tasks = list(
-                Task.objects.with_metrics()
-                .exclude(status=Task.Status.ACTIVE)
-                .order_by("-votes_score", "-updated_at")
-            )
+            reference_tasks = list(Task.objects.with_metrics().exclude(status=Task.Status.ACTIVE).order_by("-votes_score", "-updated_at"))
         _assign_priorities(reference_tasks)
-        priority_map = {t.id: getattr(t, "priority_label", None) for t in reference_tasks}
+        priority_map = {
+            t.id: getattr(t, "priority_label", None) for t in reference_tasks
+        }
         current_label = getattr(task, "priority_label", None)
         task.priority_label = priority_map.get(task.id, current_label or task.get_status_display())
         priority_map = {
             t.id: (
                 getattr(t, "priority_label", None),
                 getattr(t, "priority_category", None),
-            )
-            for t in reference_tasks
+            ) for t in reference_tasks
         }
         current_label, current_category = priority_map.get(
             task.id,
@@ -199,15 +176,11 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         )
         task.priority_label = current_label or task.get_status_display()
         task.priority_category = current_category
-        context["helping_votes"] = (
-            TaskVote.objects.filter(task=task, value=TaskVote.Value.UP)
-            .select_related("user")
-            .order_by("updated_at", "id")
-        )
+        context["helping_votes"] = (TaskVote.objects.filter(task=task, value=TaskVote.Value.UP).select_related("user").order_by("updated_at", "id"))
         if self.request.user.is_authenticated:
             vote = TaskVote.objects.filter(task=task, user=self.request.user).first()
             context["user_vote_value"] = vote.value if vote else None
-            
+
             # Check if chat room has unseen messages
             task.chat_room_pulse_class = task.get_chat_room_pulse_class(self.request.user)
         context["task"] = task
@@ -226,7 +199,9 @@ class TaskEditView(LoginRequiredMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse_lazy("tasks:detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("tasks:detail", kwargs={
+            "pk": self.object.pk
+        })
 
 
 class TaskCloseView(LoginRequiredMixin, UpdateView):
@@ -244,7 +219,9 @@ class TaskCloseView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("tasks:detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("tasks:detail", kwargs={
+            "pk": self.object.pk
+        })
 
 
 @require_POST
@@ -269,14 +246,10 @@ def vote_task(request: HttpRequest, pk: int) -> HttpResponse:
 
         # Refresh score and set rejected if sum of votes <= -2
         task.refresh_from_db(fields=["status", "updated_at"])
-        metrics = Task.objects.filter(pk=task.pk).annotate(
-            votes_score=Coalesce(Sum("votes__value"), 0)
-        ).values("votes_score", "status").first()
+        metrics = Task.objects.filter(pk=task.pk).annotate(votes_score=Coalesce(Sum("votes__value"), 0)).values("votes_score", "status").first()
         votes_score = metrics["votes_score"] if metrics else 0
         if votes_score <= -2 and task.status != Task.Status.REJECTED:
-            Task.objects.filter(pk=task.pk).update(
-                status=Task.Status.REJECTED, updated_at=models.F("updated_at")
-            )
+            Task.objects.filter(pk=task.pk).update(status=Task.Status.REJECTED, updated_at=models.F("updated_at"))
             task.status = Task.Status.REJECTED
     return redirect(request.POST.get("next") or "tasks:list")
 
@@ -329,9 +302,9 @@ def delete_task(request: HttpRequest, pk: int) -> HttpResponse:
     task = get_object_or_404(Task, pk=pk)
     if task.created_by != request.user:
         return redirect("tasks:detail", pk=pk)
-    
+
     if task.status == Task.Status.COMPLETED:
         return redirect("tasks:detail", pk=pk)
-    
+
     task.delete()
     return redirect("tasks:list")

@@ -1,29 +1,39 @@
+# Standard library imports
 import logging
 import os
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from datetime import datetime as dt
+from datetime import timedelta as td
+
+# Third party imports
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
+from django.contrib.staticfiles import finders
+from django.db.models import Count
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
+# First party imports
+from board.models import Post
+from chat.models import Room
+from elibrary.models import Book
+
 # from glosowania.views import ZliczajWszystko
 from glosowania.models import Decyzja
 from obywatele.models import Uzytkownik
-from board.models import Post
-from elibrary.models import Book
-from django.contrib.auth.models import User
-from django.db.models import Count
-from django.contrib.auth.decorators import login_required
-from django.utils.translation import gettext_lazy as _
-from datetime import datetime as dt
-from datetime import timedelta as td
-from django.utils import timezone
-from django.http import HttpRequest, HttpResponse, JsonResponse
 from tasks.models import Task
-from chat.models import Room
+
+# Local folder imports
 from .forms import RememberLoginForm
 
 log = logging.getLogger(__name__)
+
 
 def home(request: HttpRequest):
     ongoing = Decyzja.objects.filter(status=3).order_by('data_referendum_start')
@@ -31,12 +41,12 @@ def home(request: HttpRequest):
     signatures = Decyzja.objects.filter(status=1).order_by('data_powstania')
 
     # Show active users younger than 30 days
-    people = Uzytkownik.objects.filter(uid__is_active=True, data_przyjecia__gte=dt.today()-td(days=30))
+    people = Uzytkownik.objects.filter(uid__is_active=True, data_przyjecia__gte=dt.today() - td(days=30))
     # Show inactive users
     people_waiting = User.objects.filter(is_active=False)
 
-    posts = Post.objects.filter(updated__gte=timezone.now()-td(days=30)).order_by('-updated')
-    books = Book.objects.filter(uploaded__gte=timezone.now()-td(days=30))
+    posts = Post.objects.filter(updated__gte=timezone.now() - td(days=30)).order_by('-updated')
+    books = Book.objects.filter(uploaded__gte=timezone.now() - td(days=30))
 
     tasks_in_progress = Task.objects.none()
     tasks_new = Task.objects.none()
@@ -53,35 +63,27 @@ def home(request: HttpRequest):
             assigned_to__isnull=True,
         ).order_by('-created_at')[:10]
 
-        rooms_with_new_messages = (
-            Room.objects.filter(allowed=request.user)
-            .exclude(seen_by=request.user)
-            .annotate(messages_count=Count('messages'))
-            .filter(messages_count__gt=0)
-            .order_by('-last_activity')[:10]
-        )
+        rooms_with_new_messages = (Room.objects.filter(allowed=request.user).exclude(seen_by=request.user).annotate(messages_count=Count('messages')).filter(messages_count__gt=0).order_by('-last_activity')[:10])
 
     start = Post.objects.filter(title='Start').order_by('-updated', '-created').first()
     if not start:
         log.info('Add Board Message title Start.')
         start = ''
-        
+
     # data_referendum_start = ZliczajWszystko.kolejka
-    return render(request,
-                  'home/home.html',
-                  {
-                      'ongoing': ongoing,
-                      'upcoming': upcoming,
-                      'signatures': signatures,
-                      'start': start,
-                      'people': people,
-                      'people_waiting': people_waiting,
-                      'posts': posts,
-                      'books': books,
-                      'tasks_in_progress': tasks_in_progress,
-                      'tasks_new': tasks_new,
-                      'rooms_with_new_messages': rooms_with_new_messages,
-                  })
+    return render(request, 'home/home.html', {
+        'ongoing': ongoing,
+        'upcoming': upcoming,
+        'signatures': signatures,
+        'start': start,
+        'people': people,
+        'people_waiting': people_waiting,
+        'posts': posts,
+        'books': books,
+        'tasks_in_progress': tasks_in_progress,
+        'tasks_new': tasks_new,
+        'rooms_with_new_messages': rooms_with_new_messages,
+    })
 
 
 class RememberLoginView(LoginView):
@@ -129,42 +131,39 @@ def manifest(request):
         'background_color': '#000',
         "prefer_related_applications": False,
         "related_applications": [],
-        'icons': [
-            {
-                'src': '/static/home/images/favicon.ico',
-                'sizes': "16x16 32x32 48x48",
-                'type': 'image/x-icon',
-                "purpose": "any"
-            },
-            {
-                'src': '/static/home/images/icon-192.png',
-                'sizes': "192x192",
-                'type': 'image/png',
-                "purpose": "any"
-            },
-            {
-                'src': '/static/home/images/icon-512.png',
-                'sizes': "512x512",
-                'type': 'image/png',
-                "purpose": "any"
-            }
-        ],
+        'icons': [{
+            'src': '/static/home/images/favicon.ico',
+            'sizes': "16x16 32x32 48x48",
+            'type': 'image/x-icon',
+            "purpose": "any"
+        }, {
+            'src': '/static/home/images/icon-192.png',
+            'sizes': "192x192",
+            'type': 'image/png',
+            "purpose": "any"
+        }, {
+            'src': '/static/home/images/icon-512.png',
+            'sizes': "512x512",
+            'type': 'image/png',
+            "purpose": "any"
+        }],
     }
-    return JsonResponse(data, json_dumps_params={'ensure_ascii': False})
+    return JsonResponse(data, json_dumps_params={
+        'ensure_ascii': False
+    })
 
 
 def service_worker(request):
     """Serve the service worker JavaScript file with correct MIME type"""
-    sw_path = os.path.join(settings.BASE_DIR, 'chat', 'static', 'chat','js','sw.js')
-    
+    sw_path = os.path.join(settings.BASE_DIR, 'chat', 'static', 'chat', 'js', 'sw.js')
+
     # For development, serve from staticfiles dirs
     if not os.path.exists(sw_path):
         # Try finding in staticfiles dirs
-        from django.contrib.staticfiles import finders
         sw_path = finders.find('chat/js/sw.js')
         if not sw_path:
             return HttpResponse("Service Worker not found", status=404)
-    
+
     with open(sw_path, 'rb') as f:
         response = HttpResponse(f.read(), content_type='application/javascript')
         response['Cache-Control'] = 'no-cache, no-store, must-revalidate'

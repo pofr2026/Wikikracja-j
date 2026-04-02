@@ -1,7 +1,7 @@
+# Third party imports
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Prefetch
-from django.contrib.auth import get_user_model
-from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
 
@@ -18,7 +18,7 @@ class Room(models.Model):
 
     # For old chats without activity
     archived = models.BooleanField(default=False)
-    
+
     # Room title
     title = models.CharField(max_length=255, unique=True)
 
@@ -53,7 +53,7 @@ class Room(models.Model):
         if self.public:
             # Clip public room names to title_len characters for display
             return self.title[:title_len] if len(self.title) > title_len else self.title
-        
+
         get_user = self.get_other(user)
         if get_user is not None:
             username = get_user.username
@@ -104,35 +104,28 @@ class Room(models.Model):
         Optimized: Find all private 1-to-1 rooms between the given user and multiple other users.
         Returns a dictionary mapping other_user_id to Room object.
         This uses a single database query instead of N queries.
-        
         Args:
             user: The main user
             other_user_ids: List or queryset of user IDs to find rooms with
-            
         Returns:
             dict: {other_user_id: Room} for found rooms
         """
         # Convert to list if needed
         other_user_ids = list(other_user_ids)
-        
+
         if not other_user_ids:
             return {}
-        
+
         # Find all private rooms where:
         # 1. public=False
         # 2. user is in allowed
         # 3. room has exactly 2 users (1-to-1)
         # 4. at least one of the other_user_ids is also in allowed
-        rooms = Room.objects.filter(
-            public=False,
-            allowed=user
-        ).filter(
-            allowed__id__in=other_user_ids
-        ).distinct()
-        
+        rooms = Room.objects.filter(public=False, allowed=user).filter(allowed__id__in=other_user_ids).distinct()
+
         # Build mapping: other_user_id -> room
         result = {}
-        
+
         # We need to check each room to find which other user from the pair it corresponds to
         # Since these are 1-to-1 rooms, there should be exactly one other user besides the main user
         for room in rooms:
@@ -142,7 +135,7 @@ class Room(models.Model):
                 other_user = other_users.first()
                 if other_user.id in other_user_ids:
                     result[other_user.id] = room
-        
+
         return result
 
     @classmethod
@@ -150,11 +143,9 @@ class Room(models.Model):
         """
         Get all room members except a specific user.
         Uses a single query with prefetch_related for efficiency.
-        
         Args:
             room_id: The room ID
             user_id: User ID to exclude
-            
         Returns:
             QuerySet[User]: Allowed users except the excluded one
         """
@@ -170,44 +161,38 @@ class Room(models.Model):
         Bulk fetch membership preferences (seen/muted status) for multiple users in a room.
         Returns dict: {user_id: {'seen': bool, 'muted': bool}}
         Uses 2 queries regardless of number of users.
-        
         Args:
             room_id: The room ID
             user_ids: List of user IDs to check
-            
         Returns:
             dict: Mapping user_id to their preferences
         """
         if not user_ids:
             return {}
-            
+
         # try:
         #     room = cls.objects.get(id=room_id)
         # except cls.DoesNotExist:
         #     return {user_id: {'seen': False, 'muted': False} for user_id in user_ids}
-        
+
         # Get all users with their relationships in 2 queries
-        users = User.objects.filter(id__in=user_ids).prefetch_related(
-            Prefetch('seen_rooms', 
-                    queryset=cls.objects.filter(id=room_id),
-                    to_attr='prefetched_seen_rooms'),
-            Prefetch('muted_rooms',
-                    queryset=cls.objects.filter(id=room_id),
-                    to_attr='prefetched_muted_rooms')
-        )
-        
+        users = User.objects.filter(id__in=user_ids).prefetch_related(Prefetch('seen_rooms', queryset=cls.objects.filter(id=room_id), to_attr='prefetched_seen_rooms'), Prefetch('muted_rooms', queryset=cls.objects.filter(id=room_id), to_attr='prefetched_muted_rooms'))
+
         result = {}
         for user in users:
             result[user.id] = {
                 'seen': bool(user.prefetched_seen_rooms),
                 'muted': bool(user.prefetched_muted_rooms)
             }
-        
+
         # Fill in missing users (shouldn't happen but defensive)
         for user_id in user_ids:
             if user_id not in result:
-                result[user_id] = {'seen': False, 'muted': False}
-                
+                result[user_id] = {
+                    'seen': False,
+                    'muted': False
+                }
+
         return result
 
 
@@ -218,6 +203,7 @@ class Message(models.Model):
     text = models.TextField()
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="messages")
     anonymous = models.BooleanField(default=False)
+
     # TODO: revisions (editMessage(), deleteMessage())
 
     class Meta:

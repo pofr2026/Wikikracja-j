@@ -1,19 +1,25 @@
-from django import forms
-from django.http import HttpRequest
-from obywatele.models import Uzytkownik
-from django.contrib.auth.models import User
-from allauth.account.forms import SignupForm
-from django.utils.translation import gettext_lazy as _
-from django.utils import translation
-from django.conf import settings as s
-from django.core.mail import EmailMessage
+# Standard library imports
+import logging
 import threading
 import time
+
+# Third party imports
+from allauth.account.forms import SignupForm
 from captcha.fields import CaptchaField
+from django import forms
+from django.conf import settings as s
+from django.contrib.auth.models import User
+from django.core.mail import EmailMessage
+from django.http import HttpRequest
+from django.utils import translation
+from django.utils.translation import gettext_lazy as _
+
+# First party imports
+from obywatele.models import Uzytkownik
 from zzz.utils import build_site_url, get_site_domain
 
-import logging
 log = logging.getLogger(__name__)
+
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -40,7 +46,7 @@ class UsernameChangeForm(forms.ModelForm):
 
 class EmailChangeForm(forms.Form):
     """
-    A form that lets a user change set their email while checking for a change in the 
+    A form that lets a user change set their email while checking for a change in the
     e-mail.
     """
     error_messages = {
@@ -98,10 +104,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Uzytkownik
-        fields = ('phone', 'responsibilities', 'city', 'hobby',
-                  'to_give_away', 'to_borrow', 'for_sale', 'i_need',
-                  'skills', 'knowledge', 'want_to_learn', 'business',
-                  'job', 'gift', 'other', 'why')
+        fields = ('phone', 'responsibilities', 'city', 'hobby', 'to_give_away', 'to_borrow', 'for_sale', 'i_need', 'skills', 'knowledge', 'want_to_learn', 'business', 'job', 'gift', 'other', 'why')
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
@@ -153,25 +156,21 @@ class CustomSignupForm(SignupForm):
 
         if existing_user:
             if not existing_user.is_active:
-                raise forms.ValidationError(
-                    _('Your candidacy is still in the queue. Please wait for verification.')
-                )
+                raise forms.ValidationError(_('Your candidacy is still in the queue. Please wait for verification.'))
             else:
-                raise forms.ValidationError(
-                    _('An account with this email address already exists.')
-                )
+                raise forms.ValidationError(_('An account with this email address already exists.'))
 
         return email
- 
+
     def save(self, request: HttpRequest):
         user = super(CustomSignupForm, self).save(request)
         user.email = self.cleaned_data['email']
         if not User.objects.filter(username=user.username).exists():
             user.set_unusable_password()
-        
+
         try:
             user.save()
-        except Exception as e:
+        except Exception as _e:
             # Handle unique constraint violation
             # Delete this user if a duplicate with the same email already exists
             existing = User.objects.filter(email__iexact=user.email).exclude(id=user.id).first()
@@ -187,13 +186,12 @@ class CustomSignupForm(SignupForm):
 
         request.session['onboarding_user_id'] = user.id
         request.session.modified = True
-    
-        HOST = get_site_domain()
+
         log.info(f'EMAIL_DIAG trigger=new_person_requested_membership source=obywatele.forms.CustomSignupForm.save user_id={user.id} email={user.email} username={user.username} subject={_("New person requested membership")}')
-        SendEmailToAll(
-            _('New person requested membership'),
-            _('User %(username)s just requested membership') % {'username': user.username} + '\n' + build_site_url('/obywatele/poczekalnia/')
-        )
+        SendEmailToAll(_('New person requested membership'),
+                       _('User %(username)s just requested membership') % {
+                           'username': user.username
+                       } + '\n' + build_site_url('/obywatele/poczekalnia/'))
         return user
 
 
@@ -213,7 +211,7 @@ def SendEmailToAll(subject, message):
         bcc=recipients,
         subject=f'[{HOST}] {subject}',
         body=f"{message}\n\n{email_footer}",
-        )
+    )
     log.info(f'Sending email to {len(recipients)} recipients; subject: {subject}')
 
     def _send_with_delay():

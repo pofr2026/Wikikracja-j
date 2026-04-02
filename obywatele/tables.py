@@ -1,7 +1,11 @@
+# Third party imports
 import django_tables2 as tables
+
+# First party imports
 from obywatele.models import Uzytkownik
 
 # https://django-tables2.readthedocs.io/en/latest/pages/filtering.html
+
 
 class UzytkownikTable(tables.Table):
     class Meta:

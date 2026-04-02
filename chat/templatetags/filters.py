@@ -1,7 +1,9 @@
+# Third party imports
 from django import template
-
-from chat.models import Room
 from django.db.models import Count
+
+# First party imports
+from chat.models import Room
 
 register = template.Library()
 
@@ -23,18 +25,13 @@ def seen_by(room, user):
 
 @register.filter("has_messages")
 def has_messages(user):
-    rooms_with_new_messages = (
-            Room.objects.filter(allowed=user.id, archived=False)
-            .exclude(seen_by=user.id)
-            .annotate(messages_count=Count('messages'))
-            .filter(messages_count__gt=0)
-        )
+    rooms_with_new_messages = (Room.objects.filter(allowed=user.id, archived=False).exclude(seen_by=user.id).annotate(messages_count=Count('messages')).filter(messages_count__gt=0))
     count = rooms_with_new_messages.count()
     return "chat-has-messages" if count > 0 else ""
-    
+
     # from django.core.cache import cache
     # rooms_with_new_messages = cache.get('has_messages')
-    
+
     # if not rooms_with_new_messages:
     #     rooms_with_new_messages = (
     #             Room.objects.filter(allowed=user.id, archived=False)

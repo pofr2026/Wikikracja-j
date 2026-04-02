@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "batisteo.vscode-django",
+    "charliermarsh.ruff",
+    "eeyore.yapf"
+  ]
+}

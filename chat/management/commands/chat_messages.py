@@ -1,20 +1,25 @@
+# Standard library imports
 import logging
-import pytz
 import threading
-
+from collections import defaultdict
 from datetime import datetime as dt
 from time import sleep
-from django.utils import timezone, translation
-from django.core.management.base import BaseCommand
-from django.core.mail import EmailMessage
+
+# Third party imports
+import pytz
 from django.conf import settings as s
-from chat.models import Room, Message
+from django.core.mail import EmailMessage
+from django.core.management.base import BaseCommand
+from django.utils import translation
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import User
+
+# First party imports
+from chat.models import Message, Room
 from obywatele.models import Uzytkownik
 from zzz.utils import get_site_domain
 
 log = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
     args = ''
@@ -39,7 +44,7 @@ class Command(BaseCommand):
                 body=header + "\n\n" + message + "\n\n" + footer1 + "\n" + footer2,
                 from_email=str(s.DEFAULT_FROM_EMAIL),
                 bcc=recipients,
-                )
+            )
             log.info(f'Sending email to {recipients}; subject: {email_message.subject}')
 
             def _send_with_delay():
@@ -66,7 +71,6 @@ class Command(BaseCommand):
                 continue
 
             # Group messages by room
-            from collections import defaultdict
             messages_by_room = defaultdict(list)
             for m in message_list.order_by('room', 'time'):
                 messages_by_room[m.room].append(m)
@@ -78,20 +82,22 @@ class Command(BaseCommand):
                 room_name = room.displayed_name(u.uid)
                 b.append(f"## {room_name}: {room_link}")
                 b.append("")
-                
+
                 # Add messages without date/time/room
                 for m in messages:
                     log.info(f'Found messages for user {u.uid}: {m.text}')
                     if m.anonymous:
                         m.sender = None
                     b.append(f'{m.sender}: {m.text}')
-                
+
                 b.append("")  # Empty line between rooms
 
             body = "\n".join(b)
             if body:
-                SendEmail([u.uid.email,], body)
-            u.last_broadcast = dt.now(pytz.timezone('Europe/Warsaw')) # TODO: Wziąć to z settings.py
+                SendEmail([
+                    u.uid.email,
+                ], body)
+            u.last_broadcast = dt.now(pytz.timezone('Europe/Warsaw'))  # TODO: Wziąć to z settings.py
             u.save()
 
         for t in threads:

@@ -1,10 +1,14 @@
+# Standard library imports
+import calendar
+from datetime import timedelta
+from datetime import timezone as dt_timezone
+from urllib.parse import urlencode
+
+# Third party imports
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from datetime import timedelta, timezone as dt_timezone
-import calendar
-from urllib.parse import urlencode
 
 
 class Event(models.Model):
@@ -16,7 +20,7 @@ class Event(models.Model):
         ('monthly_ordinal', _('Monthly (specific weekday)')),
         ('yearly', _('Yearly')),
     ]
-    
+
     ORDINAL_CHOICES = [
         (1, _('First')),
         (2, _('Second')),
@@ -24,7 +28,7 @@ class Event(models.Model):
         (4, _('Fourth')),
         (-1, _('Last')),
     ]
-    
+
     WEEKDAY_CHOICES = [
         (0, _('Monday')),
         (1, _('Tuesday')),
@@ -34,69 +38,18 @@ class Event(models.Model):
         (5, _('Saturday')),
         (6, _('Sunday')),
     ]
-    
-    title = models.CharField(
-        max_length=200,
-        verbose_name=_('Title'),
-        help_text=_('Enter a descriptive name for the event')
-    )
-    description = models.TextField(
-        blank=True,
-        verbose_name=_('Description'),
-        help_text=_('Optional description of the event')
-    )
-    link = models.URLField(
-        blank=True,
-        verbose_name=_('Link do spotkania'),
-        help_text=_('Optional link to event details, registration, or location')
-    )
-    place = models.CharField(
-        max_length=200,
-        blank=True,
-        verbose_name=_('Place'),
-        help_text=_('Optional event location or venue')
-    )
-    start_date = models.DateTimeField(
-        verbose_name=_('Start Date'),
-        help_text=_('When does the event start?')
-    )
-    end_date = models.DateTimeField(
-        blank=True,
-        null=True,
-        verbose_name=_('End Date'),
-        help_text=_('When does the event end? (optional)')
-    )
-    frequency = models.CharField(
-        max_length=20,
-        choices=FREQUENCY_CHOICES,
-        default='once',
-        verbose_name=_('Frequency'),
-        help_text=_('How often does this event repeat?')
-    )
-    monthly_ordinal = models.IntegerField(
-        blank=True,
-        null=True,
-        choices=ORDINAL_CHOICES,
-        verbose_name=_('Week of month'),
-        help_text=_('For monthly ordinal events: which week? (e.g., First, Second, Last)')
-    )
-    monthly_weekday = models.IntegerField(
-        blank=True,
-        null=True,
-        choices=WEEKDAY_CHOICES,
-        verbose_name=_('Day of week'),
-        help_text=_('For monthly ordinal events: which day of the week? (e.g., Monday, Tuesday)')
-    )
-    is_active = models.BooleanField(
-        default=True,
-        verbose_name=_('Active'),
-        help_text=_('Uncheck to disable this event')
-    )
-    is_public = models.BooleanField(
-        default=True,
-        verbose_name=_('Public'),
-        help_text=_('Public events are visible to everyone. Private events are only visible to logged-in users.')
-    )
+
+    title = models.CharField(max_length=200, verbose_name=_('Title'), help_text=_('Enter a descriptive name for the event'))
+    description = models.TextField(blank=True, verbose_name=_('Description'), help_text=_('Optional description of the event'))
+    link = models.URLField(blank=True, verbose_name=_('Link do spotkania'), help_text=_('Optional link to event details, registration, or location'))
+    place = models.CharField(max_length=200, blank=True, verbose_name=_('Place'), help_text=_('Optional event location or venue'))
+    start_date = models.DateTimeField(verbose_name=_('Start Date'), help_text=_('When does the event start?'))
+    end_date = models.DateTimeField(blank=True, null=True, verbose_name=_('End Date'), help_text=_('When does the event end? (optional)'))
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default='once', verbose_name=_('Frequency'), help_text=_('How often does this event repeat?'))
+    monthly_ordinal = models.IntegerField(blank=True, null=True, choices=ORDINAL_CHOICES, verbose_name=_('Week of month'), help_text=_('For monthly ordinal events: which week? (e.g., First, Second, Last)'))
+    monthly_weekday = models.IntegerField(blank=True, null=True, choices=WEEKDAY_CHOICES, verbose_name=_('Day of week'), help_text=_('For monthly ordinal events: which day of the week? (e.g., Monday, Tuesday)'))
+    is_active = models.BooleanField(default=True, verbose_name=_('Active'), help_text=_('Uncheck to disable this event'))
+    is_public = models.BooleanField(default=True, verbose_name=_('Public'), help_text=_('Public events are visible to everyone. Private events are only visible to logged-in users.'))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -109,24 +62,24 @@ class Event(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('events:detail', kwargs={'pk': self.pk})
+        return reverse('events:detail', kwargs={
+            'pk': self.pk
+        })
 
     def _get_nth_weekday_of_month(self, year, month, weekday, nth):
         """
         Get the date of the nth occurrence of a weekday in a month.
-        
         Args:
             year: Year
             month: Month (1-12)
             weekday: Weekday (0=Monday, 6=Sunday)
             nth: Which occurrence (1=first, 2=second, etc., -1=last)
-        
         Returns:
             datetime object or None if invalid
         """
         # Get all days in the month
         month_calendar = calendar.monthcalendar(year, month)
-        
+
         if nth == -1:
             # Get the last occurrence
             for week in reversed(month_calendar):
@@ -146,17 +99,17 @@ class Event(models.Model):
                         # Combine with the time from start_date
                         result = self.start_date.replace(year=year, month=month, day=day)
                         return result
-        
+
         return None
 
     def get_next_occurrence(self):
         """Get the next occurrence of this event based on frequency"""
         if self.frequency == 'once':
             return self.start_date if self.start_date > timezone.now() else None
-        
+
         now = timezone.now()
         next_date = self.start_date
-        
+
         if self.frequency == 'daily':
             while next_date <= now:
                 next_date += timedelta(days=1)
@@ -173,34 +126,32 @@ class Event(models.Model):
             # For monthly ordinal, we need to find the next occurrence of the specified weekday
             if self.monthly_ordinal is None or self.monthly_weekday is None:
                 return None
-            
+
             # Start from the current month
             year = now.year
             month = now.month
-            
+
             # Find the next occurrence
             while True:
-                next_date = self._get_nth_weekday_of_month(
-                    year, month, self.monthly_weekday, self.monthly_ordinal
-                )
-                
+                next_date = self._get_nth_weekday_of_month(year, month, self.monthly_weekday, self.monthly_ordinal)
+
                 if next_date and next_date > now:
                     break
-                
+
                 # Move to next month
                 if month == 12:
                     month = 1
                     year += 1
                 else:
                     month += 1
-                
+
                 # Safety check to avoid infinite loop
                 if year > now.year + 10:
                     return None
         elif self.frequency == 'yearly':
             while next_date <= now:
                 next_date = next_date.replace(year=next_date.year + 1)
-        
+
         return next_date
 
     def is_upcoming(self):
@@ -208,27 +159,26 @@ class Event(models.Model):
         if not self.is_active:
             return False
         return self.get_next_occurrence() is not None
-    
+
     @property
     def google_calendar_url(self):
         """
         Generate a Google Calendar URL for this event.
-        
         Returns:
             URL string for adding event to Google Calendar
         """
         # Use the original start date for the event
         event_date = self.start_date
-        
+
         # Make sure we're working with timezone-aware datetime
         if timezone.is_naive(event_date):
             event_date = timezone.make_aware(event_date)
-        
+
         # Format dates for Google Calendar (yyyyMMddTHHmmssZ format)
         # Convert to UTC for consistency
         event_date_utc = event_date.astimezone(dt_timezone.utc)
         start_dt = event_date_utc.strftime('%Y%m%dT%H%M%SZ')
-        
+
         # Calculate end date
         if self.end_date:
             # Use the time difference from original start/end
@@ -243,15 +193,15 @@ class Event(models.Model):
             end_date = event_date + timedelta(hours=1)
             end_date_utc = end_date.astimezone(dt_timezone.utc)
             end_dt = end_date_utc.strftime('%Y%m%dT%H%M%SZ')
-        
+
         # Build description with link if available
         description = self.description or ''
         if self.link:
             description = f"{description}\n\nLink: {self.link}" if description else f"Link: {self.link}"
-        
+
         # Build location
         location = self.place if self.place else ''
-        
+
         # Build recurrence rule for Google Calendar
         recurrence = None
         if self.frequency == 'daily':
@@ -268,14 +218,14 @@ class Event(models.Model):
             recurrence = f'RRULE:FREQ=MONTHLY;BYDAY={ordinal}{weekday_str}'
         elif self.frequency == 'yearly':
             recurrence = 'RRULE:FREQ=YEARLY'
-        
+
         # Build parameters for new Google Calendar URL format
         params = {
             'action': 'TEMPLATE',
             'text': self.title,
             'dates': f'{start_dt}/{end_dt}',
         }
-        
+
         # Only add non-empty optional parameters
         if description:
             params['details'] = description
@@ -283,7 +233,7 @@ class Event(models.Model):
             params['location'] = location
         if recurrence:
             params['recur'] = recurrence
-        
+
         # Generate URL - use the new calendar.google.com/calendar/u/0/r/eventedit format
         base_url = 'https://calendar.google.com/calendar/render'
         return f'{base_url}?{urlencode(params)}'

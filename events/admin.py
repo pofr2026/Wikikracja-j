@@ -1,4 +1,7 @@
+# Third party imports
 from django.contrib import admin
+
+# Local folder imports
 from .models import Event
 
 
@@ -9,7 +12,7 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = ['title', 'description', 'place']
     date_hierarchy = 'start_date'
     ordering = ['start_date']
-    
+
     fieldsets = (
         (None, {
             'fields': ('title', 'description')
@@ -25,9 +28,9 @@ class EventAdmin(admin.ModelAdmin):
             'fields': ('is_active', 'is_public')
         }),
     )
-    
+
     readonly_fields = ('created_at', 'updated_at')
-    
+
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
             return self.readonly_fields + ('created_at', 'updated_at')

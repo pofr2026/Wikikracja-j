@@ -14,8 +14,11 @@ Scheduled Tasks:
 The scheduler only starts when SCHEDULER_ENABLED=true is set in the environment
 or when RUN_MAIN=true (Django development server reload detection).
 """
+# Standard library imports
 import logging
 import os
+
+# Third party imports
 from django.apps import AppConfig
 
 log = logging.getLogger(__name__)
@@ -34,6 +37,7 @@ class SchedulerConfig(AppConfig):
         # and not during migrations or other special operations
         if os.environ.get('RUN_MAIN') == 'true' or os.environ.get('SCHEDULER_ENABLED') == 'true':
             try:
+                # First party imports
                 from zzz.scheduler import start_scheduler
                 start_scheduler()
                 log.info("APScheduler initialized from SchedulerConfig.ready()")

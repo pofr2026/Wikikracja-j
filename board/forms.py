@@ -1,13 +1,14 @@
+# Third party imports
 from django import forms
-from tinymce.widgets import TinyMCE
 from django.utils.translation import gettext_lazy as _
+from tinymce.widgets import TinyMCE
+
+# Local folder imports
 from .models import Post
 
+
 class PostForm(forms.ModelForm):
-    text = forms.CharField(
-        widget=TinyMCE(),
-        label=_("Text")
-    )
+    text = forms.CharField(widget=TinyMCE(), label=_("Text"))
 
     class Meta:
         model = Post

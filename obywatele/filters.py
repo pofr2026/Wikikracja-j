@@ -1,10 +1,11 @@
+# Third party imports
 import django_filters
-# from django.core.validators import RegexValidator
-# from django.db import models
-# from django.utils.translation import gettext_lazy as _
+
+# First party imports
 from obywatele.models import Uzytkownik
 
 # https://django-filter.readthedocs.io/en/main/guide/usage.html
+
 
 class UzytkownikFilter(django_filters.FilterSet):
     # city = django_filters.CharFilter(method='custom_filter')
@@ -22,7 +23,6 @@ class UzytkownikFilter(django_filters.FilterSet):
     job = django_filters.CharFilter(lookup_expr='icontains')
     other = django_filters.CharFilter(lookup_expr='icontains')
     why = django_filters.CharFilter(lookup_expr='icontains')
-
 
     class Meta:
         model = Uzytkownik

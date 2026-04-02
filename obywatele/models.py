@@ -1,15 +1,18 @@
+# Future imports
 from __future__ import unicode_literals
 
+# Standard library imports
+from datetime import datetime
+
+# Third party imports
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth import get_user_model
+from django.utils.timezone import make_aware
 from django.utils.translation import gettext_lazy as _
 
 User = get_user_model()
-from django.utils.timezone import make_aware
-from datetime import datetime
-import pytz
 
 
 class Uzytkownik(models.Model):
@@ -18,12 +21,13 @@ class Uzytkownik(models.Model):
         EMAIL_CONFIRMED = 'email_confirmed', _('Email confirmed')
         FORM_COMPLETED = 'form_completed', _('Form completed')
 
-    uid = models.OneToOneField(User,
-                               on_delete=models.CASCADE,
-                               editable=False,
-                               null=True,
-                               verbose_name=_('Username'),
-                               )
+    uid = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        editable=False,
+        null=True,
+        verbose_name=_('Username'),
+    )
 
     reputation = models.SmallIntegerField(null=True, default=0)
     onboarding_status = models.CharField(
@@ -33,7 +37,7 @@ class Uzytkownik(models.Model):
     )
     polecajacy = models.CharField(editable=False, null=True, max_length=64)
     data_przyjecia = models.DateField(null=True, editable=False)
-    
+
     phone = models.CharField(null=True, blank=True, max_length=72, help_text=_('Preferred communicator or phone number'), verbose_name=_('Phone number'))
     city = models.CharField(null=True, blank=True, max_length=72, help_text=_('Where one spend most of their time'), verbose_name=_('City'))
     responsibilities = models.CharField(null=True, blank=True, max_length=622, help_text=_('Tasks performed in our group'), verbose_name=_('Responsibilities'))
@@ -52,7 +56,7 @@ class Uzytkownik(models.Model):
     why = models.CharField(null=True, blank=True, max_length=662, help_text=_("In your own words please explain why do you want join our group"), verbose_name=_("Why do you want to join?"))
 
     # Last broadcast time
-    last_broadcast = models.DateTimeField(default=make_aware(datetime(1900,1,1)))
+    last_broadcast = models.DateTimeField(default=make_aware(datetime(1900, 1, 1)))
 
     class Meta:
         verbose_name = _("Citizen")
@@ -72,12 +76,8 @@ class Uzytkownik(models.Model):
 
 
 class Rate(models.Model):
-    kandydat = models.ForeignKey(Uzytkownik,
-                                 on_delete=models.CASCADE,
-                                 related_name='kandydat')
-    obywatel = models.ForeignKey(Uzytkownik,
-                                 on_delete=models.CASCADE,
-                                 related_name='obywatel')
+    kandydat = models.ForeignKey(Uzytkownik, on_delete=models.CASCADE, related_name='kandydat')
+    obywatel = models.ForeignKey(Uzytkownik, on_delete=models.CASCADE, related_name='obywatel')
     rate = models.SmallIntegerField(null=True, default=0)
 
     class Meta:

@@ -1,5 +1,8 @@
+# Third party imports
 from django import forms
-from .models import Decyzja, Argument
+
+# Local folder imports
+from .models import Argument, Decyzja
 
 
 class DecyzjaForm(forms.ModelForm):
@@ -16,5 +19,7 @@ class ArgumentForm(forms.ModelForm):
         model = Argument
         fields = ('argument_type', 'content')
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 3}),
+            'content': forms.Textarea(attrs={
+                'rows': 3
+            }),
         }

@@ -1,3 +1,4 @@
+# Third party imports
 from django.apps import AppConfig
 
 
@@ -6,4 +7,5 @@ class TasksConfig(AppConfig):
     name = "tasks"
 
     def ready(self):
-        import tasks.signals
+        # First party imports
+        import tasks.signals  # noqa: F401

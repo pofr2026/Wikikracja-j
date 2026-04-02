@@ -1,10 +1,12 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+# Third party imports
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.urls import reverse_lazy
 from django.utils import timezone
-from .models import Event
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+
+# Local folder imports
 from .forms import EventForm
+from .models import Event
 
 
 class EventListView(ListView):
@@ -15,13 +17,13 @@ class EventListView(ListView):
 
     def get_queryset(self):
         queryset = Event.objects.filter(is_active=True)
-        
+
         # If user is not authenticated, show only public events
         if not self.request.user.is_authenticated:
             queryset = queryset.filter(is_public=True)
-        
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['now'] = timezone.now()
@@ -32,14 +34,14 @@ class EventDetailView(DetailView):
     model = Event
     template_name = 'events/event_detail.html'
     context_object_name = 'event'
-    
+
     def get_queryset(self):
         queryset = super().get_queryset()
-        
+
         # If user is not authenticated, show only public events
         if not self.request.user.is_authenticated:
             queryset = queryset.filter(is_public=True)
-        
+
         return queryset
 
 

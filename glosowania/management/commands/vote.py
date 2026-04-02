@@ -1,27 +1,28 @@
-from django.core.management.base import BaseCommand
+# Standard library imports
+import logging
 import os
-import django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zzz.settings")
-django.setup()
-from django.conf import settings as s
+import re
+import time
 from datetime import datetime, timedelta
-from glosowania.models import Decyzja
-from django.utils.translation import gettext_lazy as _
-from django.core.mail import EmailMessage
+
+# Third party imports
+import django
 from django.conf import settings as s
 from django.contrib.auth.models import User
-from chat.models import Room
-import logging
-import time
+from django.core.mail import EmailMessage
+from django.core.management.base import BaseCommand
 from django.utils import translation
-# from django.contrib import messages
-# from django.shortcuts import redirect
-# from django.http import HttpResponse
-# from django.contrib.sites.models import Site
-import re
+from django.utils.translation import gettext_lazy as _
+
+# First party imports
+from chat.models import Room
+from glosowania.models import Decyzja
 from zzz.utils import get_site_domain
 
 log = logging.getLogger(__name__)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zzz.settings")
+django.setup()
+
 
 class Command(BaseCommand):
     args = ''
@@ -41,7 +42,7 @@ class Command(BaseCommand):
 
         def zliczaj_wszystko():
 
-            log.info(f'zliczaj_wszystko() run ok')
+            log.info('zliczaj_wszystko() run ok')
 
             # POPRZEDNIO:
             # propozycja = 1
@@ -79,9 +80,9 @@ class Command(BaseCommand):
             starting_now = _('is starting now')
             time_to_vote = _('It is time to vote on proposal no.')
             to = _('to')
-            was = _('was approved')
+            _was = _('was approved')
             was_removed = _('and was removed from queue')
-            
+
             for i in decyzje:
                 # Nie ma sensu procesowoać zatwierdzonych i odrzuconych więc odrzućmy je na starcie:
                 if i.status == proposition or i.status == discussion or i.status == referendum:
@@ -97,7 +98,7 @@ class Command(BaseCommand):
                                 if days_since_modification < 2:
                                     log.info(f"Proposition {i.id} has enough signatures but waiting for 2-day freeze period (modified {days_since_modification} days ago).")
                                     continue
-                            
+
                             i.status = discussion
                             i.path = str(i.path) + " -> " + _("Signed") + " -> " + _("Discussion")
                             i.data_zebrania_podpisow = dzisiaj
@@ -105,10 +106,7 @@ class Command(BaseCommand):
                             i.data_referendum_stop = i.data_referendum_start + timedelta(days=s.CZAS_TRWANIA_REFERENDUM)
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                            SendEmail(
-                                f"{prop_number} {i.id} {approved_for}", 
-                                f"{prop_number} {i.id} {gathered} {i.data_referendum_start} {to} {i.data_referendum_stop}\n{click}: {details_url}"
-                            )
+                            SendEmail(f"{prop_number} {i.id} {approved_for}", f"{prop_number} {i.id} {gathered} {i.data_referendum_start} {to} {i.data_referendum_stop}\n{click}: {details_url}")
                             log.info(f"Proposition {i.id} changed status from PROPOSITION to DISCUSSION.")
                             continue
                     # FROM PROPOSITION TO REJECTED
@@ -117,10 +115,7 @@ class Command(BaseCommand):
                             i.path = str(i.path) + " -> " + _("Not enough signatures")
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                            SendEmail(
-                                f"{prop_number} {i.id} {not_gathered}",
-                                f"{prop_number} {i.id} {not_gathered} {was_removed}. {feel_free}\n{click}: {details_url}"
-                            )
+                            SendEmail(f"{prop_number} {i.id} {not_gathered}", f"{prop_number} {i.id} {not_gathered} {was_removed}. {feel_free}\n{click}: {details_url}")
                             log.info(f"Proposition {i.id} changed status from PROPOSITION to NOT_INTRESTED.")
                             continue
 
@@ -130,20 +125,14 @@ class Command(BaseCommand):
                         i.path = i.path + " -> " + _("Referendum")
                         i.save()
                         details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                        SendEmail(
-                            f"{ref_num} {i.id} {starting_now}",
-                            f"{time_to_vote} {i.id}\n{ends_at} {i.data_referendum_stop}\n{click}: {details_url}"
-                        )
+                        SendEmail(f"{ref_num} {i.id} {starting_now}", f"{time_to_vote} {i.id}\n{ends_at} {i.data_referendum_stop}\n{click}: {details_url}")
                         log.info(f"Proposition {i.id} changed status from DISCUSSION to REFERENDUM.")
                         continue
 
                     # LAST DAY OF REFERENDUM REMINDER
                     if i.status == referendum and i.data_referendum_stop == dzisiaj:
                         details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                        SendEmail(
-                            f"{last_day} {i.id}",
-                            f"{last_day_reminder}\n{ref_num} {i.id} {ends_at} {i.data_referendum_stop}\n{click}: {details_url}"
-                        )
+                        SendEmail(f"{last_day} {i.id}", f"{last_day_reminder}\n{ref_num} {i.id} {ends_at} {i.data_referendum_stop}\n{click}: {details_url}")
                         log.info(f"Last day reminder sent for referendum {i.id}.")
                         continue
 
@@ -162,10 +151,7 @@ class Command(BaseCommand):
                                     log.info(f"Proposition {z} was rejected in {i.id}")
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                            SendEmail(
-                                f"{prop_number} {i.id} {in_effect}",
-                                f"{prop_number} {i.id} {became}\n{click}: {details_url}"
-                            )
+                            SendEmail(f"{prop_number} {i.id} {in_effect}", f"{prop_number} {i.id} {became}\n{click}: {details_url}")
                             log.info("Proposition {i.id} changed status from REFERENDUM to VALID.")
                             continue
                         else:
@@ -173,10 +159,7 @@ class Command(BaseCommand):
                             i.path = i.path + " -> " + _("Rejected")
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                            SendEmail(
-                                f"{prop_number} {i.id} {was_rejected}",
-                                f"{prop_number} {i.id} {rejected_in}\n{feel_free}\n{click}: {details_url}"
-                            )
+                            SendEmail(f"{prop_number} {i.id} {was_rejected}", f"{prop_number} {i.id} {rejected_in}\n{feel_free}\n{click}: {details_url}")
                             log.info("Proposition {i.id} changed status from REFERENDUM to REJECTED.")
                             continue
 
@@ -189,12 +172,12 @@ class Command(BaseCommand):
             email_footer = _("Why you received this email? Here is explanation: {url}").format(url=INFO_URL)
             email_message = EmailMessage(
                 from_email=str(s.DEFAULT_FROM_EMAIL),
-                bcc = list(User.objects.filter(is_active=True).values_list('email', flat=True)),
+                bcc=list(User.objects.filter(is_active=True).values_list('email', flat=True)),
                 subject=f'[{HOST}] {subject}',
                 body=message + "\n\n" + email_footer,
-                )
+            )
             log.warning(f"subject: {subject} \n message: {message}")
-            
+
             time.sleep(s.EMAIL_SEND_DELAY_SECONDS)
             email_message.send()
 
@@ -207,7 +190,7 @@ class Command(BaseCommand):
         for i in active_users:
             for j in active_users:
                 # User A will not talk to user A
-                if i == j:  
+                if i == j:
                     continue
                 # Avoid A-B B-A because it is the same thing
                 t = sorted([i.username, j.username])
@@ -220,11 +203,13 @@ class Command(BaseCommand):
                     existing_room.save()
                 # if not - create new room (use get_or_create to handle race conditions)
                 else:
-                    r, created = Room.objects.get_or_create(
-                        title=title,
-                        defaults={'public': False}
-                    )
+                    r, created = Room.objects.get_or_create(title=title, defaults={
+                        'public': False
+                    })
                     if created or r.allowed.count() != 2:
-                        r.allowed.set((i, j,))
+                        r.allowed.set((
+                            i,
+                            j,
+                        ))
 
-        log.info(f'vote.py counted all votes')
+        log.info('vote.py counted all votes')

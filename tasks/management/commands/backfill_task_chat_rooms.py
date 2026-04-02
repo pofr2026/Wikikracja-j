@@ -1,5 +1,10 @@
+# Standard library imports
 import logging
+
+# Third party imports
 from django.core.management.base import BaseCommand
+
+# First party imports
 from chat.models import Room
 from tasks.models import Task
 
@@ -25,6 +30,4 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"  No room found for task #{task.id}: '{title}'"))
                 missing += 1
 
-        self.stdout.write(self.style.SUCCESS(
-            f"Done. Linked: {linked}, no room found: {missing}"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"Done. Linked: {linked}, no room found: {missing}"))
