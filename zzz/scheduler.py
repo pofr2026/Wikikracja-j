@@ -98,7 +98,7 @@ def start_scheduler():
     )
     log.info("Scheduled job: update_site every hour")
 
-    meeting_notification_cron = os.getenv('MEETING_NOTIFICATION_CRON', '50 19 * * 3')
+    meeting_notification_cron = os.getenv('MEETING_NOTIFICATION_CRON', '50 19 * * 2')
     # meeting_notification_cron ='* * * * *'
     scheduler.add_job(
         run_meeting_notification,
