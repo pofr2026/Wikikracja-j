@@ -76,16 +76,18 @@ def population():
 
 
 def required_reputation():
+    if population() <= s.ACCEPTANCE:
+        return 0
     if population() <= s.ACCEPTANCE * 2:
         return population() - s.ACCEPTANCE
     if population() > s.ACCEPTANCE * 2:
         return s.ACCEPTANCE
     '''
     Liczba Próg
-    L    L-P
-    1 -> 1-3=-2
-    2 -> 2-3=-1
-    3 -> 3-3=+0
+    Pop  P-A=Rep
+    1 -> 1-3=0
+    2 -> 2-3=0
+    3 -> 3-3=0
     4 -> 4-3=+1
     5 -> 5-3=+2
     6 -> 6-3=+3
