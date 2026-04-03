@@ -14,6 +14,16 @@ def name_for(room, user):
     return room.displayed_name(user)
 
 
+@register.filter('is_seen_by')
+def is_seen_by(room, user):
+    """Returns True if the room has been seen by the user"""
+    # Use pre-computed annotations if available
+    if hasattr(room, 'is_seen') and hasattr(room, 'messages_count'):
+        return "true" if (room.is_seen or room.messages_count == 0) else "false"
+    # Fallback to direct query
+    return "true" if (room.messages.all().count() == 0 or room.seen_by.filter(id=user.id).exists()) else "false"
+
+
 @register.filter('seen_by')
 def seen_by(room, user):
     # Use pre-computed annotations from the view if available
@@ -21,6 +31,12 @@ def seen_by(room, user):
         return "" if (room.is_seen or room.messages_count == 0) else "room-not-seen"
     # Fallback to original logic if annotations not available
     return "" if (room.messages.all().count() == 0 or room.seen_by.filter(id=user.id).exists()) else "room-not-seen"
+
+
+@register.filter('is_muted_by')
+def is_muted_by(room, user):
+    """Returns True if the room is muted by the user"""
+    return room.muted_by.filter(id=user.id).exists()
 
 
 @register.filter("has_messages")
@@ -42,9 +58,3 @@ def has_messages(user):
     #     cache.set("has_messages", rooms_with_new_messages, timeout=60)
     # count = rooms_with_new_messages.count()
     # return "chat-has-messages" if count > 0 else ""
-
-
-@register.filter('is_muted_by')
-def is_muted_by(room, user):
-    """Returns True if the room is muted by the user"""
-    return room.muted_by.filter(id=user.id).exists()

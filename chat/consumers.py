@@ -405,6 +405,20 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if not await self.room_is_seen(room):
             await self.see_room(room)
 
+    @handlers.register("room-unseen")
+    async def handle_unseen_room(self, proxy: HandledMessage, room_id):
+        """ Handle user marking room as unread/unseen """
+        try:
+            room = await self.get_room(room_id)
+        except ClientError:
+            return
+
+        await self.unsee_room(room)
+        # Notify the client that the room is now unseen
+        # proxy.send_json({
+        #     "unsee_room": room_id,
+        # })
+
     @handlers.register("message-add-vote")
     async def handle_add_vote(self, proxy: HandledMessage, vote: str, message_id: int):
         existing_vote = await self.get_vote(message_id)

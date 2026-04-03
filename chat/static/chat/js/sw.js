@@ -35,8 +35,6 @@ self.addEventListener('install', (event) => {
                     // '/static/chat/js/ejs.min.js',
                     // '/static/chat/js/utility.js',
                     // '/favicon.ico',
-                    // '/static/chat/css/photoswipe/photoswipe.css',
-                    // '/static/chat/css/photoswipe/default-skin.css',
                 ]);
             })
     );

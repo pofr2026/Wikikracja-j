@@ -8,9 +8,10 @@ import {
     removeNotification,
     formatTime,
     escapeHtml,
-    getImageSize,
     _,
-    setCaretPosition
+    setCaretPosition,
+    $,
+    $$
 } from './utility.js';
 import { Room, Message } from './templates.js';
 
@@ -19,577 +20,417 @@ import { Room, Message } from './templates.js';
  * @class
  */
 export default class DomApi {
-    /**
-     * Gets the jQuery-wrapped room link element for a given room ID
-     * @param {number} room_id - The room ID
-     * @returns {jQuery} - jQuery object containing the room link element
-     */
     getRoomLinkDiv(room_id) {
         return $(`.room-link[data-room-id="${room_id}"]`);
     }
 
-    /**
-     * Creates the room div and appends it to the messages container
-     * @param {number} room_id - The room ID
-     * @param {string} title - The room title
-     * @param {boolean} is_public - Whether the room is public
-     * @param {boolean} notifs_enabled - Whether notifications are enabled for this room
-     * @returns {jQuery} - jQuery object containing the created room div
-     */
     createRoomDiv(room_id, title, is_public, notifs_enabled) {
-        let roomdiv = $(Room({ room_id, title, is_public, notifs_enabled }));
-        $(".chat-root-messages").empty().append(roomdiv);
-        return roomdiv;
+        const html = Room({ room_id, title, is_public, notifs_enabled });
+        const container = $('.chat-root-messages');
+        container.innerHTML = '';
+        container.insertAdjacentHTML('beforeend', html);
+        return container.firstElementChild;
     }
 
-    /**
-     * Gets the main room container element
-     * @returns {jQuery} - jQuery object containing the #room element
-     */
     getRoom() {
-        return $(`#room`)
+        return $('#room');
     }
 
-    /**
-     * Gets the messages container within the room
-     * @returns {jQuery} - jQuery object containing the messages div
-     */
     getMessagesDiv() {
-        return this.getRoom().find('.messages');
+        const room = this.getRoom();
+        return room ? $('.messages', room) : null;
     }
 
-    /**
-     * Adds a message to the chat display
-     * @param {number} room_id - Room ID
-     * @param {number} message_id - Unique message ID
-     * @param {string} username - Sender's username
-     * @param {string} message - Message content
-     * @param {number} upvotes - Upvote count
-     * @param {number} downvotes - Downvote count
-     * @param {string|null} vote - Current user's vote ('upvote', 'downvote', or null)
-     * @param {boolean} own - Whether message was sent by current user
-     * @param {boolean} edited - Whether message has been edited
-     * @param {Object} [attachments] - Attachment data with images array
-     * @param {number} original_ts - Original message timestamp
-     * @param {number} latest_ts - Latest timestamp (for edited messages)
-     */
-    addMessage(room_id, message_id,
-        username, message,
-        upvotes, downvotes, vote,
-        own, edited,
-        attachments,
-        original_ts, latest_ts) {
-
-        let type = this.getRoomType(room_id);
-
-        let html = Message({
-            room_id,
-            message_id,
-            username,
+    addMessage(room_id, message_id, username, message, upvotes, downvotes, vote, own, edited, attachments, original_ts, latest_ts) {
+        const html = Message({
+            room_id, message_id, username,
             message: this.formatMessage(message),
-            upvotes,
-            downvotes,
-            vote,
-            own,
-            edited,
-            attachments,
-            original_ts,
-            latest_ts: formatTime(latest_ts),
-            type,
+            upvotes, downvotes, vote, own, edited, attachments,
+            original_ts, latest_ts: formatTime(latest_ts),
+            type: this.getRoomType(room_id),
         });
 
-        this.getMessagesDiv().append(html);
-
-        // make own vote appear active
-        this.getVoteDiv(message_id, vote).addClass('active');
+        this.getMessagesDiv()?.insertAdjacentHTML('beforeend', html);
+        this.getVoteDiv(message_id, vote)?.classList.add('active');
     }
 
-    /**
-     * Adds a date banner to the messages container
-     * @param {string} text - Text to display in the banner
-     */
     addDateBanner(text) {
-        this.getMessagesDiv().append(`<div>${text}</div>`)
+        this.getMessagesDiv()?.insertAdjacentHTML('beforeend', `<div>${text}</div>`);
     }
 
-    /**
-     * Gets the message element for a given message ID
-     * @param {number} message_id - The message ID
-     * @returns {jQuery} - jQuery object containing the message element
-     */
     getMessageDiv(message_id) {
         return $(`.message[data-message-id="${message_id}"]`);
     }
 
-    /**
-     * Scrolls to a specific message in the chat
-     * @param {number} message_id - The message ID to scroll to
-     * @returns {boolean} - true if message was found and scrolled to, false otherwise
-     */
     scrollToMessage(message_id) {
-        let message = this.getMessageDiv(message_id);
-        if (!message.length) {
-            return false;
-        }
-        message[0].scrollIntoView();
-
-        message.addClass('msg-highlight');
-        setTimeout(() => message.removeClass('msg-highlight'), 5000);
+        const message = this.getMessageDiv(message_id);
+        if (!message) return false;
+        message.scrollIntoView();
+        message.classList.add('msg-highlight');
+        setTimeout(() => message.classList.remove('msg-highlight'), 5000);
         return true;
     }
 
-    /**
-     * Gets the upvote count element for a message
-     * @param {number} message_id - The message ID
-     * @returns {jQuery} - jQuery object containing the upvote count
-     */
     getMessageUpvotesCountDiv(message_id) {
-        return this.getMessageDiv(message_id).find(".msg-upvotes");
+        const msgDiv = this.getMessageDiv(message_id);
+        return msgDiv ? $(".msg-upvotes", msgDiv) : null;
     }
 
-    /**
-     * Gets the downvote count element for a message
-     * @param {number} message_id - The message ID
-     * @returns {jQuery} - jQuery object containing the downvote count
-     */
     getMessageDownvotesCountDiv(message_id) {
-        return this.getMessageDiv(message_id).find(".msg-downvotes");
+        const msgDiv = this.getMessageDiv(message_id);
+        return msgDiv ? $(".msg-downvotes", msgDiv) : null;
     }
 
-    /**
-     * Gets the vote button element for a message and vote type
-     * @param {number} message_id - The message ID
-     * @param {string} vote - Vote type ('upvote' or 'downvote')
-     * @returns {jQuery} - jQuery object containing the vote button
-     */
     getVoteDiv(message_id, vote) {
-        return this.getMessageDiv(message_id).find(`.msg-vote[data-event-name="${vote}"]`)
+        const msgDiv = this.getMessageDiv(message_id);
+        return msgDiv ? $(`.msg-vote[data-event-name="${vote}"]`, msgDiv) : null;
     }
 
-    /**
-     * Updates the text of an edited message
-     * @param {number} message_id - The message ID
-     * @param {string} text - New message text
-     * @param {number} ts - Timestamp to display
-     * @returns {jQuery} - jQuery object containing the message text element
-     */
     editMessageText(message_id, text, ts) {
-        let f = this.formatMessage(text)
-        let time = formatTime(ts);
-        this.getMessageTimeDiv(message_id).text(time);
-        return this.getMessageDiv(message_id).find(".msg-text").html(f);
+        this.getMessageTimeDiv(message_id).textContent = formatTime(ts);
+        const msgDiv = this.getMessageDiv(message_id);
+        if (msgDiv) {
+            const msgText = $(".msg-text", msgDiv);
+            if (msgText) {
+                msgText.innerHTML = this.formatMessage(text);
+                return msgText;
+            }
+        }
+        return null;
     }
 
-    /**
-     * Updates message attachments (for editing)
-     * @param {number} message_id - The message ID
-     * @param {Object} attachments - Attachment data with images array
-     */
     updateMessageAttachments(message_id, attachments) {
-        let message_div = this.getMessageDiv(message_id);
-        let attachment_container = message_div.find('.attachment-image-container');
-        attachment_container.empty();
-        
-        if (attachments && attachments.images && attachments.images.length > 0) {
-            for (let filename of attachments.images) {
-                attachment_container.append(`<img class='attached-image' src='/media/uploads/${filename}'>`);
+        const message_div = this.getMessageDiv(message_id);
+        if (!message_div) return;
+        const attachment_container = $('.attachment-image-container', message_div);
+        if (attachment_container) {
+            attachment_container.innerHTML = '';
+            if (attachments?.images?.length > 0) {
+                for (const filename of attachments.images) {
+                    attachment_container.insertAdjacentHTML('beforeend', `<img class='attached-image' src='/media/uploads/${filename}'>`);
+                }
             }
         }
     }
 
-    /**
-     * Shows the edit history button for a message
-     * @param {number} message_id - The message ID
-     */
     showHistoryButton(message_id) {
-        this.getMessageDiv(message_id).find(".show-history").show();
+        const msgDiv = this.getMessageDiv(message_id);
+        if (msgDiv) {
+            $(".show-history", msgDiv).style.display = '';
+        }
     }
 
-    /**
-     * Gets the room type for a given room ID
-     * @param {number} room_id - The room ID
-     * @returns {string} - Room type (e.g., 'public', 'private')
-     */
     getRoomType(room_id) {
-        return $(`.room-link[data-room-id="${room_id}"]`).attr("data-room-type");
+        return $(`.room-link[data-room-id="${room_id}"]`)?.getAttribute("data-room-type") ?? null;
     }
 
-    /**
-     * Gets all date banner elements in the messages container
-     * @returns {jQuery} - jQuery object containing date banners
-     */
     getLastMessageBanner() {
-        return this.getMessagesDiv().find('.date-banner');
+        const messagesDiv = this.getMessagesDiv();
+        return messagesDiv ? $$('.date-banner', messagesDiv) : [];
     }
 
-    /**
-     * Gets the text content of a message
-     * @param {number} message_id - The message ID
-     * @returns {string} - Message text content
-     */
     getMessageText(message_id) {
-        return this.getMessageDiv(message_id).find(".msg-text").text();
+        const msgDiv = this.getMessageDiv(message_id);
+        return msgDiv ? $(".msg-text", msgDiv)?.textContent ?? '' : '';
     }
 
-    /**
-     * Formats a message by escaping HTML and converting URLs to links
-     * @param {string} raw_message - Raw message text
-     * @returns {string} - Formatted HTML-safe message text
-     */
     formatMessage(raw_message) {
         let escaped = escapeHtml(raw_message);
-        let URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/g;
-        let formatted = escaped;
-
-        let matches = escaped.match(URL_REGEX);
-        if (matches != null) {
-            for (let match of matches) {
-                formatted = raw_message.replace(match, `<a href='${match}' target="_blank">${match}</a>`);
+        const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/g;
+        const matches = escaped.match(URL_REGEX);
+        if (matches) {
+            for (const match of matches) {
+                escaped = raw_message.replace(match, `<a href='${match}' target="_blank">${match}</a>`);
             }
         }
-        return formatted;
+        return escaped;
     }
 
-    /**
-     * Gets the image preview container
-     * @returns {jQuery} - jQuery object containing the preview container
-     */
     getPreviewDiv() {
-        return $(".preview-images")
+        return $(".preview-images");
     }
 
-    /**
-     * Gets the image preview container (with close button)
-     * @returns {jQuery} - jQuery object containing the preview container
-     */
     getPreviewContainer() {
-        return $(`.image-preview-container`)
+        return $(`.image-preview-container`);
     }
 
-    /**
-     * Marks a room as seen (removes unread indicator)
-     * @param {number} room_id - The room ID
-     */
     seenChat(room_id) {
-        let room_link = this.getRoomLinkDiv(room_id);
-        room_link.removeClass("room-not-seen");
-
-        // all rooms are seen, change tab icon back
-        if ($('.room-not-seen').length == 0) {
+        this.getRoomLinkDiv(room_id)?.classList.remove("room-not-seen");
+        this.setRoomSeenIconState(room_id, true);
+        if ($$('.room-not-seen').length === 0) {
             removeNotification();
         }
     }
 
-    /**
-     * Updates online status indicator for a room
-     * @param {number} room_id - The room ID
-     * @param {boolean} is_online - Whether the room is online
-     */
     updateOnline(room_id, is_online) {
-        let room_link = this.getRoomLinkDiv(room_id);
-        if (is_online) {
-            room_link.removeClass('offline').addClass('online');
-        } else {
-            room_link.removeClass('online').addClass('offline');
-        }
+        const room_link = this.getRoomLinkDiv(room_id);
+        if (!room_link) return;
+        room_link.classList.toggle('online', is_online);
+        room_link.classList.toggle('offline', !is_online);
     }
 
-    /**
-     * Gets the timestamp element for a message
-     * @param {number} message_id - The message ID
-     * @returns {jQuery} - jQuery object containing the timestamp element
-     */
     getMessageTimeDiv(message_id) {
         return $(`.message-timestamp[data-message-id=${message_id}]`);
     }
 
-    /**
-     * Gets the message input field
-     * @returns {jQuery} - jQuery object containing the message input
-     */
     getMessageInput() {
         return $(`#message-input`);
     }
 
-    /**
-     * Gets the current text in the message input
-     * @returns {string} - Current input value
-     */
     getEnteredText() {
-        return this.getMessageInput().val();
+        return this.getMessageInput()?.value ?? '';
     }
 
-    /**
-     * Gets the anonymous mode checkbox state
-     * @returns {boolean} - Whether anonymous mode is enabled
-     */
     getAnonymousValue() {
-        return $(`.anonymous-switch`).is(":checked");
+        return $(`.anonymous-switch`)?.checked ?? false;
     }
 
-    /**
-     * Gets the file input element
-     * @returns {jQuery} - jQuery object containing the file input
-     */
     getFileInput() {
         return $(`#file-input`);
     }
 
-    /**
-     * Gets the selected files from the file input
-     * @returns {FileList} - List of selected files
-     */
     getFiles() {
-        return this.getFileInput()[0].files;
+        return this.getFileInput()?.files ?? null;
     }
 
-    /**
-     * Clears file input and preview containers
-     */
     clearFiles() {
-        $(`#file-input`).val("");
-        this.getPreviewContainer().hide();
-        this.getPreviewDiv().empty();
-        // Don't clear removed-attachments data here, it's needed for editing
+        const fileInput = $(`#file-input`);
+        if (fileInput) fileInput.value = "";
+        this.getPreviewContainer().style.display = 'none';
+        this.getPreviewDiv().innerHTML = '';
     }
 
-    /**
-     * Gets the currently edited message ID from input data
-     * @returns {number|null} - The message ID being edited, or null
-     */
     getEditedMessageId() {
-        return this.getMessageInput().data('edit-message');
+        return this.getMessageInput()?.dataset.editMessage ?? null;
     }
 
-    /**
-     * Sets editing mode for a message
-     * @param {number} message_id - The message ID to edit
-     */
     setEditing(message_id) {
-        let text = this.getMessageText(message_id);
-        this.getFileInput().removeAttr('disabled');
-        this.getMessageInput().data('edit-message', message_id)
-            .data('original-message-text', text)
-            .val(text)
-            .css('background-color', '#4a4a00');
-        
-        // Load existing attachments for editing
-        let attachments = this.getMessageAttachments(message_id);
-        this.loadEditingAttachments(message_id, attachments);
-        
-        setCaretPosition(this.getMessageInput()[0], text.length);
+        const text = this.getMessageText(message_id);
+        this.getFileInput()?.removeAttribute('disabled');
+        const input = this.getMessageInput();
+        if (input) {
+            input.dataset.editMessage = message_id;
+            input.dataset.originalMessageText = text;
+            input.value = text;
+            input.style.backgroundColor = '#4a4a00';
+        }
+        this.loadEditingAttachments(message_id, this.getMessageAttachments(message_id));
+        setCaretPosition(this.getMessageInput(), text.length);
     }
 
-    /**
-     * Stops editing mode and clears input
-     */
     stopEditing() {
-        this.getFileInput().removeAttr('disabled');
-        this.getMessageInput().removeData('edit-message')
-            .removeData('removed-attachments')
-            .removeData('original-message-text')
-            .val("")
-            .css('background-color', '#303030');
+        this.getFileInput()?.removeAttribute('disabled');
+        const input = this.getMessageInput();
+        if (input) {
+            delete input.dataset.editMessage;
+            delete input.dataset.removedAttachments;
+            delete input.dataset.originalMessageText;
+            input.value = "";
+            input.style.backgroundColor = '#303030';
+        }
         this.clearFiles();
     }
 
-    /**
-     * Opens an image in a PhotoSwipe lightbox
-     * @param {Array<string>} srcs - Array of image URLs to display
-     * @returns {Promise<void>}
-     */
-    async openBigImage(srcs) {
-        let pswpElement = document.querySelectorAll('.pswp')[0];
-        let items = [];
-        for (let src of srcs) {
-            let size = await getImageSize(src);
-            items.push({
-                src,
-                w: size.w,
-                h: size.h
-            })
+    openBigImage(srcs) {
+        // Remove existing viewer if any
+        this.closeBigImage();
+
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'image-viewer-overlay';
+        overlay.className = 'image-viewer-overlay';
+        overlay.innerHTML = `
+            <button class="image-viewer-close" aria-label="Close">&times;</button>
+            <button class="image-viewer-nav image-viewer-prev" aria-label="Previous">&#10094;</button>
+            <button class="image-viewer-nav image-viewer-next" aria-label="Next">&#10095;</button>
+            <div class="image-viewer-container">
+                <img class="image-viewer-img" src="" alt="Image viewer">
+            </div>
+            <div class="image-viewer-counter"></div>
+        `;
+
+        document.body.appendChild(overlay);
+        document.body.classList.add('modal-open');
+
+        // State
+        let currentIndex = 0;
+        const images = srcs;
+        const imgEl = overlay.querySelector('.image-viewer-img');
+        const counterEl = overlay.querySelector('.image-viewer-counter');
+        const prevBtn = overlay.querySelector('.image-viewer-prev');
+        const nextBtn = overlay.querySelector('.image-viewer-next');
+
+        function showImage(index) {
+            currentIndex = index;
+            imgEl.src = images[currentIndex];
+            if (images.length > 1) {
+                counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+            } else {
+                counterEl.textContent = '';
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            }
         }
-        let gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
-            index: 0, // start at first slide
-            closeOnScroll: false,
+
+        function close() {
+            overlay.remove();
+            document.body.classList.remove('modal-open');
+        }
+
+        // Event listeners
+        overlay.querySelector('.image-viewer-close').addEventListener('click', close);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) close();
         });
-        gallery.init();
+
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const newIndex = (currentIndex - 1 + images.length) % images.length;
+            showImage(newIndex);
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const newIndex = (currentIndex + 1) % images.length;
+            showImage(newIndex);
+        });
+
+        // Keyboard navigation
+        overlay._keyHandler = (e) => {
+            if (e.key === 'Escape') close();
+            if (e.key === 'ArrowLeft' && images.length > 1) showImage((currentIndex - 1 + images.length) % images.length);
+            if (e.key === 'ArrowRight' && images.length > 1) showImage((currentIndex + 1) % images.length);
+        };
+        document.addEventListener('keydown', overlay._keyHandler);
+
+        // Show first image
+        showImage(0);
     }
 
-    /**
-     * Closes the PhotoSwipe lightbox
-     */
     closeBigImage() {
-        $("#big-image").remove();
-        $('body').removeClass('modal-open');
+        const overlay = $('#image-viewer-overlay');
+        if (overlay) {
+            if (overlay._keyHandler) {
+                document.removeEventListener('keydown', overlay._keyHandler);
+            }
+            overlay.remove();
+        }
+        document.body.classList.remove('modal-open');
     }
 
-    /**
-     * Gets the most recent message sent by the current user
-     * @returns {jQuery} - jQuery object containing the message element
-     */
     getLatestOwnMessage() {
-        return this.getMessagesDiv().find('.message.own').last();
+        const messagesDiv = this.getMessagesDiv();
+        if (!messagesDiv) return null;
+        const ownMessages = $$('.message.own', messagesDiv);
+        return ownMessages.length > 0 ? ownMessages[ownMessages.length - 1] : null;
     }
 
-    /**
-     * Checks if currently editing a message
-     * @returns {boolean} - true if editing, false otherwise
-     */
     isEditing() {
-        return this.getEditedMessageId() ? true : false;
+        return !!this.getEditedMessageId();
     }
 
-    /**
-     * Removes the "empty chat" banner
-     */
     removeNoMessagesBanner() {
-        $('.empty-chat-message').remove();
+        $('.empty-chat-message')?.remove();
     }
 
-    /**
-     * Sets the room title in the UI
-     * @param {string} title - The room title to set
-     */
     setRoomTitle(title) {
-        $("#room-title").text(title);
+        const el = $("#room-title");
+        if (el) el.textContent = title;
     }
 
-    /**
-     * Sets the notification toggle state for a room
-     * @param {number} room_id - The room ID
-     * @param {boolean} is_enabled - Whether notifications are enabled
-     */
     setRoomNotifications(room_id, is_enabled) {
-        const $btn = $(".notif-switch[data-room-id='" + room_id + "']");
-        $btn.prop("disabled", false);
-        $btn.data("enabled", is_enabled);
-        
-        // Update icon: bell if enabled, bell-slash if disabled
-        const $icon = $btn.find("i");
-        if (is_enabled) {
-            $icon.removeClass("fa-bell-slash").addClass("fa-bell");
-        } else {
-            $icon.removeClass("fa-bell").addClass("fa-bell-slash");
+        const btn = $(`.notif-switch[data-room-id='${room_id}']`);
+        if (!btn) return;
+        btn.disabled = false;
+        btn.dataset.enabled = is_enabled;
+        const icon = $("i", btn);
+        if (icon) {
+            icon.classList.toggle('fa-bell', is_enabled);
+            icon.classList.toggle('fa-bell-slash', !is_enabled);
         }
     }
 
-    /**
-     * Clears all room data from the UI
-     */
+    setRoomSeenIconState(room_id, is_seen) {
+        const btn = $(`.seen-switch[data-room-id='${room_id}']`);
+        if (!btn) return;
+        btn.dataset.seen = is_seen.toString();
+        const icon = $("i", btn);
+        if (icon) {
+            icon.classList.toggle('fa-eye', is_seen);
+            icon.classList.toggle('fa-eye-slash', !is_seen);
+        }
+    }
+
     clearRoomData() {
-        this.getMessagesDiv().empty();
-        this.getMessageInput().val("");
+        const messagesDiv = this.getMessagesDiv();
+        if (messagesDiv) messagesDiv.innerHTML = '';
+        const input = this.getMessageInput();
+        if (input) input.value = "";
         this.clearFiles();
         this.stopEditing();
-        this.getMessagesDiv().append(
-            "<p class='empty-chat-message'>" + _("Loading...") + "</p>"
-        );
+        messagesDiv?.insertAdjacentHTML('beforeend', "<p class='empty-chat-message'>" + _("Loading...") + "</p>");
     }
 
-    /**
-     * Adds a banner prompting user to enable notifications
-     */
-    addPermissionBanner() {
-        $('.chat-page-header').append("<button type='button' class='alert alert-info p-1 m-1 enable-notifications-btn'><i class='far fa-bell-slash'></i> " + _("Click here to enable notifications") + " <i class ='far fa-bell-slash'></i></button>")
-    }
-
-    /**
-     * Shows visual feedback after a copy operation
-     * @param {HTMLElement} button - The button element
-     * @param {string} message - Feedback message
-     * @param {boolean} success - Whether the operation succeeded
-     */
     showCopyFeedback(button, message, success) {
-        if (!button) {
-            return;
-        }
-
-        let $button = $(button);
-        let $tooltip = $('<span class="copy-feedback badge"></span>');
-        $tooltip.text(message);
-        $tooltip.toggleClass('text-bg-success', !!success);
-        $tooltip.toggleClass('text-bg-danger', !success);
-
-        $button.append($tooltip);
+        if (!button) return;
+        const tooltip = document.createElement('span');
+        tooltip.className = "copy-feedback badge";
+        tooltip.textContent = message;
+        tooltip.classList.add(success ? 'text-bg-success' : 'text-bg-danger');
+        button.appendChild(tooltip);
         setTimeout(() => {
-            $tooltip.fadeOut(200, function () {
-                $(this).remove();
-            });
+            tooltip.style.transition = 'opacity 0.2s';
+            tooltip.style.opacity = '0';
+            setTimeout(() => tooltip.parentNode?.remove(), 200);
         }, 1200);
     }
 
-    /**
-     * Gets current attachments from a message element
-     * @param {number} message_id - The message ID
-     * @returns {Object} - Attachment data with images array
-     */
     getMessageAttachments(message_id) {
-        let message_div = this.getMessageDiv(message_id);
-        let attachments = { images: [] };
-        message_div.find('.attached-image').each(function() {
-            let src = $(this).attr('src');
-            let filename = src.split('/').pop();
-            attachments.images.push(filename);
-        });
+        const message_div = this.getMessageDiv(message_id);
+        const attachments = { images: [] };
+        if (message_div) {
+            $$('.attached-image', message_div).forEach(img => {
+                attachments.images.push(img.getAttribute('src').split('/').pop());
+            });
+        }
         return attachments.images.length > 0 ? attachments : {};
     }
 
-    /**
-     * Loads existing attachments into the preview area during editing
-     * @param {number} message_id - The message ID
-     * @param {Object} attachments - Attachment data with images array
-     */
     loadEditingAttachments(message_id, attachments) {
-        let preview_container = this.getPreviewDiv();
-        preview_container.empty();
-        
-        if (!attachments || !attachments.images || attachments.images.length === 0) {
-            this.getPreviewContainer().hide();
+        const preview_container = this.getPreviewDiv();
+        if (preview_container) preview_container.innerHTML = '';
+        if (!attachments?.images?.length) {
+            this.getPreviewContainer().style.display = 'none';
             return;
         }
-
-        this.getPreviewContainer().show();
-        
+        this.getPreviewContainer().style.display = '';
         for (let i = 0; i < attachments.images.length; i++) {
-            let filename = attachments.images[i];
-            let preview_id = `preview-existing-${i}`;
-            let img_html = `<div class="image-preview-wrapper" style="position: relative; display: inline-block;">
-                <img class='image-preview' id='${preview_id}' src='/media/uploads/${filename}' data-filename='${filename}'>
-                <button class="btn btn-sm btn-danger remove-existing-attachment" 
+            const filename = attachments.images[i];
+            preview_container?.insertAdjacentHTML('beforeend', `<div class="image-preview-wrapper" style="position: relative; display: inline-block;">
+                <img class='image-preview' id='preview-existing-${i}' src='/media/uploads/${filename}' data-filename='${filename}'>
+                <button class="btn btn-sm btn-danger remove-existing-attachment"
                     style="position: absolute; top: 2px; right: 2px; padding: 0 4px; font-size: 12px;"
                     data-filename="${filename}" type="button">×</button>
-            </div>`;
-            preview_container.append(img_html);
+            </div>`);
         }
     }
 
-    /**
-     * Gets the list of removed attachment filenames from input data
-     * @returns {Array<string>} - Array of removed attachment filenames
-     */
     getRemovedAttachments() {
-        return this.getMessageInput().data('removed-attachments') || [];
+        const input = this.getMessageInput();
+        return input?.dataset.removedAttachments ? JSON.parse(input.dataset.removedAttachments) : [];
     }
 
-    /**
-     * Adds a filename to the removed attachments list
-     * @param {string} filename - The filename to mark as removed
-     */
     addRemovedAttachment(filename) {
-        let removed = this.getRemovedAttachments();
+        const removed = this.getRemovedAttachments();
         if (!removed.includes(filename)) {
             removed.push(filename);
-            this.getMessageInput().data('removed-attachments', removed);
+            this.getMessageInput().dataset.removedAttachments = JSON.stringify(removed);
         }
     }
 
-    /**
-     * Gets the original message text from input data
-     * @param {number} message_id - The message ID
-     * @returns {string} - Original message text
-     */
     getOriginalMessageText(message_id) {
-        return this.getMessageInput().data('original-message-text');
+        return this.getMessageInput()?.dataset.originalMessageText ?? '';
     }
 }

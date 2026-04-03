@@ -1,11 +1,3 @@
-.chat-has-messages {
-    background-color: var(--bs-success);
-}
-
-.chat-page-header {
-    text-align: center;
-}
-
 .chat-root-messages {
     display: flex;
     flex: 1;
@@ -300,6 +292,7 @@
         background: #3399f3;
         color: var(--bs-dark);
 
+        .seen-switch,
         .notif-switch,
         .copy-link-btn {
             color: var(--bs-white) !important;
@@ -349,13 +342,14 @@
     padding: 4px;
 }
 
-.notif-switch {
+.seen-switch,
+.notif-switch,
+.copy-link-btn {
     color: var(--bs-light);
 }
 
 .copy-link-btn {
     position: relative;
-    color: var(--bs-light);
 }
 
 .copy-feedback {
@@ -389,5 +383,137 @@
     .room-list {
         min-height: 15dvh;
         max-height: 45dvh;
+    }
+}
+
+/* ============================================================ */
+/* Image Viewer (Lightbox) - Custom replacement for PhotoSwipe  */
+/* ============================================================ */
+
+.image-viewer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    animation: imageViewerFadeIn 0.2s ease-out;
+}
+
+@keyframes imageViewerFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.image-viewer-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 2rem;
+    color: #fff;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 10000;
+    padding: 5px 15px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.image-viewer-close:hover {
+    opacity: 1;
+}
+
+.image-viewer-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2.5rem;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    cursor: pointer;
+    z-index: 10000;
+    padding: 10px 20px;
+    opacity: 0.7;
+    transition: opacity 0.2s, background 0.2s;
+    user-select: none;
+    border-radius: 4px;
+}
+
+.image-viewer-nav:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.image-viewer-prev {
+    left: 15px;
+}
+
+.image-viewer-next {
+    right: 15px;
+}
+
+.image-viewer-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 90%;
+    max-height: 90%;
+    cursor: default;
+}
+
+.image-viewer-img {
+    max-width: 100%;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transition: opacity 0.2s ease;
+    animation: imageViewerImgFadeIn 0.3s ease-out;
+}
+
+@keyframes imageViewerImgFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.image-viewer-counter {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 5px 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    z-index: 10000;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+    .image-viewer-nav {
+        font-size: 2rem;
+        padding: 8px 15px;
+    }
+
+    .image-viewer-prev {
+        left: 10px;
+    }
+
+    .image-viewer-next {
+        right: 10px;
+    }
+
+    .image-viewer-close {
+        top: 5px;
+        right: 10px;
+        font-size: 1.8rem;
     }
 }

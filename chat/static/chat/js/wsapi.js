@@ -40,7 +40,7 @@ export default class WsApi {
 
         // Register open/close callbacks
         ws.setOnConnect(() => {
-            console.log("Connected to chat socket");
+            // console.log("Connected to chat socket");
             if (this.wsOnConnect) {
                 this.wsOnConnect();
             }
@@ -283,6 +283,17 @@ export default class WsApi {
             command: 'toggle-notifications',
             room_id,
             enabled
+        });
+    }
+
+    /**
+     * Marks a room as unread/unseen
+     * @param {number} room_id - ID of the room
+     */
+    markRoomUnseen(room_id) {
+        this.sendJson({
+            command: 'room-unseen',
+            room_id
         });
     }
 }

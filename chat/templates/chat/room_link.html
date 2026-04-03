@@ -10,6 +10,14 @@
 
   <div class="room-controls">
     <button type="button"
+      class="btn btn-link btn-sm p-0 seen-switch"
+      data-room-id="{{ room.id }}"
+      data-seen="{{ room|is_seen_by:user }}"
+      title="{% trans 'Mark as unread' %}"
+      aria-label="{% blocktrans with room_name=room|name_for:user %}Mark room {{ room_name }} as unread{% endblocktrans %}">
+      <i class="fas fa-eye{% if room|is_seen_by:user == "true" %}{% else %}-slash{% endif %}"></i>
+    </button>
+    <button type="button"
       class="btn btn-link btn-sm p-0 notif-switch"
       data-room-id="{{ room.id }}"
       data-enabled="{% if room|is_muted_by:user %}false{% else %}true{% endif %}"
