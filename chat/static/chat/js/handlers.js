@@ -23,12 +23,7 @@ import { $, $$ } from './utility.js';
  */
 const DOM_API = new DomApi();
 
-/**
- * Sets up event listeners for the chat interface
- */
-document.addEventListener('DOMContentLoaded', function() {
-
-    // Map accordion button IDs to their content element IDs
+document.addEventListener('DOMContentLoaded', () => {
     const accordionMap = {
         'toggleButtonPubRoomsActive': 'content-pub-rooms-active',
         'toggleButtonPubRoomsArchive': 'content-pub-rooms-archive',
@@ -40,320 +35,177 @@ document.addEventListener('DOMContentLoaded', function() {
         'toggleButtonPrvArchive': 'content-prv-archive'
     };
 
-    let acc = document.getElementsByClassName('accordion');
-    for (var i = 0; i < acc.length; i++) {
-        acc[i].addEventListener('click', function() {
+    for (const acc of document.getElementsByClassName('accordion')) {
+        acc.addEventListener('click', () => {
             this.classList.toggle('activated');
-            // Find the associated content element and slide toggle it
-            const contentId = accordionMap[this.id];
-            if (contentId) {
-                const contentEl = $('#' + contentId);
-                if (contentEl) {
-                    slideToggle(contentEl, 300);
-                }
-            }
+            const contentEl = $('#' + accordionMap[this.id]);
+            if (contentEl) slideToggle(contentEl, 300);
         });
     }
 
-
-    // Send message button click handler
-    document.addEventListener("click", function(e) {
+    document.addEventListener("click", (e) => {
         if (e.target.closest(".send-message")) {
-            let edit_message_id = DOM_API.getEditedMessageId();
-            let message = DOM_API.getEnteredText();
-            onSubmitMessage(message, edit_message_id);
+            onSubmitMessage(DOM_API.getEnteredText(), DOM_API.getEditedMessageId());
         }
     });
 
-    // Enter key to send message (and ArrowUp to edit last message)
-    document.addEventListener("keydown", function(e) {
+    document.addEventListener("keydown", (e) => {
         if (e.target.id !== "message-input") return;
-
         if (e.keyCode == 13) {
-            let edit_message_id = DOM_API.getEditedMessageId();
-            let message = DOM_API.getEnteredText();
-            onSubmitMessage(message, edit_message_id);
+            onSubmitMessage(DOM_API.getEnteredText(), DOM_API.getEditedMessageId());
         }
-
         if (e.key == "ArrowUp") {
-            // up arrow will move caret to start by default
             e.preventDefault();
-            let message = DOM_API.getLatestOwnMessage();
-            let message_id = message ? message.dataset.messageId : null;
+            const message = DOM_API.getLatestOwnMessage();
             if (!DOM_API.isEditing()) {
-                DOM_API.setEditing(message_id);
+                DOM_API.setEditing(message?.dataset.messageId);
             }
         }
     });
 
-    // Image click to open in lightbox
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', (e) => {
         const container = e.target.closest('.attachment-image-container');
         if (container) {
-            let srcs = [];
-            const imgs = $$("img", container);
-            for (let img of imgs) {
-                srcs.push(img.src);
-            }
-            DOM_API.openBigImage(srcs);
+            DOM_API.openBigImage([...$$("img", container)].map(img => img.src));
         }
     });
 
-    // Notification toggle switch
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', (e) => {
         const btn = e.target.closest('.notif-switch');
         if (btn) {
-            const currentState = btn.dataset.enabled === "true" || btn.dataset.enabled === true;
-            const newState = !currentState;
-
-            // Update UI immediately for instant feedback
+            const newState = !(btn.dataset.enabled === "true" || btn.dataset.enabled === true);
             btn.dataset.enabled = newState;
             const icon = $("i", btn);
-            if (icon) {
-                if (newState) {
-                    icon.classList.remove("fa-bell-slash");
-                    icon.classList.add("fa-bell");
-                } else {
-                    icon.classList.remove("fa-bell");
-                    icon.classList.add("fa-bell-slash");
-                }
-            }
-
+            icon?.classList.toggle('fa-bell', newState);
+            icon?.classList.toggle('fa-bell-slash', !newState);
             onToggleNotifications(btn.dataset.roomId, newState);
         }
     });
 
-    // Escape key to cancel editing
-    document.addEventListener('keydown', function(e) {
-        if (e.key !== "Escape") {
-            return;
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "Escape" && DOM_API.isEditing()) {
+            DOM_API.stopEditing();
         }
-
-        if (!DOM_API.isEditing()) {
-            return;
-        }
-
-        DOM_API.stopEditing();
     });
 
-    // Delete images preview button
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', (e) => {
         const btn = e.target.closest('.delete-images-preview');
-        if (btn) {
-            let room_id = btn.dataset.roomId;
-            DOM_API.clearFiles(room_id);
-        }
+        if (btn) DOM_API.clearFiles(btn.dataset.roomId);
     });
 
-    // Copy room link button
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', (e) => {
         const btn = e.target.closest('.copy-room-url');
         if (btn) {
             e.preventDefault();
             e.stopPropagation();
-            let room_id = btn.dataset.roomId;
-            copyRoomLink(room_id, btn);
+            copyRoomLink(btn.dataset.roomId, btn);
         }
     });
 
-    // Copy message link button
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', (e) => {
         const btn = e.target.closest('.copy-message-url');
         if (btn) {
             e.preventDefault();
             e.stopPropagation();
-            let room_id = btn.dataset.roomId;
-            let message_id = btn.dataset.messageId;
-            copyMessageLink(room_id, message_id, btn);
+            copyMessageLink(btn.dataset.roomId, btn.dataset.messageId, btn);
         }
     });
 
-    // File input change handler for image previews
-    document.addEventListener("change", function(e) {
+    document.addEventListener("change", (e) => {
         if (!e.target.classList.contains("file-input")) return;
-
-        let files = e.target.files;
-        let preview_container = DOM_API.getPreviewDiv();
-
-        // If editing, keep existing attachments and append new ones
-        if (!DOM_API.isEditing() && preview_container) {
-            preview_container.innerHTML = '';
-        }
-
-        if (files.length > 0) {
-            const container = DOM_API.getPreviewContainer();
-            if (container) {
-                container.style.display = '';
-            }
-        }
-
+        const files = e.target.files;
+        const preview_container = DOM_API.getPreviewDiv();
+        if (!DOM_API.isEditing() && preview_container) preview_container.innerHTML = '';
+        if (files.length > 0) DOM_API.getPreviewContainer().style.display = '';
         for (let i = 0; i < files.length; ++i) {
-            let file = files.item(i);
-            let fr = new FileReader();
-
-            let preview_id = `preview-new-${i}-${Date.now()}`;
-
-            let img_html = `<div class="image-preview-wrapper" style="position: relative; display: inline-block;">
+            const file = files.item(i);
+            const fr = new FileReader();
+            const preview_id = `preview-new-${i}-${Date.now()}`;
+            preview_container?.insertAdjacentHTML('beforeend', `<div class="image-preview-wrapper" style="position: relative; display: inline-block;">
                 <img class='image-preview new-attachment' id='${preview_id}'>
                 <button class="btn btn-sm btn-danger remove-new-attachment"
                     style="position: absolute; top: 2px; right: 2px; padding: 0 4px; font-size: 12px;"
                     data-preview-id="${preview_id}" type="button">×</button>
-            </div>`;
-            if (preview_container) {
-                preview_container.insertAdjacentHTML('beforeend', img_html);
-            }
-
-            fr.onload = function(e) {
-                const imgEl = document.getElementById(preview_id);
-                if (imgEl) {
-                    imgEl.src = this.result;
-                }
+            </div>`);
+            fr.onload = (e) => {
+                document.getElementById(preview_id).src = e.target.result;
             };
-
             fr.readAsDataURL(file);
         }
     });
 
-    // Vote button click handler
-    document.addEventListener("click", function(e) {
+    document.addEventListener("click", (e) => {
         const btn = e.target.closest(".msg-vote");
         if (btn) {
-            let event_type = btn.dataset.eventName; // upvote / downvote
-            let message_id = btn.dataset.messageId;
-
-            // if is active and pressed it means vote has to be removed
-            let is_add = !btn.classList.contains('active');
-
-            onUpdateVote.call(btn, event_type, message_id, is_add);
+            onUpdateVote.call(btn, btn.dataset.eventName, btn.dataset.messageId, !btn.classList.contains('active'));
         }
     });
 
-    // Show message history button
-    document.addEventListener("click", function(e) {
+    document.addEventListener("click", (e) => {
         const btn = e.target.closest(".show-history");
-        if (btn) {
-            let message_id = btn.dataset.messageId;
-            onMessageHistory(message_id);
-        }
+        if (btn) onMessageHistory(btn.dataset.messageId);
     });
 
-    // Edit message button
-    document.addEventListener("click", function(e) {
+    document.addEventListener("click", (e) => {
         const btn = e.target.closest(".edit-message");
-        if (btn) {
-            let message_id = btn.dataset.messageId;
-            DOM_API.setEditing(message_id);
-        }
+        if (btn) DOM_API.setEditing(btn.dataset.messageId);
     });
 
-    // Remove existing attachment during editing
-    document.addEventListener("click", function(e) {
+    document.addEventListener("click", (e) => {
         const btn = e.target.closest(".remove-existing-attachment");
         if (btn) {
             e.preventDefault();
             e.stopPropagation();
-            let filename = btn.dataset.filename;
-            DOM_API.addRemovedAttachment(filename);
-            const wrapper = btn.closest('.image-preview-wrapper');
-            if (wrapper) {
-                wrapper.remove();
-            }
-
-            // Hide preview container if no images left
-            if (DOM_API.getPreviewDiv() && DOM_API.getPreviewDiv().children.length === 0) {
-                const container = DOM_API.getPreviewContainer();
-                if (container) {
-                    container.style.display = 'none';
-                }
+            DOM_API.addRemovedAttachment(btn.dataset.filename);
+            btn.closest('.image-preview-wrapper')?.remove();
+            if (DOM_API.getPreviewDiv()?.children.length === 0) {
+                DOM_API.getPreviewContainer().style.display = 'none';
             }
         }
     });
 
-    // Remove new attachment before upload
-    document.addEventListener("click", function(e) {
+    document.addEventListener("click", (e) => {
         const btn = e.target.closest(".remove-new-attachment");
         if (btn) {
             e.preventDefault();
             e.stopPropagation();
-            const wrapper = btn.closest('.image-preview-wrapper');
-            if (wrapper) {
-                wrapper.remove();
-            }
-
-            // Clear file input if no new attachments left
+            btn.closest('.image-preview-wrapper')?.remove();
             const previewDiv = DOM_API.getPreviewDiv();
             if (previewDiv && $$('.new-attachment', previewDiv).length === 0) {
-                const fileInput = DOM_API.getFileInput();
-                if (fileInput) {
-                    fileInput.value = "";
-                }
+                DOM_API.getFileInput().value = "";
             }
-
-            // Hide preview container if no images left
-            if (previewDiv && previewDiv.children.length === 0) {
-                const container = DOM_API.getPreviewContainer();
-                if (container) {
-                    container.style.display = 'none';
-                }
+            if (previewDiv?.children.length === 0) {
+                DOM_API.getPreviewContainer().style.display = 'none';
             }
         }
     });
 
-    // Room join/leave (touch support for mobile)
-    document.addEventListener('click', function(e) {
-        handleRoomNameClick(e);
-    });
-
-    document.addEventListener('touchstart', function(e) {
-        handleRoomNameClick(e);
-    }, { passive: false });
+    document.addEventListener('click', handleRoomNameClick);
+    document.addEventListener('touchstart', handleRoomNameClick, { passive: false });
 
     function handleRoomNameClick(e) {
         const roomName = e.target.closest('.room-name');
         if (!roomName) return;
-
-        // Prevent default to avoid double-tap zoom on mobile
-        if (e.type === 'touchstart') {
-            e.preventDefault();
-        }
-
-        let room_id = roomName.parentElement.getAttribute("data-room-id");
-
-        if (roomName.classList.contains("joined")) {
-            // ignore second click on active room
-            //onRoomTryLeave(true);
-        } else {
-            // Add visual feedback immediately
+        if (e.type === 'touchstart') e.preventDefault();
+        const room_id = roomName.parentElement.getAttribute("data-room-id");
+        if (!roomName.classList.contains("joined")) {
             roomName.parentElement.classList.add('room-tapping');
-            // Remove feedback after a short delay
-            setTimeout(() => {
-                roomName.parentElement.classList.remove('room-tapping');
-            }, 300);
-
-            // Join room
+            setTimeout(() => roomName.parentElement.classList.remove('room-tapping'), 300);
             onRoomTryJoin(room_id);
         }
     }
 });
 
-/**
- * Simple slideToggle implementation as a vanilla JS replacement for jQuery
- * @param {Element} element - Element to toggle
- * @param {number} duration - Animation duration in ms
- */
 function slideToggle(element, duration) {
     const isHidden = element.style.display === 'none' || getComputedStyle(element).display === 'none';
     element.style.overflow = 'hidden';
-
     if (isHidden) {
         element.style.display = 'block';
         element.style.height = '0';
-        const targetHeight = element.scrollHeight;
-        animate(element, { height: targetHeight + 'px' }, duration);
+        animate(element, { height: element.scrollHeight + 'px' }, duration);
     } else {
-        const currentHeight = element.scrollHeight;
-        element.style.height = currentHeight + 'px';
-        animate(element, { height: '0' }, duration, function() {
+        element.style.height = element.scrollHeight + 'px';
+        animate(element, { height: '0' }, duration, () => {
             element.style.display = 'none';
             element.style.height = '';
             element.style.overflow = '';
@@ -361,26 +213,14 @@ function slideToggle(element, duration) {
     }
 }
 
-/**
- * Simple animation helper
- * @param {Element} element - Element to animate
- * @param {Object} properties - CSS properties to animate to
- * @param {number} duration - Duration in ms
- * @param {Function} [callback] - Callback when done
- */
 function animate(element, properties, duration, callback) {
-    element.style.transition = '';
+    element.style.transition = `height ${duration}ms ease`;
     for (const prop in properties) {
-        element.style.transition = `height ${duration}ms ease`;
         element.style[prop] = properties[prop];
     }
-
-    const onTransitionEnd = function() {
+    const onTransitionEnd = () => {
         element.removeEventListener('transitionend', onTransitionEnd);
-        if (callback) {
-            callback();
-        }
+        callback?.();
     };
-
     element.addEventListener('transitionend', onTransitionEnd);
 }
