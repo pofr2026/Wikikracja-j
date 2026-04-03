@@ -40,7 +40,7 @@ export default class WsApi {
 
         // Register open/close callbacks
         ws.setOnConnect(() => {
-            console.log("Connected to chat socket");
+            // console.log("Connected to chat socket");
             if (this.wsOnConnect) {
                 this.wsOnConnect();
             }
