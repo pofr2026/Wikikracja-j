@@ -93,6 +93,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ROOT_URLCONF = 'zzz.urls'
 FILEBROWSER_DIRECTORY = 'uploads/'
 
+if DEBUG:
+    ASGI_THREADS = 1
+
 gettext_lazy = lambda s: s
 LANGUAGES = (
     ('en', gettext_lazy('English')),
