@@ -6,6 +6,7 @@
  */
 
 import { makeNotification } from './utility.js';
+import { getSharedWebSocket } from './websocket-manager.js';
 
 /**
  * Handles incoming WebSocket notifications
@@ -26,48 +27,41 @@ export function onRoomUnsee(room_id) {
     $(".nav-link[data-route='chat']").addClass("chat-has-messages");
 }
 
-// Initialize WebSocket connection for notifications when DOM is ready
+/**
+ * Message handler for notification events
+ * Registers with shared WebSocket manager to receive relevant messages
+ * @param {Object} data - WebSocket message data
+ */
+function handleNotificationMessage(data) {
+    // Handle errors
+    if (data.error) {
+        console.error(data.error);
+        return;
+    }
+
+    if (data.notification) {
+        let notif = data.notification;
+        onReceiveNotification(notif);
+    } else if (data.unsee_room) {
+        onRoomUnsee(data.unsee_room);
+    }
+}
+
+// Initialize shared WebSocket connection for notifications when DOM is ready
 $(document).ready(function() {
     // Check if Notification API is supported
     if (!Notification) {
         // console.log("Connecting aborted in !Notification");
         return;
     }
-    
+
     // Check if notification permission has been granted or user opted out
     if (Notification.permission !== 'granted' && localStorage.notifications !== "No") {
         // console.log("Connecting aborted in permission !==granted");
         return;
-    }   
-    
-    // Determine WebSocket URL based on current protocol
-    let ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    let ws_path = ws_scheme + '://' + window.location.host + "/chat/stream/";
-    console.log("Connecting to " + ws_path);
-
-    // Create WebSocket connection
-    let socket = new ReconnectingWebSocket(ws_path);
-
-    // Handle incoming messages
-    socket.onmessage = (e) => {
-        let data = JSON.parse(e.data);
-        // console.log("Got websocket message ", data);
-
-        // Handle errors
-        if (data.error) {
-            console.error(data.error);
-            return;
-        }
-
-        if (data.notification) {
-            let notif = data.notification;
-            onReceiveNotification(notif);
-
-        } else if (data.unsee_room) {
-            onRoomUnsee(data.unsee_room);
-
-        } else {
-            //  console.log("Cannot handle message!");
-        }
     }
+
+    // Get shared WebSocket connection and register handler
+    let ws = getSharedWebSocket();
+    ws.addMessageHandler(handleNotificationMessage);
 });

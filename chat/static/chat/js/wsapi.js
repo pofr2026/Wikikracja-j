@@ -5,6 +5,8 @@
  * including sending messages, joining rooms, voting, and file uploads.
  */
 
+import { getSharedWebSocket } from './websocket-manager.js';
+
 /**
  * WebSocket API class for managing chat WebSocket connection
  * Handles all server communication through WebSocket protocol
@@ -13,55 +15,46 @@
 export default class WsApi {
     /**
      * Constructs a new WsApi instance
-     * Creates WebSocket connection and sets up message handlers
+     * Sets up message handlers using shared WebSocket connection
      */
     constructor() {
-        this.promises = {};
+        this.socketMessageHandler = null;
+        this.wsOnConnect = null;
+        this.wsOnDisconnect = null;
 
-        // Correctly decide between ws:// and wss://
-        let ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        let ws_path = ws_scheme + '://' + window.location.host + "/chat/stream/";
-        console.log("Connecting to " + ws_path);
+        // Get shared WebSocket manager instance
+        let ws = getSharedWebSocket();
 
-        this.socket = new ReconnectingWebSocket(ws_path);
+        // Set up this instance's message handler for non-TRACE messages
+        ws.setSocketMessageHandler(function (data) {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            if (this.socketMessageHandler) {
+                this.socketMessageHandler(data);
+            } else {
+                console.warn("No socket message handler set");
+            }
+        }.bind(this));
 
-        $(window).on('beforeunload', () => {
-            console.log("beforeunload: Closing connecton " + ws_path);
-            this.socket.close();
+        // Register open/close callbacks
+        ws.setOnConnect(() => {
+            console.log("Connected to chat socket");
+            if (this.wsOnConnect) {
+                this.wsOnConnect();
+            }
         });
 
-        this.socket.onmessage = (e) => {
-            let data = JSON.parse(e.data);
-
-            if (data.__TRACE_ID) {
-                if (data.error) {
-                    this.rejectAsync(data);
-                } else {
-                    this.receiveAsync(data);
-                }
-            } else {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    if (this.socketMessageHandler) {
-                        this.socketMessageHandler(data);
-                    } else {
-                        console.warn("No socket message handler set");
-                    }
-                }
-            }
-        }
-
-        // Helpful debugging
-        this.socket.onopen = function() {
-            console.log("Connected to chat socket");
-            this.wsOnConnect();
-        }.bind(this);
-
-        this.socket.onclose = function() {
+        ws.setOnDisconnect(() => {
             console.log("Disconnected from chat socket");
-            this.wsOnDisconnect();
-        }.bind(this);
+            if (this.wsOnDisconnect) {
+                this.wsOnDisconnect();
+            }
+        });
+
+        // Store reference to shared socket
+        this.ws = ws;
     }
 
     /**
@@ -83,7 +76,7 @@ export default class WsApi {
      * @param {Object} obj - Object to send (will be JSON stringified)
      */
     sendJson(obj) {
-        this.socket.send(JSON.stringify(obj));
+        this.ws.sendJson(obj);
     }
 
     /**
@@ -93,49 +86,7 @@ export default class WsApi {
      * @returns {Promise<Object>} - Promise resolving to server response
      */
     async sendJsonAsync(obj) {
-        let ID = Math.floor(Math.random() * 1000000) + 1;
-        obj.__TRACE_ID = ID;
-        let promises = this.promises;
-
-        let promise = new Promise(
-            (resolve, reject) => {
-                promises[ID] = {
-                    resolve,
-                    reject
-                }
-            }
-        );
-
-        this.sendJson(obj);
-        return promise;
-    }
-
-    /**
-     * Handles successful async response from server
-     * @param {Object} obj - Response object with __TRACE_ID
-     */
-    receiveAsync(obj) {
-        let ID = obj.__TRACE_ID;
-        if (this.promises[ID] === undefined) {
-            console.warn("received __TRACE_ID of " + ID + " that does not exist locally. Was it already resolved? Server should return only one message from this kind of responding handlers");
-            return;
-        }
-        this.promises[ID].resolve(obj);
-        delete this.promises[ID];
-    }
-
-    /**
-     * Handles error response from server
-     * @param {Object} obj - Error object with __TRACE_ID and error message
-     */
-    rejectAsync(obj) {
-        let ID = obj.__TRACE_ID;
-        if (this.promises[ID] === undefined) {
-            alert(obj.error);
-            return;
-        }
-        this.promises[ID].reject(obj.error);
-        delete this.promises[ID];
+        return await this.ws.sendJsonAsync(obj);
     }
 
     /**
