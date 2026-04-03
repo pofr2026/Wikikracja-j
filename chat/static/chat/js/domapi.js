@@ -10,7 +10,9 @@ import {
     escapeHtml,
     getImageSize,
     _,
-    setCaretPosition
+    setCaretPosition,
+    $,
+    $$
 } from './utility.js';
 import { Room, Message } from './templates.js';
 
@@ -20,9 +22,9 @@ import { Room, Message } from './templates.js';
  */
 export default class DomApi {
     /**
-     * Gets the jQuery-wrapped room link element for a given room ID
+     * Gets the room link element for a given room ID
      * @param {number} room_id - The room ID
-     * @returns {jQuery} - jQuery object containing the room link element
+     * @returns {Element|null}
      */
     getRoomLinkDiv(room_id) {
         return $(`.room-link[data-room-id="${room_id}"]`);
@@ -34,28 +36,31 @@ export default class DomApi {
      * @param {string} title - The room title
      * @param {boolean} is_public - Whether the room is public
      * @param {boolean} notifs_enabled - Whether notifications are enabled for this room
-     * @returns {jQuery} - jQuery object containing the created room div
+     * @returns {Element}
      */
     createRoomDiv(room_id, title, is_public, notifs_enabled) {
-        let roomdiv = $(Room({ room_id, title, is_public, notifs_enabled }));
-        $(".chat-root-messages").empty().append(roomdiv);
-        return roomdiv;
+        const html = Room({ room_id, title, is_public, notifs_enabled });
+        const container = $('.chat-root-messages');
+        container.innerHTML = '';
+        container.insertAdjacentHTML('beforeend', html);
+        return container.firstElementChild;
     }
 
     /**
      * Gets the main room container element
-     * @returns {jQuery} - jQuery object containing the #room element
+     * @returns {Element|null}
      */
     getRoom() {
-        return $(`#room`)
+        return $('#room');
     }
 
     /**
      * Gets the messages container within the room
-     * @returns {jQuery} - jQuery object containing the messages div
+     * @returns {Element|null}
      */
     getMessagesDiv() {
-        return this.getRoom().find('.messages');
+        const room = this.getRoom();
+        return room ? $('.messages', room) : null;
     }
 
     /**
@@ -98,10 +103,16 @@ export default class DomApi {
             type,
         });
 
-        this.getMessagesDiv().append(html);
+        const messagesDiv = this.getMessagesDiv();
+        if (messagesDiv) {
+            messagesDiv.insertAdjacentHTML('beforeend', html);
+        }
 
         // make own vote appear active
-        this.getVoteDiv(message_id, vote).addClass('active');
+        const voteDiv = this.getVoteDiv(message_id, vote);
+        if (voteDiv) {
+            voteDiv.classList.add('active');
+        }
     }
 
     /**
@@ -109,13 +120,16 @@ export default class DomApi {
      * @param {string} text - Text to display in the banner
      */
     addDateBanner(text) {
-        this.getMessagesDiv().append(`<div>${text}</div>`)
+        const messagesDiv = this.getMessagesDiv();
+        if (messagesDiv) {
+            messagesDiv.insertAdjacentHTML('beforeend', `<div>${text}</div>`);
+        }
     }
 
     /**
      * Gets the message element for a given message ID
      * @param {number} message_id - The message ID
-     * @returns {jQuery} - jQuery object containing the message element
+     * @returns {Element|null}
      */
     getMessageDiv(message_id) {
         return $(`.message[data-message-id="${message_id}"]`);
@@ -128,42 +142,45 @@ export default class DomApi {
      */
     scrollToMessage(message_id) {
         let message = this.getMessageDiv(message_id);
-        if (!message.length) {
+        if (!message) {
             return false;
         }
-        message[0].scrollIntoView();
+        message.scrollIntoView();
 
-        message.addClass('msg-highlight');
-        setTimeout(() => message.removeClass('msg-highlight'), 5000);
+        message.classList.add('msg-highlight');
+        setTimeout(() => message.classList.remove('msg-highlight'), 5000);
         return true;
     }
 
     /**
      * Gets the upvote count element for a message
      * @param {number} message_id - The message ID
-     * @returns {jQuery} - jQuery object containing the upvote count
+     * @returns {Element|null}
      */
     getMessageUpvotesCountDiv(message_id) {
-        return this.getMessageDiv(message_id).find(".msg-upvotes");
+        const msgDiv = this.getMessageDiv(message_id);
+        return msgDiv ? $(".msg-upvotes", msgDiv) : null;
     }
 
     /**
      * Gets the downvote count element for a message
      * @param {number} message_id - The message ID
-     * @returns {jQuery} - jQuery object containing the downvote count
+     * @returns {Element|null}
      */
     getMessageDownvotesCountDiv(message_id) {
-        return this.getMessageDiv(message_id).find(".msg-downvotes");
+        const msgDiv = this.getMessageDiv(message_id);
+        return msgDiv ? $(".msg-downvotes", msgDiv) : null;
     }
 
     /**
      * Gets the vote button element for a message and vote type
      * @param {number} message_id - The message ID
      * @param {string} vote - Vote type ('upvote' or 'downvote')
-     * @returns {jQuery} - jQuery object containing the vote button
+     * @returns {Element|null}
      */
     getVoteDiv(message_id, vote) {
-        return this.getMessageDiv(message_id).find(`.msg-vote[data-event-name="${vote}"]`)
+        const msgDiv = this.getMessageDiv(message_id);
+        return msgDiv ? $(`.msg-vote[data-event-name="${vote}"]`, msgDiv) : null;
     }
 
     /**
@@ -171,13 +188,24 @@ export default class DomApi {
      * @param {number} message_id - The message ID
      * @param {string} text - New message text
      * @param {number} ts - Timestamp to display
-     * @returns {jQuery} - jQuery object containing the message text element
+     * @returns {Element|null}
      */
     editMessageText(message_id, text, ts) {
-        let f = this.formatMessage(text)
+        let f = this.formatMessage(text);
         let time = formatTime(ts);
-        this.getMessageTimeDiv(message_id).text(time);
-        return this.getMessageDiv(message_id).find(".msg-text").html(f);
+        const timeDiv = this.getMessageTimeDiv(message_id);
+        if (timeDiv) {
+            timeDiv.textContent = time;
+        }
+        const msgDiv = this.getMessageDiv(message_id);
+        if (msgDiv) {
+            const msgText = $(".msg-text", msgDiv);
+            if (msgText) {
+                msgText.innerHTML = f;
+                return msgText;
+            }
+        }
+        return null;
     }
 
     /**
@@ -187,12 +215,15 @@ export default class DomApi {
      */
     updateMessageAttachments(message_id, attachments) {
         let message_div = this.getMessageDiv(message_id);
-        let attachment_container = message_div.find('.attachment-image-container');
-        attachment_container.empty();
-        
-        if (attachments && attachments.images && attachments.images.length > 0) {
-            for (let filename of attachments.images) {
-                attachment_container.append(`<img class='attached-image' src='/media/uploads/${filename}'>`);
+        if (!message_div) return;
+        let attachment_container = $('.attachment-image-container', message_div);
+        if (attachment_container) {
+            attachment_container.innerHTML = '';
+
+            if (attachments && attachments.images && attachments.images.length > 0) {
+                for (let filename of attachments.images) {
+                    attachment_container.insertAdjacentHTML('beforeend', `<img class='attached-image' src='/media/uploads/${filename}'>`);
+                }
             }
         }
     }
@@ -202,39 +233,48 @@ export default class DomApi {
      * @param {number} message_id - The message ID
      */
     showHistoryButton(message_id) {
-        this.getMessageDiv(message_id).find(".show-history").show();
+        const msgDiv = this.getMessageDiv(message_id);
+        if (msgDiv) {
+            const btn = $(".show-history", msgDiv);
+            if (btn) {
+                btn.style.display = '';
+            }
+        }
     }
 
     /**
      * Gets the room type for a given room ID
      * @param {number} room_id - The room ID
-     * @returns {string} - Room type (e.g., 'public', 'private')
+     * @returns {string|null}
      */
     getRoomType(room_id) {
-        return $(`.room-link[data-room-id="${room_id}"]`).attr("data-room-type");
+        const el = $(`.room-link[data-room-id="${room_id}"]`);
+        return el ? el.getAttribute("data-room-type") : null;
     }
 
     /**
      * Gets all date banner elements in the messages container
-     * @returns {jQuery} - jQuery object containing date banners
+     * @returns {NodeList}
      */
     getLastMessageBanner() {
-        return this.getMessagesDiv().find('.date-banner');
+        const messagesDiv = this.getMessagesDiv();
+        return messagesDiv ? $$('.date-banner', messagesDiv) : [];
     }
 
     /**
      * Gets the text content of a message
      * @param {number} message_id - The message ID
-     * @returns {string} - Message text content
+     * @returns {string}
      */
     getMessageText(message_id) {
-        return this.getMessageDiv(message_id).find(".msg-text").text();
+        const msgDiv = this.getMessageDiv(message_id);
+        return msgDiv ? ($(".msg-text", msgDiv) || {}).textContent || '' : '';
     }
 
     /**
      * Formats a message by escaping HTML and converting URLs to links
      * @param {string} raw_message - Raw message text
-     * @returns {string} - Formatted HTML-safe message text
+     * @returns {string}
      */
     formatMessage(raw_message) {
         let escaped = escapeHtml(raw_message);
@@ -252,18 +292,18 @@ export default class DomApi {
 
     /**
      * Gets the image preview container
-     * @returns {jQuery} - jQuery object containing the preview container
+     * @returns {Element|null}
      */
     getPreviewDiv() {
-        return $(".preview-images")
+        return $(".preview-images");
     }
 
     /**
      * Gets the image preview container (with close button)
-     * @returns {jQuery} - jQuery object containing the preview container
+     * @returns {Element|null}
      */
     getPreviewContainer() {
-        return $(`.image-preview-container`)
+        return $(`.image-preview-container`);
     }
 
     /**
@@ -272,10 +312,12 @@ export default class DomApi {
      */
     seenChat(room_id) {
         let room_link = this.getRoomLinkDiv(room_id);
-        room_link.removeClass("room-not-seen");
+        if (room_link) {
+            room_link.classList.remove("room-not-seen");
+        }
 
         // all rooms are seen, change tab icon back
-        if ($('.room-not-seen').length == 0) {
+        if ($$('.room-not-seen').length === 0) {
             removeNotification();
         }
     }
@@ -287,17 +329,20 @@ export default class DomApi {
      */
     updateOnline(room_id, is_online) {
         let room_link = this.getRoomLinkDiv(room_id);
+        if (!room_link) return;
         if (is_online) {
-            room_link.removeClass('offline').addClass('online');
+            room_link.classList.remove('offline');
+            room_link.classList.add('online');
         } else {
-            room_link.removeClass('online').addClass('offline');
+            room_link.classList.remove('online');
+            room_link.classList.add('offline');
         }
     }
 
     /**
      * Gets the timestamp element for a message
      * @param {number} message_id - The message ID
-     * @returns {jQuery} - jQuery object containing the timestamp element
+     * @returns {Element|null}
      */
     getMessageTimeDiv(message_id) {
         return $(`.message-timestamp[data-message-id=${message_id}]`);
@@ -305,7 +350,7 @@ export default class DomApi {
 
     /**
      * Gets the message input field
-     * @returns {jQuery} - jQuery object containing the message input
+     * @returns {Element|null}
      */
     getMessageInput() {
         return $(`#message-input`);
@@ -313,23 +358,25 @@ export default class DomApi {
 
     /**
      * Gets the current text in the message input
-     * @returns {string} - Current input value
+     * @returns {string}
      */
     getEnteredText() {
-        return this.getMessageInput().val();
+        const input = this.getMessageInput();
+        return input ? input.value : '';
     }
 
     /**
      * Gets the anonymous mode checkbox state
-     * @returns {boolean} - Whether anonymous mode is enabled
+     * @returns {boolean}
      */
     getAnonymousValue() {
-        return $(`.anonymous-switch`).is(":checked");
+        const el = $(`.anonymous-switch`);
+        return el ? el.checked : false;
     }
 
     /**
      * Gets the file input element
-     * @returns {jQuery} - jQuery object containing the file input
+     * @returns {Element|null}
      */
     getFileInput() {
         return $(`#file-input`);
@@ -337,28 +384,36 @@ export default class DomApi {
 
     /**
      * Gets the selected files from the file input
-     * @returns {FileList} - List of selected files
+     * @returns {FileList}
      */
     getFiles() {
-        return this.getFileInput()[0].files;
+        const input = this.getFileInput();
+        return input ? input.files : null;
     }
 
     /**
      * Clears file input and preview containers
      */
     clearFiles() {
-        $(`#file-input`).val("");
-        this.getPreviewContainer().hide();
-        this.getPreviewDiv().empty();
+        const fileInput = $(`#file-input`);
+        if (fileInput) {
+            fileInput.value = "";
+        }
+        this.getPreviewContainer().style.display = 'none';
+        const previewDiv = this.getPreviewDiv();
+        if (previewDiv) {
+            previewDiv.innerHTML = '';
+        }
         // Don't clear removed-attachments data here, it's needed for editing
     }
 
     /**
      * Gets the currently edited message ID from input data
-     * @returns {number|null} - The message ID being edited, or null
+     * @returns {number|null}
      */
     getEditedMessageId() {
-        return this.getMessageInput().data('edit-message');
+        const input = this.getMessageInput();
+        return input ? input.dataset.editMessage : null;
     }
 
     /**
@@ -367,29 +422,44 @@ export default class DomApi {
      */
     setEditing(message_id) {
         let text = this.getMessageText(message_id);
-        this.getFileInput().removeAttr('disabled');
-        this.getMessageInput().data('edit-message', message_id)
-            .data('original-message-text', text)
-            .val(text)
-            .css('background-color', '#4a4a00');
-        
+        const fileInput = this.getFileInput();
+        if (fileInput) {
+            fileInput.removeAttribute('disabled');
+        }
+        const input = this.getMessageInput();
+        if (input) {
+            input.dataset.editMessage = message_id;
+            input.dataset.originalMessageText = text;
+            input.value = text;
+            input.style.backgroundColor = '#4a4a00';
+        }
+
         // Load existing attachments for editing
         let attachments = this.getMessageAttachments(message_id);
         this.loadEditingAttachments(message_id, attachments);
-        
-        setCaretPosition(this.getMessageInput()[0], text.length);
+
+        const inputEl = this.getMessageInput();
+        if (inputEl) {
+            setCaretPosition(inputEl, text.length);
+        }
     }
 
     /**
      * Stops editing mode and clears input
      */
     stopEditing() {
-        this.getFileInput().removeAttr('disabled');
-        this.getMessageInput().removeData('edit-message')
-            .removeData('removed-attachments')
-            .removeData('original-message-text')
-            .val("")
-            .css('background-color', '#303030');
+        const fileInput = this.getFileInput();
+        if (fileInput) {
+            fileInput.removeAttribute('disabled');
+        }
+        const input = this.getMessageInput();
+        if (input) {
+            delete input.dataset.editMessage;
+            delete input.dataset.removedAttachments;
+            delete input.dataset.originalMessageText;
+            input.value = "";
+            input.style.backgroundColor = '#303030';
+        }
         this.clearFiles();
     }
 
@@ -399,7 +469,7 @@ export default class DomApi {
      * @returns {Promise<void>}
      */
     async openBigImage(srcs) {
-        let pswpElement = document.querySelectorAll('.pswp')[0];
+        let pswpElement = $$('.pswp')[0];
         let items = [];
         for (let src of srcs) {
             let size = await getImageSize(src);
@@ -407,7 +477,7 @@ export default class DomApi {
                 src,
                 w: size.w,
                 h: size.h
-            })
+            });
         }
         let gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
             index: 0, // start at first slide
@@ -420,21 +490,27 @@ export default class DomApi {
      * Closes the PhotoSwipe lightbox
      */
     closeBigImage() {
-        $("#big-image").remove();
-        $('body').removeClass('modal-open');
+        const el = $("#big-image");
+        if (el) {
+            el.remove();
+        }
+        document.body.classList.remove('modal-open');
     }
 
     /**
      * Gets the most recent message sent by the current user
-     * @returns {jQuery} - jQuery object containing the message element
+     * @returns {Element|null}
      */
     getLatestOwnMessage() {
-        return this.getMessagesDiv().find('.message.own').last();
+        const messagesDiv = this.getMessagesDiv();
+        if (!messagesDiv) return null;
+        const ownMessages = $$('.message.own', messagesDiv);
+        return ownMessages.length > 0 ? ownMessages[ownMessages.length - 1] : null;
     }
 
     /**
      * Checks if currently editing a message
-     * @returns {boolean} - true if editing, false otherwise
+     * @returns {boolean}
      */
     isEditing() {
         return this.getEditedMessageId() ? true : false;
@@ -444,7 +520,10 @@ export default class DomApi {
      * Removes the "empty chat" banner
      */
     removeNoMessagesBanner() {
-        $('.empty-chat-message').remove();
+        const banner = $('.empty-chat-message');
+        if (banner) {
+            banner.remove();
+        }
     }
 
     /**
@@ -452,7 +531,10 @@ export default class DomApi {
      * @param {string} title - The room title to set
      */
     setRoomTitle(title) {
-        $("#room-title").text(title);
+        const el = $("#room-title");
+        if (el) {
+            el.textContent = title;
+        }
     }
 
     /**
@@ -461,16 +543,21 @@ export default class DomApi {
      * @param {boolean} is_enabled - Whether notifications are enabled
      */
     setRoomNotifications(room_id, is_enabled) {
-        const $btn = $(".notif-switch[data-room-id='" + room_id + "']");
-        $btn.prop("disabled", false);
-        $btn.data("enabled", is_enabled);
-        
+        const btn = $(`.notif-switch[data-room-id='${room_id}']`);
+        if (!btn) return;
+        btn.disabled = false;
+        btn.dataset.enabled = is_enabled;
+
         // Update icon: bell if enabled, bell-slash if disabled
-        const $icon = $btn.find("i");
-        if (is_enabled) {
-            $icon.removeClass("fa-bell-slash").addClass("fa-bell");
-        } else {
-            $icon.removeClass("fa-bell").addClass("fa-bell-slash");
+        const icon = $("i", btn);
+        if (icon) {
+            if (is_enabled) {
+                icon.classList.remove("fa-bell-slash");
+                icon.classList.add("fa-bell");
+            } else {
+                icon.classList.remove("fa-bell");
+                icon.classList.add("fa-bell-slash");
+            }
         }
     }
 
@@ -478,20 +565,22 @@ export default class DomApi {
      * Clears all room data from the UI
      */
     clearRoomData() {
-        this.getMessagesDiv().empty();
-        this.getMessageInput().val("");
+        const messagesDiv = this.getMessagesDiv();
+        if (messagesDiv) {
+            messagesDiv.innerHTML = '';
+        }
+        const input = this.getMessageInput();
+        if (input) {
+            input.value = "";
+        }
         this.clearFiles();
         this.stopEditing();
-        this.getMessagesDiv().append(
-            "<p class='empty-chat-message'>" + _("Loading...") + "</p>"
-        );
-    }
-
-    /**
-     * Adds a banner prompting user to enable notifications
-     */
-    addPermissionBanner() {
-        $('.chat-page-header').append("<button type='button' class='alert alert-info p-1 m-1 enable-notifications-btn'><i class='far fa-bell-slash'></i> " + _("Click here to enable notifications") + " <i class ='far fa-bell-slash'></i></button>")
+        if (messagesDiv) {
+            messagesDiv.insertAdjacentHTML(
+                'beforeend',
+                "<p class='empty-chat-message'>" + _("Loading...") + "</p>"
+            );
+        }
     }
 
     /**
@@ -505,33 +594,39 @@ export default class DomApi {
             return;
         }
 
-        let $button = $(button);
-        let $tooltip = $('<span class="copy-feedback badge"></span>');
-        $tooltip.text(message);
-        $tooltip.toggleClass('text-bg-success', !!success);
-        $tooltip.toggleClass('text-bg-danger', !success);
+        let $tooltip = document.createElement('span');
+        $tooltip.className = "copy-feedback badge";
+        $tooltip.textContent = message;
+        $tooltip.classList.add(success ? 'text-bg-success' : 'text-bg-danger');
 
-        $button.append($tooltip);
+        button.appendChild($tooltip);
         setTimeout(() => {
-            $tooltip.fadeOut(200, function () {
-                $(this).remove();
-            });
+            $tooltip.style.transition = 'opacity 0.2s';
+            $tooltip.style.opacity = '0';
+            setTimeout(() => {
+                if ($tooltip.parentNode) {
+                    $tooltip.remove();
+                }
+            }, 200);
         }, 1200);
     }
 
     /**
      * Gets current attachments from a message element
      * @param {number} message_id - The message ID
-     * @returns {Object} - Attachment data with images array
+     * @returns {Object}
      */
     getMessageAttachments(message_id) {
         let message_div = this.getMessageDiv(message_id);
         let attachments = { images: [] };
-        message_div.find('.attached-image').each(function() {
-            let src = $(this).attr('src');
-            let filename = src.split('/').pop();
-            attachments.images.push(filename);
-        });
+        if (message_div) {
+            const images = $$('.attached-image', message_div);
+            images.forEach(function(img) {
+                let src = img.getAttribute('src');
+                let filename = src.split('/').pop();
+                attachments.images.push(filename);
+            });
+        }
         return attachments.images.length > 0 ? attachments : {};
     }
 
@@ -542,34 +637,45 @@ export default class DomApi {
      */
     loadEditingAttachments(message_id, attachments) {
         let preview_container = this.getPreviewDiv();
-        preview_container.empty();
-        
+        if (preview_container) {
+            preview_container.innerHTML = '';
+        }
+
         if (!attachments || !attachments.images || attachments.images.length === 0) {
-            this.getPreviewContainer().hide();
+            const container = this.getPreviewContainer();
+            if (container) {
+                container.style.display = 'none';
+            }
             return;
         }
 
-        this.getPreviewContainer().show();
-        
+        const container = this.getPreviewContainer();
+        if (container) {
+            container.style.display = '';
+        }
+
         for (let i = 0; i < attachments.images.length; i++) {
             let filename = attachments.images[i];
             let preview_id = `preview-existing-${i}`;
             let img_html = `<div class="image-preview-wrapper" style="position: relative; display: inline-block;">
                 <img class='image-preview' id='${preview_id}' src='/media/uploads/${filename}' data-filename='${filename}'>
-                <button class="btn btn-sm btn-danger remove-existing-attachment" 
+                <button class="btn btn-sm btn-danger remove-existing-attachment"
                     style="position: absolute; top: 2px; right: 2px; padding: 0 4px; font-size: 12px;"
                     data-filename="${filename}" type="button">×</button>
             </div>`;
-            preview_container.append(img_html);
+            if (preview_container) {
+                preview_container.insertAdjacentHTML('beforeend', img_html);
+            }
         }
     }
 
     /**
      * Gets the list of removed attachment filenames from input data
-     * @returns {Array<string>} - Array of removed attachment filenames
+     * @returns {Array<string>}
      */
     getRemovedAttachments() {
-        return this.getMessageInput().data('removed-attachments') || [];
+        const input = this.getMessageInput();
+        return input ? (input.dataset.removedAttachments ? JSON.parse(input.dataset.removedAttachments) : []) : [];
     }
 
     /**
@@ -580,16 +686,20 @@ export default class DomApi {
         let removed = this.getRemovedAttachments();
         if (!removed.includes(filename)) {
             removed.push(filename);
-            this.getMessageInput().data('removed-attachments', removed);
+            const input = this.getMessageInput();
+            if (input) {
+                input.dataset.removedAttachments = JSON.stringify(removed);
+            }
         }
     }
 
     /**
      * Gets the original message text from input data
      * @param {number} message_id - The message ID
-     * @returns {string} - Original message text
+     * @returns {string}
      */
     getOriginalMessageText(message_id) {
-        return this.getMessageInput().data('original-message-text');
+        const input = this.getMessageInput();
+        return input ? input.dataset.originalMessageText : '';
     }
 }

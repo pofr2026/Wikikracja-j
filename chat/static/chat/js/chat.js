@@ -6,7 +6,7 @@
 
 import WsApi from './wsapi.js';
 import DomApi from './domapi.js';
-import { makeNotification, formatDate, formatDateTime, Lock, parseParms, _ } from './utility.js';
+import { makeNotification, formatDate, formatDateTime, Lock, parseParms, _, $, $$ } from './utility.js';
 import { MessageHistory } from './templates.js';
 
 /**
@@ -39,7 +39,10 @@ let currentRoomId = null;
  */
 let scrollToMessageId = null;
 
-$(() => {
+/**
+ * Initialize chat module when DOM is ready
+ */
+document.addEventListener('DOMContentLoaded', () => {
     WS_API = new WsApi();
     DOM_API = new DomApi();
 
@@ -55,8 +58,9 @@ $(() => {
 
         let data = await WS_API.getNotificationData();
         const enabledRooms = new Set(data.rooms.map(id => parseInt(id)));
-        $('.notif-switch[data-room-id]').each(function() {
-            const id = parseInt($(this).data('room-id'));
+        const notifButtons = $$('.notif-switch[data-room-id]');
+        notifButtons.forEach(function(btn) {
+            const id = parseInt(btn.dataset.roomId);
             DOM_API.setRoomNotifications(id, enabledRooms.has(id));
         });
 
@@ -74,9 +78,11 @@ $(() => {
         }
 
         // Build set of room IDs the user actually has access to (rendered in DOM by server)
-        const allowedRoomIds = new Set(
-            $('.room-link[data-room-id]').map((_, el) => parseInt($(el).data('room-id'))).get()
-        );
+        const roomLinks = $$('.room-link[data-room-id]');
+        const allowedRoomIds = new Set();
+        roomLinks.forEach(function(el) {
+            allowedRoomIds.add(parseInt(el.dataset.roomId));
+        });
 
         // Get locally stored last room ID, but only if it's in the allowed list
         if (!room_id && localStorage.lastUsedRoomID) {
@@ -90,9 +96,9 @@ $(() => {
 
         // Find the first public room if no room_id is set
         if (!room_id) {
-            let publicRooms = $('.room-link[data-room-id][data-room-type="public"]');
+            const publicRooms = $$('.room-link[data-room-id][data-room-type="public"]');
             if (publicRooms.length > 0) {
-                room_id = parseInt($(publicRooms[0]).data('room-id'));
+                room_id = parseInt(publicRooms[0].dataset.roomId);
             } else if (allowedRoomIds.size > 0) {
                 room_id = [...allowedRoomIds][0];
             }
@@ -100,7 +106,7 @@ $(() => {
 
         if (room_id)
             onRoomTryJoin(room_id);
-    }
+    };
 });
 
 /**
@@ -154,13 +160,13 @@ export async function onReceiveNotification(notification) {
 
 // Function to expand category containing the active room
 async function expandCategoryForRoom(room_id) {
-    const roomLink = $(`.room-link[data-room-id="${room_id}"]`)
-    if (roomLink.length === 0) return
+    const roomLink = $(`.room-link[data-room-id="${room_id}"]`);
+    if (!roomLink) return;
 
-    const container = roomLink.closest('.list-of-rooms, .list-of-pms')
-    if (container.length === 0) return
+    const container = roomLink.closest('.list-of-rooms, .list-of-pms');
+    if (!container) return;
 
-    const containerId = container.attr('id')
+    const containerId = container.id;
     const categoryMap = {
         'content-pub-rooms-active': '#toggleButtonPubRoomsActive',
         'content-pub-rooms-archive': '#toggleButtonPubRoomsArchive',
@@ -170,12 +176,22 @@ async function expandCategoryForRoom(room_id) {
         'content-votes-archive': '#toggleButtonVotesArchive',
         'content-prv-active': '#toggleButtonPrvActive',
         'content-prv-archive': '#toggleButtonPrvArchive'
-    }
+    };
 
-    const toggleButton = categoryMap[containerId]
-    if (toggleButton && !$(toggleButton).hasClass('activated')) {
-        container.show()
-        $(toggleButton).addClass('activated')
+    const toggleSelector = categoryMap[containerId];
+    if (toggleSelector) {
+        const toggleButton = $(toggleSelector);
+        if (toggleButton) {
+            // Check if container is hidden
+            const isHidden = container.style.display === 'none' || getComputedStyle(container).display === 'none';
+            if (isHidden) {
+                // Directly show container and activate button
+                container.style.display = 'block';
+                container.style.height = '';
+                container.style.overflow = '';
+                toggleButton.classList.add('activated');
+            }
+        }
     }
 }
 
@@ -195,7 +211,10 @@ export async function onRoomTryJoin(room_id) {
         await onRoomTryLeave(false);
     }
 
-    DOM_API.getRoomLinkDiv(room_id).addClass("joined");
+    const roomLink = DOM_API.getRoomLinkDiv(room_id);
+    if (roomLink) {
+        roomLink.classList.add("joined");
+    }
 
     // Expand category containing this room
     expandCategoryForRoom(room_id);
@@ -216,10 +235,13 @@ export async function onRoomTryJoin(room_id) {
         RoomLock.unlock();
         if (error === 'ROOM_INVALID' || error === 'ACCESS_DENIED') {
             delete localStorage.lastUsedRoomID;
-            DOM_API.getRoomLinkDiv(room_id).removeClass("joined");
-            let roomElements = $('.room-link[data-room-id][data-room-type="public"]');
+            const link = DOM_API.getRoomLinkDiv(room_id);
+            if (link) {
+                link.classList.remove("joined");
+            }
+            const roomElements = $$('.room-link[data-room-id][data-room-type="public"]');
             if (roomElements.length > 0) {
-                let fallbackId = parseInt($(roomElements[0]).data('room-id'));
+                let fallbackId = parseInt(roomElements[0].dataset.roomId);
                 if (fallbackId != room_id) {
                     onRoomTryJoin(fallbackId);
                 }
@@ -248,7 +270,10 @@ export async function onRoomTryJoin(room_id) {
     DOM_API.createRoomDiv(currentRoomId, title, is_public, has_notifs);
 
     // Put cursor into input field
-    document.querySelector("#message-input").focus();
+    const msgInput = $("#message-input");
+    if (msgInput) {
+        msgInput.focus();
+    }
 }
 
 /**
@@ -265,7 +290,10 @@ export async function onRoomTryLeave(sync_with_server) {
         await WS_API.leaveRoom(currentRoomId);
         RoomLock.unlock();
     }
-    DOM_API.getRoomLinkDiv(currentRoomId).removeClass("joined");
+    const roomLink = DOM_API.getRoomLinkDiv(currentRoomId);
+    if (roomLink) {
+        roomLink.classList.remove("joined");
+    }
     DOM_API.clearRoomData();
 
     currentRoomId = null;
@@ -303,11 +331,11 @@ export async function onReceiveMessages(messages) {
     for (let message of messages) {
         // let type = DOM_API.getRoomType(message.room_id);
         let current_banner = formatDate(message.timestamp);
-        let banner_div = DOM_API.getLastMessageBanner();
-        let previous_banner = banner_div.length ? banner_div.last().text() : null;
+        let banners = DOM_API.getLastMessageBanner();
+        let previous_banner = banners.length ? banners[banners.length - 1].textContent : null;
 
         if (previous_banner != current_banner) {
-            msgdiv.append(`<div class='date-banner'>${current_banner}</div>`);
+            msgdiv.insertAdjacentHTML('beforeend', `<div class='date-banner'>${current_banner}</div>`);
         }
 
         DOM_API.addMessage(
@@ -324,13 +352,15 @@ export async function onReceiveMessages(messages) {
                 makeNotification({
                     title: message.username,
                     body: message.message
-                })
+                });
             }
         }
         if (message.your_vote /* You voted for this message e.g. 'upvote' or 'downvote' */ ) {
             // find message div and make button appear active
             let active_btn = DOM_API.getVoteDiv(message.message_id, message.your_vote);
-            active_btn.addClass('active');
+            if (active_btn) {
+                active_btn.classList.add('active');
+            }
         }
     }
 
@@ -345,10 +375,13 @@ export async function onReceiveMessages(messages) {
         }
     }
 
-    if (shouldStickToBottom) {
-        msgdiv.scrollTop(msgdiv.prop("scrollHeight"));
+    if (shouldStickToBottom && msgdiv) {
+        msgdiv.scrollTop = msgdiv.scrollHeight;
     }
-    document.querySelector("#message-input").focus();
+    const msgInput = $("#message-input");
+    if (msgInput) {
+        msgInput.focus();
+    }
 }
 
 /**
@@ -364,18 +397,31 @@ export async function onReceiveVotes(event) {
     // find message on page by id and update counters
     let message_div = DOM_API.getMessageDiv(event.message_id);
 
-    DOM_API.getMessageUpvotesCountDiv(event.message_id).text(event.upvotes);
-    DOM_API.getMessageDownvotesCountDiv(event.message_id).text(event.downvotes);
+    const upvotesDiv = DOM_API.getMessageUpvotesCountDiv(event.message_id);
+    if (upvotesDiv) {
+        upvotesDiv.textContent = event.upvotes;
+    }
+    const downvotesDiv = DOM_API.getMessageDownvotesCountDiv(event.message_id);
+    if (downvotesDiv) {
+        downvotesDiv.textContent = event.downvotes;
+    }
 
     if (event.your_vote /* vote type e.g. upvote or downvote or null if it wasn't you who triggered */ ) {
         // find vote button you pressed
         let active_btn = DOM_API.getVoteDiv(event.message_id, event.your_vote);
         // make all vote buttons appear inactive
-        message_div.find('.msg-vote').removeClass('active');
+        if (message_div) {
+            const voteBtns = $$('.msg-vote', message_div);
+            voteBtns.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+        }
 
         // vote was added
         if (event.add) {
-            active_btn.addClass('active');
+            if (active_btn) {
+                active_btn.classList.add('active');
+            }
         } /* vote was removed */
         else {
             // do nothing, all buttons are inactive
@@ -425,7 +471,10 @@ export async function onRoomUnsee(room_id) {
     if (currentRoomId == room_id) {
         return;
     }
-    DOM_API.getRoomLinkDiv(room_id).addClass("room-not-seen");
+    const roomLink = DOM_API.getRoomLinkDiv(room_id);
+    if (roomLink) {
+        roomLink.classList.add("room-not-seen");
+    }
 }
 
 /**
@@ -437,7 +486,7 @@ export async function onRoomUnsee(room_id) {
  */
 export async function onUpdateVote(vote, message_id, is_add) {
     // toggle button's state
-    $(this).toggleClass('active');
+    this.classList.toggle('active');
 
     if (is_add) {
         WS_API.addVote(vote, message_id);
@@ -461,7 +510,7 @@ export async function onToggleNotifications(room_id, is_enabled) {
  */
 export async function onMessageHistory(message_id) {
     let data = await WS_API.getMessageHistory(message_id);
-    let history = data?.message_history || []
+    let history = data?.message_history || [];
 
     // Format timestamps to readable dates with time
     history = history.map(entry => ({
@@ -469,9 +518,24 @@ export async function onMessageHistory(message_id) {
         formattedTime: formatDateTime(entry.timestamp)
     }));
 
-    let html = MessageHistory( {history} );
-    $("#message-history-modal .modal-body").html(html);
-    $("#message-history-modal").modal('show');
+    let html = MessageHistory({ history });
+    const modalBody = $("#message-history-modal .modal-body");
+    if (modalBody) {
+        modalBody.innerHTML = html;
+    }
+    // Bootstrap modal show
+    const modal = $("#message-history-modal");
+    if (modal) {
+        // Use bootstrap's JS API if available, otherwise fallback to class manipulation
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+        } else {
+            modal.classList.add('show');
+            modal.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+    }
 }
 
 /**
@@ -566,7 +630,7 @@ function buildRoomUrl(room_id) {
  * @param {number} message_id - ID of the message
  * @returns {string} - Full URL to the specific message
  */
-function buildMessageUrl(room_id, message_id) {
+function buildMessageUrls(room_id, message_id) {
     return `${buildRoomUrl(room_id)}&message_id=${message_id}`;
 }
 
@@ -584,7 +648,7 @@ export async function onSubmitMessage(message, editing_message_id) {
         let original_message = DOM_API.getOriginalMessageText(editing_message_id);
 
         // Upload new files if any
-        if (files.length) {
+        if (files && files.length) {
             let response = await WS_API.uploadFiles(files);
             attachments.images = response.filenames;
         }
@@ -598,11 +662,11 @@ export async function onSubmitMessage(message, editing_message_id) {
     let attachments = {};
     let is_anonymous = DOM_API.getAnonymousValue();
 
-    if (message.replace(" ", "").length == 0 && files.length == 0) {
+    if (message.replace(" ", "").length == 0 && (!files || files.length == 0)) {
         return;
     }
 
-    if (files.length) {
+    if (files && files.length) {
         let response = await WS_API.uploadFiles(files);
         attachments.images = response.filenames;
     }
@@ -613,5 +677,8 @@ export async function onSubmitMessage(message, editing_message_id) {
     DOM_API.clearFiles();
 
     // Clears input field
-    DOM_API.getMessageInput().val("");
+    const input = DOM_API.getMessageInput();
+    if (input) {
+        input.value = "";
+    }
 }

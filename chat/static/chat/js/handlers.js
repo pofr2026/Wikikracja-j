@@ -15,6 +15,7 @@ import {
 } from './chat.js';
 
 import DomApi from './domapi.js';
+import { $, $$ } from './utility.js';
 
 /**
  * DOM API instance for UI operations
@@ -25,49 +26,49 @@ const DOM_API = new DomApi();
 /**
  * Sets up event listeners for the chat interface
  */
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
 
-    let acc = document.getElementsByClassName('accordion')
+    // Map accordion button IDs to their content element IDs
+    const accordionMap = {
+        'toggleButtonPubRoomsActive': 'content-pub-rooms-active',
+        'toggleButtonPubRoomsArchive': 'content-pub-rooms-archive',
+        'toggleButtonTasksActive': 'content-tasks-active',
+        'toggleButtonTasksArchive': 'content-tasks-archive',
+        'toggleButtonVotesActive': 'content-votes-active',
+        'toggleButtonVotesArchive': 'content-votes-archive',
+        'toggleButtonPrvActive': 'content-prv-active',
+        'toggleButtonPrvArchive': 'content-prv-archive'
+    };
+
+    let acc = document.getElementsByClassName('accordion');
     for (var i = 0; i < acc.length; i++) {
         acc[i].addEventListener('click', function() {
-            this.classList.toggle('activated')
-        })
+            this.classList.toggle('activated');
+            // Find the associated content element and slide toggle it
+            const contentId = accordionMap[this.id];
+            if (contentId) {
+                const contentEl = $('#' + contentId);
+                if (contentEl) {
+                    slideToggle(contentEl, 300);
+                }
+            }
+        });
     }
 
-    $('#toggleButtonPubRoomsActive').click(function() {
-        $('#content-pub-rooms-active').slideToggle(300)
-    })
-    $('#toggleButtonPubRoomsArchive').click(function() {
-        $('#content-pub-rooms-archive').slideToggle(300)
-    })
-    $('#toggleButtonTasksActive').click(function() {
-        $('#content-tasks-active').slideToggle(300)
-    })
-    $('#toggleButtonTasksArchive').click(function() {
-        $('#content-tasks-archive').slideToggle(300)
-    })
-    $('#toggleButtonVotesActive').click(function() {
-        $('#content-votes-active').slideToggle(300)
-    })
-    $('#toggleButtonVotesArchive').click(function() {
-        $('#content-votes-archive').slideToggle(300)
-    })
-    $('#toggleButtonPrvActive').click(function() {
-        $('#content-prv-active').slideToggle(300)
-    })
-    $('#toggleButtonPrvArchive').click(function() {
-        $('#content-prv-archive').slideToggle(300)
-    })
 
     // Send message button click handler
-    $(document).on("click", ".send-message", function() {
-        let edit_message_id = DOM_API.getEditedMessageId();
-        let message = DOM_API.getEnteredText();
-        onSubmitMessage(message, edit_message_id);
+    document.addEventListener("click", function(e) {
+        if (e.target.closest(".send-message")) {
+            let edit_message_id = DOM_API.getEditedMessageId();
+            let message = DOM_API.getEnteredText();
+            onSubmitMessage(message, edit_message_id);
+        }
     });
 
     // Enter key to send message (and ArrowUp to edit last message)
-    $(document).on("keydown", "#message-input", function(e) {
+    document.addEventListener("keydown", function(e) {
+        if (e.target.id !== "message-input") return;
+
         if (e.keyCode == 13) {
             let edit_message_id = DOM_API.getEditedMessageId();
             let message = DOM_API.getEnteredText();
@@ -78,7 +79,7 @@ $(document).ready(function() {
             // up arrow will move caret to start by default
             e.preventDefault();
             let message = DOM_API.getLatestOwnMessage();
-            let message_id = message.data('message-id');
+            let message_id = message ? message.dataset.messageId : null;
             if (!DOM_API.isEditing()) {
                 DOM_API.setEditing(message_id);
             }
@@ -86,34 +87,44 @@ $(document).ready(function() {
     });
 
     // Image click to open in lightbox
-    $(document).on('click', '.attachment-image-container', function(e) {
-        let srcs = []
-        for (let img of $(this).find("img")) {
-            srcs.push(img.src);
+    document.addEventListener('click', function(e) {
+        const container = e.target.closest('.attachment-image-container');
+        if (container) {
+            let srcs = [];
+            const imgs = $$("img", container);
+            for (let img of imgs) {
+                srcs.push(img.src);
+            }
+            DOM_API.openBigImage(srcs);
         }
-        DOM_API.openBigImage(srcs);
     });
 
     // Notification toggle switch
-    $(document).on('click', '.notif-switch', function() {
-        const $btn = $(this);
-        const currentState = $btn.data("enabled") === "true" || $btn.data("enabled") === true;
-        const newState = !currentState;
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.notif-switch');
+        if (btn) {
+            const currentState = btn.dataset.enabled === "true" || btn.dataset.enabled === true;
+            const newState = !currentState;
 
-        // Update UI immediately for instant feedback
-        $btn.data("enabled", newState);
-        const $icon = $btn.find("i");
-        if (newState) {
-            $icon.removeClass("fa-bell-slash").addClass("fa-bell");
-        } else {
-            $icon.removeClass("fa-bell").addClass("fa-bell-slash");
+            // Update UI immediately for instant feedback
+            btn.dataset.enabled = newState;
+            const icon = $("i", btn);
+            if (icon) {
+                if (newState) {
+                    icon.classList.remove("fa-bell-slash");
+                    icon.classList.add("fa-bell");
+                } else {
+                    icon.classList.remove("fa-bell");
+                    icon.classList.add("fa-bell-slash");
+                }
+            }
+
+            onToggleNotifications(btn.dataset.roomId, newState);
         }
-
-        onToggleNotifications($btn.data("room-id"), newState);
     });
 
     // Escape key to cancel editing
-    $(document).on('keydown', function(e) {
+    document.addEventListener('keydown', function(e) {
         if (e.key !== "Escape") {
             return;
         }
@@ -126,40 +137,54 @@ $(document).ready(function() {
     });
 
     // Delete images preview button
-    $(document).on('click', '.delete-images-preview', function(e) {
-        let room_id = $(this).data("room-id");
-        DOM_API.clearFiles(room_id);
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.delete-images-preview');
+        if (btn) {
+            let room_id = btn.dataset.roomId;
+            DOM_API.clearFiles(room_id);
+        }
     });
 
     // Copy room link button
-    $(document).on('click', '.copy-room-url', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        let room_id = $(this).data('room-id');
-        copyRoomLink(room_id, this);
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.copy-room-url');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            let room_id = btn.dataset.roomId;
+            copyRoomLink(room_id, btn);
+        }
     });
 
     // Copy message link button
-    $(document).on('click', '.copy-message-url', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        let room_id = $(this).data('room-id');
-        let message_id = $(this).data('message-id');
-        copyMessageLink(room_id, message_id, this);
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.copy-message-url');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            let room_id = btn.dataset.roomId;
+            let message_id = btn.dataset.messageId;
+            copyMessageLink(room_id, message_id, btn);
+        }
     });
 
     // File input change handler for image previews
-    $(document).on("change", ".file-input", function(e) {
-        let files = this.files;
+    document.addEventListener("change", function(e) {
+        if (!e.target.classList.contains("file-input")) return;
+
+        let files = e.target.files;
         let preview_container = DOM_API.getPreviewDiv();
 
         // If editing, keep existing attachments and append new ones
-        if (!DOM_API.isEditing()) {
-            preview_container.empty();
+        if (!DOM_API.isEditing() && preview_container) {
+            preview_container.innerHTML = '';
         }
 
         if (files.length > 0) {
-            DOM_API.getPreviewContainer().show();
+            const container = DOM_API.getPreviewContainer();
+            if (container) {
+                container.style.display = '';
+            }
         }
 
         for (let i = 0; i < files.length; ++i) {
@@ -174,10 +199,15 @@ $(document).ready(function() {
                     style="position: absolute; top: 2px; right: 2px; padding: 0 4px; font-size: 12px;"
                     data-preview-id="${preview_id}" type="button">×</button>
             </div>`;
-            preview_container.append(img_html);
+            if (preview_container) {
+                preview_container.insertAdjacentHTML('beforeend', img_html);
+            }
 
             fr.onload = function(e) {
-                $(`#${preview_id}`)[0].src = this.result;
+                const imgEl = document.getElementById(preview_id);
+                if (imgEl) {
+                    imgEl.src = this.result;
+                }
             };
 
             fr.readAsDataURL(file);
@@ -185,108 +215,172 @@ $(document).ready(function() {
     });
 
     // Vote button click handler
-    $(document).on("click", ".msg-vote", function() {
-        let event_type = $(this).data("event-name"); // upvote / downvote
-        let message_id = $(this).data("message-id");
+    document.addEventListener("click", function(e) {
+        const btn = e.target.closest(".msg-vote");
+        if (btn) {
+            let event_type = btn.dataset.eventName; // upvote / downvote
+            let message_id = btn.dataset.messageId;
 
-        // if is active and pressed it means vote has to be removed
-        let is_add = !$(this).hasClass('active');
+            // if is active and pressed it means vote has to be removed
+            let is_add = !btn.classList.contains('active');
 
-        onUpdateVote(event_type, message_id, is_add);
+            onUpdateVote.call(btn, event_type, message_id, is_add);
+        }
     });
 
     // Show message history button
-    $(document).on("click", ".show-history", async function() {
-        let message_id = $(this).data('message-id');
-        onMessageHistory(message_id);
+    document.addEventListener("click", function(e) {
+        const btn = e.target.closest(".show-history");
+        if (btn) {
+            let message_id = btn.dataset.messageId;
+            onMessageHistory(message_id);
+        }
     });
 
     // Edit message button
-    $(document).on("click", ".edit-message", function() {
-        let message_id = $(this).data("message-id");
-        DOM_API.setEditing(message_id);
+    document.addEventListener("click", function(e) {
+        const btn = e.target.closest(".edit-message");
+        if (btn) {
+            let message_id = btn.dataset.messageId;
+            DOM_API.setEditing(message_id);
+        }
     });
 
     // Remove existing attachment during editing
-    $(document).on("click", ".remove-existing-attachment", function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        let filename = $(this).data("filename");
-        DOM_API.addRemovedAttachment(filename);
-        $(this).closest('.image-preview-wrapper').remove();
+    document.addEventListener("click", function(e) {
+        const btn = e.target.closest(".remove-existing-attachment");
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            let filename = btn.dataset.filename;
+            DOM_API.addRemovedAttachment(filename);
+            const wrapper = btn.closest('.image-preview-wrapper');
+            if (wrapper) {
+                wrapper.remove();
+            }
 
-        // Hide preview container if no images left
-        if (DOM_API.getPreviewDiv().children().length === 0) {
-            DOM_API.getPreviewContainer().hide();
+            // Hide preview container if no images left
+            if (DOM_API.getPreviewDiv() && DOM_API.getPreviewDiv().children.length === 0) {
+                const container = DOM_API.getPreviewContainer();
+                if (container) {
+                    container.style.display = 'none';
+                }
+            }
         }
     });
 
     // Remove new attachment before upload
-    $(document).on("click", ".remove-new-attachment", function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $(this).closest('.image-preview-wrapper').remove();
+    document.addEventListener("click", function(e) {
+        const btn = e.target.closest(".remove-new-attachment");
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const wrapper = btn.closest('.image-preview-wrapper');
+            if (wrapper) {
+                wrapper.remove();
+            }
 
-        // Clear file input if no new attachments left
-        if (DOM_API.getPreviewDiv().find('.new-attachment').length === 0) {
-            DOM_API.getFileInput().val("");
-        }
+            // Clear file input if no new attachments left
+            const previewDiv = DOM_API.getPreviewDiv();
+            if (previewDiv && $$('.new-attachment', previewDiv).length === 0) {
+                const fileInput = DOM_API.getFileInput();
+                if (fileInput) {
+                    fileInput.value = "";
+                }
+            }
 
-        // Hide preview container if no images left
-        if (DOM_API.getPreviewDiv().children().length === 0) {
-            DOM_API.getPreviewContainer().hide();
+            // Hide preview container if no images left
+            if (previewDiv && previewDiv.children.length === 0) {
+                const container = DOM_API.getPreviewContainer();
+                if (container) {
+                    container.style.display = 'none';
+                }
+            }
         }
     });
 
     // Room join/leave (touch support for mobile)
-    $(document).on('click touchstart', '.room-name', function(e) {
+    document.addEventListener('click', function(e) {
+        handleRoomNameClick(e);
+    });
+
+    document.addEventListener('touchstart', function(e) {
+        handleRoomNameClick(e);
+    }, { passive: false });
+
+    function handleRoomNameClick(e) {
+        const roomName = e.target.closest('.room-name');
+        if (!roomName) return;
+
         // Prevent default to avoid double-tap zoom on mobile
         if (e.type === 'touchstart') {
             e.preventDefault();
         }
 
-        let room_id = $(this).parent().attr("data-room-id");
+        let room_id = roomName.parentElement.getAttribute("data-room-id");
 
-        if ($(this).hasClass("joined")) {
+        if (roomName.classList.contains("joined")) {
             // ignore second click on active room
             //onRoomTryLeave(true);
         } else {
             // Add visual feedback immediately
-            $(this).parent().addClass('room-tapping');
+            roomName.parentElement.classList.add('room-tapping');
             // Remove feedback after a short delay
             setTimeout(() => {
-                $(this).parent().removeClass('room-tapping');
+                roomName.parentElement.classList.remove('room-tapping');
             }, 300);
 
             // Join room
             onRoomTryJoin(room_id);
         }
-    });
-
-    // Enable notifications button (request permission)
-    $(document).on('click', '.enable-notifications-btn', async function(e) {
-        e.preventDefault();
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                location.reload();
-            }
-        } catch (error) {
-            console.error('Error requesting notification permission:', error);
-        }
-    });
-
-    // Initialize notification banner on DOM ready
-    $(function() {
-        if (!Notification) {
-            return;
-        }
-
-        if (Notification.permission !== 'granted') {
-            DOM_API.addPermissionBanner();
-        }
-        // if (Notification.permission !== 'granted' && localStorage.notifications !== "No") {
-        //     DOM_API.addPermissionBanner();
-        // }
-    });
+    }
 });
+
+/**
+ * Simple slideToggle implementation as a vanilla JS replacement for jQuery
+ * @param {Element} element - Element to toggle
+ * @param {number} duration - Animation duration in ms
+ */
+function slideToggle(element, duration) {
+    const isHidden = element.style.display === 'none' || getComputedStyle(element).display === 'none';
+    element.style.overflow = 'hidden';
+
+    if (isHidden) {
+        element.style.display = 'block';
+        element.style.height = '0';
+        const targetHeight = element.scrollHeight;
+        animate(element, { height: targetHeight + 'px' }, duration);
+    } else {
+        const currentHeight = element.scrollHeight;
+        element.style.height = currentHeight + 'px';
+        animate(element, { height: '0' }, duration, function() {
+            element.style.display = 'none';
+            element.style.height = '';
+            element.style.overflow = '';
+        });
+    }
+}
+
+/**
+ * Simple animation helper
+ * @param {Element} element - Element to animate
+ * @param {Object} properties - CSS properties to animate to
+ * @param {number} duration - Duration in ms
+ * @param {Function} [callback] - Callback when done
+ */
+function animate(element, properties, duration, callback) {
+    element.style.transition = '';
+    for (const prop in properties) {
+        element.style.transition = `height ${duration}ms ease`;
+        element.style[prop] = properties[prop];
+    }
+
+    const onTransitionEnd = function() {
+        element.removeEventListener('transitionend', onTransitionEnd);
+        if (callback) {
+            callback();
+        }
+    };
+
+    element.addEventListener('transitionend', onTransitionEnd);
+}

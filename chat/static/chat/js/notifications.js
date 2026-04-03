@@ -5,7 +5,7 @@
  * and handles displaying them to the user.
  */
 
-import { makeNotification } from './utility.js';
+import { makeNotification, $ } from './utility.js';
 import { getSharedWebSocket } from './websocket-manager.js';
 
 /**
@@ -21,10 +21,9 @@ export function onReceiveNotification(notification) {
 
 /**
  * Handles room unsee events (marks room as having unread messages)
- * @param {number} room_id - The room ID to mark as unread
  */
-export function onRoomUnsee(room_id) {
-    $(".nav-link[data-route='chat']").addClass("chat-has-messages");
+export function onRoomUnsee() {
+    $(".nav-link[data-route='chat']")?.classList.add("chat-has-messages");
 }
 
 /**
@@ -43,23 +42,14 @@ function handleNotificationMessage(data) {
         let notif = data.notification;
         onReceiveNotification(notif);
     } else if (data.unsee_room) {
-        onRoomUnsee(data.unsee_room);
+        onRoomUnsee();
     }
 }
 
 // Initialize shared WebSocket connection for notifications when DOM is ready
-$(document).ready(function() {
-    // Check if Notification API is supported
-    if (!Notification) {
-        // console.log("Connecting aborted in !Notification");
+document.addEventListener('DOMContentLoaded', function() {
+    if (Notification?.permission !== 'granted')
         return;
-    }
-
-    // Check if notification permission has been granted or user opted out
-    if (Notification.permission !== 'granted' && localStorage.notifications !== "No") {
-        // console.log("Connecting aborted in permission !==granted");
-        return;
-    }
 
     // Get shared WebSocket connection and register handler
     let ws = getSharedWebSocket();

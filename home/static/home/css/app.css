@@ -140,3 +140,7 @@ img {
 #gtx-trans {
   display: none !important;
 }
+
+.chat-has-messages {
+  background-color: var(--bs-success);
+}

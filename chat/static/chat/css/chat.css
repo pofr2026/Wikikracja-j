@@ -1,7 +1,3 @@
-.chat-has-messages {
-    background-color: var(--bs-success);
-}
-
 .chat-root-messages {
     display: flex;
     flex: 1;

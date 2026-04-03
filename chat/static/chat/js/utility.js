@@ -5,6 +5,26 @@
  */
 
 /**
+ * Helper function to query elements
+ * @param {string} selector - CSS selector
+ * @param {Element|Document} [context=document] - Context to search within
+ * @returns {Element|null}
+ */
+export function $(selector, context = document) {
+    return context.querySelector(selector);
+}
+
+/**
+ * Helper function to query all elements
+ * @param {string} selector - CSS selector
+ * @param {Element|Document} [context=document] - Context to search within
+ * @returns {NodeList}
+ */
+export function $$(selector, context = document) {
+    return context.querySelectorAll(selector);
+}
+
+/**
  * Displays a desktop notification for chat events
  * @param {Object} notif - Notification data
  * @param {string} notif.title - Notification title
@@ -18,7 +38,7 @@ export function makeNotification(notif) {
         new Audio('/static/chat/sounds/notification.mp3').play();
     } catch (e) {}
 
-    if (Notification && Notification.permission == 'granted') {
+    if (Notification?.permission === 'granted') {
         let notification = new Notification(notif.title, {
             icon: notif.link ?? '/favicon.ico',
             body: notif.body,
@@ -44,7 +64,7 @@ export function removeNotification() {
  * @param {string} resource - URL to the icon image
  */
 export function changeIcon(resource) {
-    let link = document.querySelector("link[rel~='icon']");
+    let link = $("link[rel~='icon']");
     if (!link) {
         link = document.createElement('link');
         link.rel = 'icon';
