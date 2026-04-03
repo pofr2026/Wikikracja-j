@@ -78,21 +78,21 @@ function createWebSocketManager() {
     };
 
     socket.onopen = function() {
-        console.log("Connected to chat socket");
+        //console.log("Connected to socket");
         if (wsOnConnect) {
             wsOnConnect();
         }
     }.bind(this);
 
     socket.onclose = function() {
-        console.log("Disconnected from chat socket");
+        console.log("Disconnected from socket");
         if (wsOnDisconnect) {
             wsOnDisconnect();
         }
     }.bind(this);
 
     // Set up beforeunload handler to close socket
-    $(window).on('beforeunload', () => {
+    window.addEventListener('beforeunload', () => {
         console.log("beforeunload: Closing connection " + ws_path);
         socket.close();
     });
