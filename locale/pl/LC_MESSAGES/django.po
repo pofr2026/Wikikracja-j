@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-31 11:50+0200\n"
+"POT-Creation-Date: 2026-04-03 17:03+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -454,7 +454,7 @@ msgstr "Czy na pewno chcesz skasować tego partnera?"
 
 #: .\bookkeeping\templates\bookkeeping\partner_confirm_delete.html:76
 #: .\bookkeeping\templates\bookkeeping\partner_list.html:22 .\home\forms.py:16
-#: .\home\templates\home\login.html:14
+#: .\home\templates\home\login.html:21
 #: .\obywatele\templates\obywatele\start.html:30
 msgid "Email"
 msgstr "Email"
@@ -1668,14 +1668,14 @@ msgid "Calendar"
 msgstr "Kalendarz"
 
 #: .\home\templates\home\base.html:88 .\home\templates\home\home.html:14
-#: .\home\templates\home\login.html:4 .\home\templates\home\login.html:12
-#: .\home\templates\home\login.html:33
+#: .\home\templates\home\login.html:4 .\home\templates\home\login.html:19
+#: .\home\templates\home\login.html:40
 #: .\obywatele\management\commands\count_citizens.py:179
 msgid "Login"
 msgstr "Zaloguj"
 
 #: .\home\templates\home\base.html:92 .\home\templates\home\home.html:17
-#: .\home\templates\home\login.html:34
+#: .\home\templates\home\login.html:41
 #: .\templates\allauth\account\signup.html:28
 msgid "Sign Up"
 msgstr "Załóż konto"
@@ -1734,7 +1734,7 @@ msgstr "Hasło"
 msgid "Change password"
 msgstr "Zmień hasło"
 
-#: .\home\templates\home\home.html:20 .\home\templates\home\login.html:35
+#: .\home\templates\home\home.html:20 .\home\templates\home\login.html:42
 #: .\home\templates\home\password_reset_form.html:5
 msgid "Reset password"
 msgstr "Odzyskaj hasło"
@@ -1779,15 +1779,19 @@ msgstr "Oczekujące osoby"
 msgid "Updated posts"
 msgstr "Zaktualizowane ogłoszenia"
 
-#: .\home\templates\home\login.html:39
+#: .\home\templates\home\login.html:9
+msgid "Last application update"
+msgstr "Ostatnia aktualizacja aplikacji"
+
+#: .\home\templates\home\login.html:46
 msgid "The username or password is incorrect."
 msgstr "Nazwa użytkownika lub hasło są nieprawidłowe."
 
-#: .\home\templates\home\login.html:40
+#: .\home\templates\home\login.html:47
 msgid "Also your account may not be active jet."
 msgstr "Twoje konto może nie być jeszcze aktywne."
 
-#: .\home\templates\home\login.html:41
+#: .\home\templates\home\login.html:48
 msgid "Please try again or reset your password."
 msgstr "Spróbuj ponownie lub odzyskaj hasło."
 

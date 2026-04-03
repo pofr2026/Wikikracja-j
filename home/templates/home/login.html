@@ -3,6 +3,13 @@
 
 {% block title %}{% trans 'Login' %}{% endblock %}
 {% block content %}
+
+{% if last_commit_date %}
+<div class="text-center text-muted small mt-2 mb-3">
+	{% trans "Last application update" %}: {{ last_commit_date }}
+</div>
+{% endif %}
+
 <div class="container">
   <div class="row d-flex justify-content-center">
     <div class="col-xs-12 col-sm-10 col-md-8 col-lg-6 col-xl-4">

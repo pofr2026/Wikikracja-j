@@ -7,6 +7,9 @@ from django.http import HttpRequest
 
 # First party imports
 from board.models import Post
+import subprocess
+import os
+from datetime import datetime
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +31,19 @@ def vapid_public_key(request):
     return {
         'vapid_public_key': settings.PUSH_NOTIFICATIONS['WEBPUSH'].get('VAPID_PUBLIC_KEY', '')
     }
+
+def last_commit_date(request):
+    """Get the date of the last Git commit"""
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    result = subprocess.run(
+        ['git', 'log', '-1', '--format=%cd', '--date=short'],
+        cwd=project_root,
+        capture_output=True,
+        text=True,
+        timeout=5
+    )
+    commit_date = result.stdout.strip() if result.returncode == 0 else None
+    return {'last_commit_date': commit_date}
 
     # Firebase configuration from settings
     # firebase_config = {

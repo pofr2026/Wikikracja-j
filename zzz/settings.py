@@ -182,6 +182,7 @@ TEMPLATES = [
                 'zzz.context_processors.footer',
                 'zzz.context_processors.site_description',
                 'zzz.context_processors.vapid_public_key',
+                'zzz.context_processors.last_commit_date',
             ],
             'debug': False
         },
