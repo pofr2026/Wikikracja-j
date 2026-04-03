@@ -210,9 +210,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         })
 
         # Load recent messages from DB to Chat (paginated)
-        messages_data = await self.get_recent_messages(room_id, limit=100)
+        # Uses optimized batch query to avoid N+1 problems for user lookups and vote checks
+        batch_data = await self.get_recent_messages_batch(room_id, self.scope['user'].id, limit=100)
+        messages_list = batch_data['messages']
+        users_dict = batch_data['users']
+        user_votes_dict = batch_data['user_votes']
+
         to_send = []
-        for msg_data in messages_data:
+        for msg_data in messages_list:
             upvotes = msg_data['upvotes']
             downvotes = msg_data['downvotes']
             edited = msg_data['edited']
@@ -237,7 +242,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 data = None
                 continue
 
-            to_send.append(await self.format_chat_message_data(data))
+            # Use pre-fetched data instead of making individual DB queries
+            to_send.append(self.format_chat_message_data_batch(data, users_dict, user_votes_dict))
 
         if to_send:
             proxy.send_json({
@@ -766,6 +772,36 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             "own": self.scope['user'] == user
         }
 
+    def format_chat_message_data_batch(self, event, users_dict, user_votes_dict):
+        """
+        Optimized version of format_chat_message_data that uses pre-fetched data
+        from get_recent_messages_batch() instead of making individual DB queries.
+        Eliminates N+1 query problem.
+        """
+        sender_id = event["user_id"]
+        message_id = event['message_id']
+
+        # Use pre-fetched user data instead of DB query
+        user = users_dict.get(sender_id)
+
+        # Use pre-fetched vote data instead of DB query
+        vote_value = user_votes_dict.get(message_id)
+
+        event_copy = {
+            **event
+        }
+        del event_copy["user_id"]  # delete user id to not give away author of anonymous message
+        del event_copy["type"]
+
+        return {
+            **event_copy,  # copy event
+            # Override some of fields based on receiver
+            'username': 'Anonymous User' if event["anonymous"] else user.username if user else None,
+            "new": event["new"] if self.scope['user'] != user else False,
+            "your_vote": vote_value if vote_value else None,
+            "own": self.scope['user'] == user
+        }
+
     ###########################################################
     # Handlers for messages sent over the channel layer       #
     ###########################################################
@@ -830,6 +866,79 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             })
 
         return result
+
+    @database_sync_to_async
+    def get_recent_messages_batch(self, room_id, user_id, limit=100):
+        """
+        Optimized version that batch-fetches messages, users, and user's votes in one go.
+        Eliminates N+1 query problem by pre-fetching all users and votes upfront.
+        Returns dict with 'messages' list, 'users' dict {user_id: user_obj}, and 'user_votes' dict {message_id: vote_str}.
+        """
+        # Fetch messages with related data (same as original)
+        messages = Message.objects.filter(room=room_id) \
+            .select_related('sender') \
+            .prefetch_related(
+                Prefetch('attachments', queryset=MessageAttachment.objects.all()),
+                'messagehistory'
+            ) \
+            .annotate(
+                upvotes=Count('votes', filter=Q(votes__vote='upvote')),
+                downvotes=Count('votes', filter=Q(votes__vote='downvote'))
+            ).order_by('-time')[:limit]
+
+        messages = list(reversed(messages))
+        if not messages:
+            return {
+                'messages': [],
+                'users': {},
+                'user_votes': {}
+            }
+
+        # Collect unique sender IDs and message IDs
+        sender_ids = {msg.sender_id for msg in messages if msg.sender_id}
+        message_ids = [msg.id for msg in messages]
+
+        # Batch fetch all users in one query
+        users = {}
+        if sender_ids:
+            users = {
+                u.id: u for u in User.objects.filter(id__in=sender_ids)
+            }
+
+        # Batch fetch current user's votes for these messages in one query
+        user_votes = {
+            v.message_id: v.vote for v in MessageVote.objects.filter(user_id=user_id, message_id__in=message_ids)
+        }
+
+        # Build message data
+        result = []
+        for msg in messages:
+            edited = hasattr(msg, 'messagehistory')
+
+            attachments = {}
+            for attachment in msg.attachments.all():
+                attachments_of_type = attachments.get(attachment.type, [])
+                attachments_of_type.append(attachment.filename)
+                attachments[attachment.type] = attachments_of_type
+
+            result.append({
+                'id': msg.id,
+                'sender_id': msg.sender_id,
+                'time': msg.time,
+                'text': msg.text,
+                'room_id': msg.room_id,
+                'anonymous': msg.anonymous,
+                'upvotes': msg.upvotes,
+                'downvotes': msg.downvotes,
+                'edited': edited,
+                'attachments': attachments,
+            })
+
+        return {
+            'messages': result,
+            'users': users,
+            'user_votes': user_votes,
+        }
 
     @database_sync_to_async
     def get_room(self, room_id):
@@ -996,18 +1105,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def has_muted_room(self, room_id):
         # Single query using through table instead of fetching room then filtering muted_by
-        return Room.muted_by.through.objects.filter(
-            room_id=room_id, 
-            user_id=self.scope['user'].id
-        ).exists()
+        return Room.muted_by.through.objects.filter(room_id=room_id, user_id=self.scope['user'].id).exists()
 
     @database_sync_to_async
     def user_has_muted_room(self, user_id, room_id):
         # Single query using through table instead of fetching room then filtering muted_by
-        return Room.muted_by.through.objects.filter(
-            room_id=room_id, 
-            user_id=user_id
-        ).exists()
+        return Room.muted_by.through.objects.filter(room_id=room_id, user_id=user_id).exists()
 
     @database_sync_to_async
     def unmute_room(self, room_id):
