@@ -44,7 +44,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     mc \
     sqlite3 \
     vim \
-    git \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /app/db /app/media /app/static
 
