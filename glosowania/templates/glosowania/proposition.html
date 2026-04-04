@@ -8,22 +8,6 @@
 
 {% block glosowania %}
 
-<style>
-  .chat-room-pulse {
-    animation: text-flash 2s infinite;
-  }
-  @keyframes text-flash {
-    0%, 100% {
-      opacity: 1;
-      color: #0d6efd;
-    }
-    50% {
-      opacity: 0.3;
-      color: #0d6efd;
-    }
-  }
-</style>
-
 <div class="container mt-4">
 	<div>
 		{% if votings %}

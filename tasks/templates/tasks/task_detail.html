@@ -2,34 +2,6 @@
 {% load i18n %}
 
 {% block content %}
-<style>
-  .task-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .task-actions form {
-    margin: 0;
-    display: inline-flex;
-  }
-  .task-actions .btn {
-    white-space: nowrap;
-  }
-  .chat-room-pulse {
-    animation: text-flash 2s infinite;
-  }
-  @keyframes text-flash {
-    0%, 100% {
-      opacity: 1;
-      color: #0d6efd;
-    }
-    50% {
-      opacity: 0.3;
-      color: #0d6efd;
-    }
-  }
-</style>
 <div class="container my-4">
   <a href="{% url 'tasks:list' %}" class="btn btn-link px-0 mb-3">&larr; {% trans "Back to list" %}</a>
 

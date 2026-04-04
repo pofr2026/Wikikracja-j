@@ -144,3 +144,61 @@ img {
 .chat-has-messages {
   background-color: var(--bs-success);
 }
+
+/* Notification banner styles */
+#notification-permission-banner,
+#notification-blocked-banner {
+  display: none;
+  border-radius: 0;
+}
+
+/* Owner highlight for task cards */
+.owner-highlight {
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Line clamp for task descriptions */
+.description-truncate {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Chat room pulse animation */
+.chat-room-pulse {
+  animation: text-flash 2s infinite;
+}
+
+@keyframes text-flash {
+
+  0%,
+  100% {
+    opacity: 1;
+    color: #0d6efd;
+  }
+
+  50% {
+    opacity: 0.3;
+    color: #0d6efd;
+  }
+}
+
+/* Task actions layout */
+.task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-actions form {
+  margin: 0;
+  display: inline-flex;
+}
+
+.task-actions .btn {
+  white-space: nowrap;
+}

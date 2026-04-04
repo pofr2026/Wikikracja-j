@@ -132,7 +132,7 @@
 
 		<!-- Global notification permission banner -->
 		{% if user.is_authenticated %}
-		<div id="notification-permission-banner" class="alert alert-info m-0 text-center" style="display: none; border-radius: 0;">
+		<div id="notification-permission-banner" class="alert alert-info m-0 text-center">
 			<i class="far fa-bell-slash"></i>
 			<span id="notification-banner-message">{% trans "Enable notifications to stay updated with new messages and activities" %}</span>
 			<button type="button" class="btn btn-sm btn-primary mx-2" id="enable-notifications-global">
@@ -142,7 +142,7 @@
 				{% trans "Not now" %}
 			</button>
 		</div>
-		<div id="notification-blocked-banner" class="alert alert-warning m-0 text-center" style="display: none; border-radius: 0;">
+		<div id="notification-blocked-banner" class="alert alert-warning m-0 text-center">
 			<i class="fas fa-exclamation-triangle"></i>
 			<span>{% trans "Notifications are blocked. Please enable them in your browser settings" %}</span>
 			<button type="button" class="btn btn-sm btn-secondary mx-2" id="dismiss-blocked-banner">
