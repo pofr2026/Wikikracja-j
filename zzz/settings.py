@@ -387,15 +387,16 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-
 WHITENOISE_AUTOREFRESH = DEBUG
 WHITENOISE_USE_FINDERS = DEBUG
 WHITENOISE_MAX_AGE = 28800  # 8 hours
 # Don't let WhiteNoise handle /media/ URLs - Django will serve them
 WHITENOISE_STATIC_PREFIX = '/static/'
+WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+WHITENOISE_MANIFEST_STRICT = False  # Allow missing manifest in dev mode
 
 DEBUG_SKIP_AUTH = env_bool("DEBUG_SKIP_AUTH", False)
 

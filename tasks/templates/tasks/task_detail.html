@@ -38,9 +38,9 @@
       <div class="d-flex justify-content-between align-items-center">
         <h1 class="h4">
           {{ task.title }}
-          {% if task.chat_room_url %}
+{% if task.chat_room_url %}
             <a href="{{ task.chat_room_url }}" target="_blank" class="text-decoration-none ms-3 {{ task.chat_room_pulse_class }}">
-              <i class="bi bi-chat-dots"></i>
+              <i class="fas fa-comments"></i>
             </a>
           {% endif %}
         </h1>

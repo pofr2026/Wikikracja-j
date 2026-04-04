@@ -18,12 +18,8 @@
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-	<!-- Citizens and Voting - question mark and trash can: -->
-	<link rel="stylesheet" type="text/css" href="{% static 'home/css/bootstrap-icons.css' %}">
-
-	<!-- Chat - like and dislike buttons, main icons -->
 	<!-- https://fontawesome.com/ -->
-	<link rel="stylesheet" type="text/css" href="{% static 'chat/webfonts/fontawesome.css' %}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 	<!-- Chat rooms styling: -->
 	<link rel="stylesheet" type="text/css" href="{% static 'home/css/darkly.css' %}">
@@ -35,18 +31,18 @@
 	<!-- Firebase SDK (for FCM on Android) -->
   {% comment %} <script type="module" src="https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js"></script>
   <script type="module" src="https://www.gstatic.com/firebasejs/12.10.0/firebase-messaging.js"></script> {% endcomment %}
-  
+
   <!-- Push notifications manager -->
   <script src="{% static 'chat/js/push-notifications.js' %}" type="module"></script>
 
   <script>
     // Firebase configuration for FCM (Android)
     // window.FIREBASE_CONFIG = {{ firebase_config|safe }};
-    
+
     // VAPID public key for WebPush
     window.VAPID_PUBLIC_KEY = "{{ vapid_public_key|default:'' }}";
   </script>
-	
+
   {% bootstrap_messages %}
   {% bootstrap_javascript %}
 </head>
@@ -61,32 +57,32 @@
 
 			<div class="collapse navbar-collapse justify-content-center" id="navbarNavAltMarkup">
 				<div class="navbar-nav text-end">
-					
-					<a {% if request.resolver_match.url_name == 'home' %} class="nav-item nav-link active mx-1 px-2" 
-					{% else %} class="nav-item nav-link mx-1 px-2" 
+
+					<a {% if request.resolver_match.url_name == 'home' %} class="nav-item nav-link active mx-1 px-2"
+					{% else %} class="nav-item nav-link mx-1 px-2"
 					{% endif %} href="{% url 'home' %}">{% trans 'Start' %}</a>
-					
-					<a {% if request.resolver_match.namespace == 'board' %} class="nav-item nav-link active mx-1 px-2" 
-					{% else %} class="nav-item nav-link mx-1 px-2" 
+
+					<a {% if request.resolver_match.namespace == 'board' %} class="nav-item nav-link active mx-1 px-2"
+					{% else %} class="nav-item nav-link mx-1 px-2"
 					{% endif %} href="{% url 'board:start' %}">{% trans "Board" %}</a>
-						
-					<a {% if request.resolver_match.namespace == 'events' %} class="nav-item nav-link active mx-1 px-2" 
-					{% else %} class="nav-item nav-link mx-1 px-2" 
+
+					<a {% if request.resolver_match.namespace == 'events' %} class="nav-item nav-link active mx-1 px-2"
+					{% else %} class="nav-item nav-link mx-1 px-2"
 					{% endif %} href="{% url 'events:list' %}">{% trans "Calendar" %}</a>
-					
+
 					{% if user.is_authenticated %}
-					<a {% if request.resolver_match.namespace == 'tasks' %} class="nav-item nav-link active mx-1 px-2" 
-					{% else %} class="nav-item nav-link mx-1 px-2" 
+					<a {% if request.resolver_match.namespace == 'tasks' %} class="nav-item nav-link active mx-1 px-2"
+					{% else %} class="nav-item nav-link mx-1 px-2"
 					{% endif %} href="{% url 'tasks:list' %}">{% trans "Tasks" %}</a>
 					{% endif %}
-					
+
 					{% if not user.is_authenticated %}
-						<a {% if request.resolver_match.url_name == 'login' %} class="nav-item nav-link active mx-1 px-2" 
-						{% else %} class="nav-item nav-link mx-1 px-2" 
+						<a {% if request.resolver_match.url_name == 'login' %} class="nav-item nav-link active mx-1 px-2"
+						{% else %} class="nav-item nav-link mx-1 px-2"
 						{% endif %} href="{% url 'login' %}">{% trans "Login" %}</a>
-					
-						<a {% if request.resolver_match.url_name == 'account_signup' %} class="nav-item nav-link active mx-1 px-2" 
-						{% else %} class="nav-item nav-link mx-1 px-2" 
+
+						<a {% if request.resolver_match.url_name == 'account_signup' %} class="nav-item nav-link active mx-1 px-2"
+						{% else %} class="nav-item nav-link mx-1 px-2"
 						{% endif %} href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
 					{% endif %}
 
@@ -97,24 +93,24 @@
 						{% endif %} href="{% url 'obywatele:obywatele' %}">{% trans "Citizens" %}</a>
 
 						{% comment %} GŁOSOWANIA: {% endcomment %}
-						<a {% if request.resolver_match.namespace == 'glosowania' %} class="nav-item nav-link active mx-1 px-2" 
-						{% else %} class="nav-item nav-link mx-1 px-2" 
+						<a {% if request.resolver_match.namespace == 'glosowania' %} class="nav-item nav-link active mx-1 px-2"
+						{% else %} class="nav-item nav-link mx-1 px-2"
 						{% endif %} href="{% url 'glosowania:approved' %}">{% trans "Voting" %}</a>
-						
-						<a {% if request.resolver_match.namespace == 'bookkeeping' %} class="nav-item nav-link active mx-1 px-2" 
-						{% else %} class="nav-item nav-link mx-1 px-2" 
+
+						<a {% if request.resolver_match.namespace == 'bookkeeping' %} class="nav-item nav-link active mx-1 px-2"
+						{% else %} class="nav-item nav-link mx-1 px-2"
 						{% endif %} href="{% url 'bookkeeping:transaction_list' %}">{% trans 'Bookkeeping' %}</a>
 
-						<a {% if request.resolver_match.namespace == 'elibrary' %} class="nav-item nav-link active mx-1 px-2" 
-						{% else %} class="nav-item nav-link mx-1 px-2" 
+						<a {% if request.resolver_match.namespace == 'elibrary' %} class="nav-item nav-link active mx-1 px-2"
+						{% else %} class="nav-item nav-link mx-1 px-2"
 						{% endif %} href="{% url 'elibrary:book_list' %}">{% trans "eLibrary" %}</a>
 
-						
-						<a class="nav-item nav-link rounded mx-1 px-2 
+
+						<a class="nav-item nav-link rounded mx-1 px-2
 						{% if request.resolver_match.namespace == 'chat' %}
-							active 
+							active
 						{% else %}
-							{{ request.user|has_messages }} 
+							{{ request.user|has_messages }}
 						{% endif %}"
 						data-route="chat" href="/chat/">{% trans "Chat" %}</a>
 
@@ -122,11 +118,11 @@
 							class="nav-item nav-link mx-1 px-2 fas fa-user active fs-3"
 						{% else %}
 							class="nav-item nav-link mx-1 px-2 fas fa-user fs-3"
-						{% endif %} 
+						{% endif %}
 						href="{% url 'obywatele:my_profile' %}"></a>
 
 						<a class="nav-item nav-link mx-1 px-2" href="{% url 'account_logout' %}">
-							<i class="fas fa-solid fa-right-from-bracket fs-3"></i>
+							<i class="fas fa-right-from-bracket fs-3"></i>
 						</a>
 
 					{% endif %}
@@ -196,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Check if user has already dismissed the banner
 	const dismissed = localStorage.getItem('notification-banner-dismissed');
 	const blockedDismissed = localStorage.getItem('notification-blocked-dismissed');
-	
+
 	// Show appropriate banner based on permission state
 	if (Notification.permission === 'default' && !dismissed) {
 		banner.style.display = 'block';
@@ -208,12 +204,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	document.getElementById('enable-notifications-global')?.addEventListener('click', async function(e) {
 		e.preventDefault();
 		console.log('Enable notifications clicked, current permission:', Notification.permission);
-		
+
 		try {
 			// Request permission
 			const permission = await Notification.requestPermission();
 			console.log('Permission result:', permission);
-			
+
 			if (permission === 'granted') {
 				banner.style.display = 'none';
 				localStorage.removeItem('notification-banner-dismissed');
@@ -269,6 +265,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 });
 </script>
- 
+
 </body>
 </html>

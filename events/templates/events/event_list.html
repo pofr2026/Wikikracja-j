@@ -20,7 +20,7 @@
                         <div class="card h-100">
                             <div class="card-body">
                                 <h5 class="card-title">{{ event.title }}</h5>
-                                
+
                                 {% if event.frequency != 'once' and event.is_upcoming %}
                                     {% with next_occurrence=event.get_next_occurrence %}
                                         {% if next_occurrence %}
@@ -36,7 +36,7 @@
                                         </div>
                                     {% endif %}
                                 {% endif %}
-                                
+
                                 {% if event.link %}
                                     <div class="alert alert-primary mb-3 py-2">
                                         <strong><i class="fas fa-link"></i> {% trans "Link do spotkania" %}:</strong><br>
@@ -44,9 +44,9 @@
                                         <i class="fas fa-external-link-alt fa-sm"></i>
                                     </div>
                                 {% endif %}
-                                
+
                                 <p class="card-text">{{ event.description|urlize|linebreaks|truncatewords_html:20 }}</p>
-                                
+
                                 {% if event.place %}
                                     <div class="mb-2">
                                         <small class="text-muted">
@@ -54,7 +54,7 @@
                                         </small>
                                     </div>
                                 {% endif %}
-                                
+
                                 <div class="mb-2">
                                     <span class="badge text-bg-{% if event.frequency == 'once' %}secondary{% else %}info{% endif %}">
                                         {{ event.get_frequency_display }}
@@ -83,7 +83,7 @@
                                     </a>
                                 {% endif %}
                                 <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success" title="{% trans 'Add to Google Calendar' %}">
-                                    <i class="bi bi-calendar-plus"></i> {% trans "Add to Calendar" %}
+                                    <i class="far fa-calendar-plus"></i> {% trans "Add to Calendar" %}
                                 </a>
                             </div>
                         </div>

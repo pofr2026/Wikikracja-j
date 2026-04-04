@@ -13,9 +13,9 @@
         <div class="flex-grow-1 me-3">
           <h3 class="h6 mb-0">
             <a class="text-break text-decoration-none" href="{% url 'tasks:detail' task.pk %}">{{ task.title }}</a>
-            {% if task.chat_room_url %}
+{% if task.chat_room_url %}
               <a href="{{ task.chat_room_url }}" target="_blank" class="text-decoration-none ms-3 {{ task.chat_room_pulse_class }}">
-                <i class="bi bi-chat-dots"></i>
+                <i class="fas fa-comments"></i>
               </a>
             {% endif %}
           </h3>
@@ -67,7 +67,7 @@
       </div>
 
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 small text-muted border-top pt-2">
-        <span>Poparcie: {{ task.votes_score|default:0 }} | {% trans "Owner" %}: 
+        <span>Poparcie: {{ task.votes_score|default:0 }} | {% trans "Owner" %}:
           {% if task.is_active and task.assigned_to == request.user %}
             <span class="owner-highlight">{{ task.assigned_to }}</span>
           {% else %}

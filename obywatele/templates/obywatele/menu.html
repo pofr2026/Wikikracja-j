@@ -4,19 +4,15 @@
 
 {% block content_fullscreen %}
 
-<!-- Chat - like and dislike buttons, main icons -->
-<!-- https://fontawesome.com/ -->
-<link rel="stylesheet" type="text/css" href='{% static "chat/webfonts/fontawesome.css" %}'>
-
 <div class="container pt-3">
 	<div class="row">
 		<div>
 			<a {% if request.resolver_match.url_name == 'parameters' %}
-				class="btn me-1 mb-1 btn-primary fas fa-solid fa-question"
+				class="btn btn-sm me-1 mb-1 btn-primary"
 			{% else %}
-				class="btn me-1 mb-1 btn-secondary fas fa-solid fa-question"
+				class="btn btn-sm me-1 mb-1 btn-secondary"
 			{% endif %}
-			href="{% url 'obywatele:parameters' %}"> </a>
+			href="{% url 'obywatele:parameters' %}"><i class="fas fa-question"></i></a>
 
 			<a {% if request.resolver_match.url_name == 'obywatele' %}
 				class="btn btn-sm me-1 mb-1 btn-primary"
@@ -24,21 +20,21 @@
 				class="btn btn-sm me-1 mb-1 btn-secondary"
 			{% endif %}
 			href="{% url 'obywatele:obywatele' %}">{% trans "Citizens" %}</a>
-		
+
 			<a {% if request.resolver_match.url_name == 'poczekalnia' %}
 				class="btn btn-sm me-1 mb-1 btn-primary"
 			{% else %}
 				class="btn btn-sm me-1 mb-1 btn-secondary"
 			{% endif %}
 			href="{% url 'obywatele:poczekalnia' %}">{% trans "Candidates" %}</a>
-			
+
 			<a {% if request.resolver_match.url_name == 'assets' %}
 				class="btn btn-sm me-1 mb-1 btn-primary"
 			{% else %}
 				class="btn btn-sm me-1 mb-1 btn-secondary"
 			{% endif %}
 			href="{% url 'obywatele:assets' %}">{% trans "Assets" %}</a>
-			
+
 			<a {% if request.resolver_match.url_name == 'zaproponuj_osobe' %}
 				class="btn btn-sm me-1 mb-1 btn-primary float-end"
         href="{% url 'obywatele:zaproponuj_osobe' %}">{% trans "Clear form" %}
