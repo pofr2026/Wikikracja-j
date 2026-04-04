@@ -74,13 +74,13 @@
               {% csrf_token %}
               <input type="hidden" name="value" value="1">
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button class="btn btn-sm py-0 px-2 {% if task.user_vote_value == 1 %}btn-info text-dark{% else %}btn-outline-info{% endif %}" type="submit" aria-label="{% trans 'I want to help' %}">+ {% trans "I want to help" %}</button>
+              <button class="btn btn-sm py-0 px-2 {% if task.user_vote_value == 1 %}btn-info text-dark{% else %}btn-outline-info{% endif %}" type="submit" aria-label="{% trans 'I want to help' %}"><i class="fas fa-plus"></i> {% trans "I want to help" %}</button>
             </form>
             <form method="post" action="{% url 'tasks:vote' task.pk %}">
               {% csrf_token %}
               <input type="hidden" name="value" value="-1">
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button class="btn btn-sm py-0 px-2 {% if task.user_vote_value == -1 %}btn-light text-dark{% else %}btn-outline-light{% endif %}" type="submit" aria-label="{% trans "Let's not do that" %}">- {% trans "Let's not do that" %}</button>
+              <button class="btn btn-sm py-0 px-2 {% if task.user_vote_value == -1 %}btn-light text-dark{% else %}btn-outline-light{% endif %}" type="submit" aria-label="{% trans "Let's not do that" %}"><i class="fas fa-minus"></i> {% trans "Let's not do that" %}</button>
             </form>
           </div>
         {% endif %}
