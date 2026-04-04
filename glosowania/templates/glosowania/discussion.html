@@ -32,7 +32,7 @@
 					{{ i.pk }}. <a href="{% url 'glosowania:details' pk=i.pk %}">{{ i.display_title }}</a>
 					{% if i.chat_room %}
 						<a href="{% url 'chat:chat' %}#room_id={{ i.chat_room.id }}" target="_blank" class="text-decoration-none ms-3 {{ i.chat_room_pulse_class }}">
-							<i class="bi bi-chat-dots"></i>
+							<i class="fas fa-comments"></i>
 						</a>
 					{% endif %}
 				</h5>
