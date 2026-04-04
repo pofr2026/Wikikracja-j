@@ -48,26 +48,4 @@
     </div>
   </div>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Tab persistence: Check localStorage for last active tab
-    const lastTab = localStorage.getItem('tasks_tab');
-    if (lastTab) {
-      const tabTrigger = document.querySelector(`[data-bs-target="#${lastTab}"]`);
-      if (tabTrigger) {
-        const tab = new bootstrap.Tab(tabTrigger);
-        tab.show();
-      }
-    }
-
-    // Save tab selection on tab change
-    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
-      tab.addEventListener('shown.bs.tab', function(event) {
-        const targetId = event.target.getAttribute('data-bs-target').substring(1);
-        localStorage.setItem('tasks_tab', targetId);
-      });
-    });
-  });
-</script>
 {% endblock %}

@@ -19,27 +19,6 @@
                 {% crispy form %}
             </div>
         </div>
-        
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const frequencyField = document.getElementById('id_frequency');
-            const ordinalFieldsRow = document.getElementById('ordinal-fields-row');
-            
-            function toggleOrdinalFields() {
-                if (frequencyField.value === 'monthly_ordinal') {
-                    ordinalFieldsRow.style.display = 'flex';
-                } else {
-                    ordinalFieldsRow.style.display = 'none';
-                }
-            }
-            
-            // Initial state
-            toggleOrdinalFields();
-            
-            // Listen for changes
-            frequencyField.addEventListener('change', toggleOrdinalFields);
-        });
-        </script>
 
         <div class="mt-3">
             <a href="{% url 'events:list' %}" class="btn btn-outline-secondary">

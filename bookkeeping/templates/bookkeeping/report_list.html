@@ -29,14 +29,6 @@
     </div>
   </div>
 
-  <!-- JavaScript for year selection -->
-  <script>
-    document.getElementById('yearSelect').addEventListener('change', function() {
-      const selectedYear = this.value;
-      window.location.href = "{% url 'bookkeeping:report_list' %}?year=" + selectedYear;
-    });
-  </script>
-
   <div class="row">
     <!-- Category Movement Summary Table for Selected Year -->
     <div class="col-md-6 mb-4">
