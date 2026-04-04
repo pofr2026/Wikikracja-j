@@ -311,7 +311,6 @@
     font-family: 'Noto Sans Mono', monospace;
     font-size: 0.9rem;
     margin: .2rem;
-    padding: .5dvh;
     width: 100%;
     transition: background-color 0.15s ease, border-color 0.15s ease;
     touch-action: manipulation;
@@ -357,6 +356,7 @@
 
     .room-name {
         flex: 1;
+        padding: .5dvh;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -390,6 +390,7 @@
 
 .copy-link-btn {
     position: relative;
+    margin-right: .3rem;
 }
 
 .copy-feedback {

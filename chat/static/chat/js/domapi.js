@@ -386,7 +386,7 @@ export default class DomApi {
         setTimeout(() => {
             tooltip.style.transition = 'opacity 0.2s';
             tooltip.style.opacity = '0';
-            setTimeout(() => tooltip.parentNode?.remove(), 200);
+            setTimeout(() => tooltip.remove(), 200);
         }, 1200);
     }
 
