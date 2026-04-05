@@ -1,4 +1,5 @@
 # PILNE
+- Refactor from eLibrary to Library.
 - archiwum czatów powinno być nie pod rozwijaną listą tylko pod guzikiem. Archiwum powinno być bardziej ukryte żeby nie zaśmiecać interfejsu.
 - podczas zakładania konta powinny się wyświetlić aktualne zasady i trzeba je zaakceptować
 - zrób obrazek po polsku pokazujące kolejne kroki zapisywania się do grupy

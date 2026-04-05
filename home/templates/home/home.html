@@ -1,14 +1,13 @@
 {% extends "home/base.html" %}
-{% block title %}Strona powitalna{% endblock %}
+{% block title %}Strona Start{% endblock %}
 {% load i18n %}
+{% load feed_filters %}
 
 {% block content %}
 
 {% if not user.is_authenticated %}
 	<div class="container">
-
 		<p>{{ start.text|safe }}</p>
-
 		<div class="row rounded">
 			<div class="col-md-3">
 				<a href="{% url 'login' %}" class="btn btn-primary m-2 btn-sm d-flex justify-content-around">{% trans 'Login' %}</a>
@@ -27,109 +26,331 @@
 {% endif %}
 
 {% if user.is_authenticated %}
-<div class="col-sm-12">
-	<p>
-		<h4>{% trans 'Ongoing referendums' %}:</h4>
-		<ul class="list-group">
-			{% for i in ongoing %}
-				<a href="glosowania/details/{{ i.pk }}" class="list-group-item">{{ i.title }}<br><u>{% trans 'End' %}: {{ i.data_referendum_stop|date:"Y-m-d" }}</u></a>
-				{% empty %}
-					<div class="alert alert-primary">({% trans 'None' %})</div>
-			{% endfor %}
-		</ul>
-	</p>
-
-	<p>
-		<h4>{% trans 'Upcoming referendums' %}:</h4>
-		<ul class="list-group">
-			{% for i in upcoming %}
-				<a href="glosowania/details/{{ i.pk }}" class="list-group-item">{{ i.title }}<br><u>{% trans 'Start' %}: {{ i.data_referendum_start|date:"Y-m-d" }}</u></a>
-				{% empty %}
-				<div class="alert alert-primary">({% trans 'None' %})</div>
-			{% endfor %}
-		</ul>
-	</p>
-
-	<p>
-		<h4>{% trans 'Gathering signatures' %}:</h4>
-		<ul class="list-group">
-			{% for i in signatures %}
-				<a href="glosowania/details/{{ i.pk }}" class="list-group-item">{{ i.title }}<br><u>{% trans 'Date of creation' %}: {{ i.data_powstania|date:"Y-m-d" }}</u></a>
-				{% empty %}
-				<div class="alert alert-primary">({% trans 'None' %})</div>
-			{% endfor %}
-		</ul>
-	</p>
-
-<hr>
-
-	<p>
-		<h4>{% trans 'New people' %}:</h4>
-		<ul class="list-group">
-		{% for i in people %}
-			<a href="obywatele/{{ i.pk }}" class="list-group-item">{{ i.uid }} | {% trans "Since" %}: {{ i.data_przyjecia|date:"Y-m-d" }}</a>
-			{% empty %}
-			<div class="alert alert-primary">({% trans 'None' %})</div>
-		{% endfor %}
-		</ul>
-	</p>
-
-	<p>
-		<h4>{% trans 'Waiting people' %}:</h4>
-		<ul class="list-group">
-		{% for i in people_waiting %}
-			<a href="obywatele/{{ i.pk }}" class="list-group-item">{{ i.username }} | {% trans "Since" %}: {{ i.date_joined|date:"Y-m-d" }}</a>
-			{% empty %}
-			<div class="alert alert-primary">({% trans 'None' %})</div>
-		{% endfor %}
-		</ul>
-	</p>
-
-<hr>
-
-	<p>
-		<h4>{% trans 'Updated posts' %}:</h4>
-		<ul class="list-group">
-		{% for i in posts|dictsortreversed:"updated" %}
-			<a href="{% url 'board:view_post' i.pk %}" class="list-group-item">{{ i.title }} | {% if i.is_public %} {% trans 'Public' %} {% else %} {% trans 'Private' %} {% endif %} | {% trans "Updated" %}: {{ i.updated|date:"Y-m-d" }}</a>
-			{% empty %}
-			<div class="alert alert-primary">({% trans 'None' %})</div>
-		{% endfor %}
-		</ul>
-	</p>
-
-	<p>
-		<h4>Zadania w realizacji:</h4>
-		<ul class="list-group">
-		{% for i in tasks_in_progress %}
-			<a href="{% url 'tasks:detail' i.pk %}" class="list-group-item">{{ i.title }} | {{ i.updated_at|date:"Y-m-d" }}</a>
-			{% empty %}
-			<div class="alert alert-primary">({% trans 'None' %})</div>
-		{% endfor %}
-		</ul>
-	</p>
-
-	<p>
-		<h4>Nowe zadania:</h4>
-		<ul class="list-group">
-		{% for i in tasks_new %}
-			<a href="{% url 'tasks:detail' i.pk %}" class="list-group-item">{{ i.title }} | {{ i.created_at|date:"Y-m-d" }}</a>
-			{% empty %}
-			<div class="alert alert-primary">({% trans 'None' %})</div>
-		{% endfor %}
-		</ul>
-	</p>
-
-	<p>
-		<h4>Nowe wiadomości na czacie:</h4>
-		<ul class="list-group">
-		{% for room in rooms_with_new_messages %}
-			<a href="{% url 'chat:chat' %}#room_id={{ room.id }}" class="list-group-item">{{ room.title }}</a>
-			{% empty %}
-			<div class="alert alert-primary">({% trans 'None' %})</div>
-		{% endfor %}
-		</ul>
-	</p>
+<div class="container-fluid">
+	<!-- Main Feed -->
+	<div class="col-12">
+		{% if first_unread %}
+		<div class="card mb-3">
+			<div class="card-body">
+				<a href="#first-unread" class="btn btn-warning btn-sm w-100">
+					{% trans 'Jump to first unread' %}
+				</a>
+			</div>
+		</div>
+		{% endif %}
+		
+		<div class="card">
+				<div class="card-header">
+					<h4 class="mb-0">{% trans 'Activity Feed' %}</h4>
+				</div>
+				<div class="card-body p-0">
+					{% for item in feed_items %}
+						<div class="feed-item border-bottom {% if not item.is_read %}unread{% endif %}" 
+							 {% if item.is_first_unread %}id="first-unread"{% endif %}>
+							<div class="p-3">
+								<div class="d-flex justify-content-between align-items-center mb-2">
+									<span class="badge bg-{{ item.content_type|content_type_color }}">
+										{{ item.content_type|title }}
+									</span>
+									
+									<div class="d-flex align-items-center">
+										{% if item.author %}
+											<strong>{{ item.author.username }}</strong>
+										{% else %}
+											<strong>System</strong>
+										{% endif %}
+										<small class="text-muted ms-2">{{ item.timestamp|date:"Y-m-d H:i" }}</small>
+										
+										{% if not item.is_read %}
+											<button class="btn btn-sm btn-outline-secondary mark-read ms-3" 
+													data-id="{{ item.content_type }}-{{ item.object_id }}" 
+													title="{% trans 'Mark as read' %}">
+												<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+													<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+													<path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+												</svg>
+											</button>
+										{% else %}
+											<button class="btn btn-sm btn-outline-secondary mark-unread ms-3" 
+													data-id="{{ item.content_type }}-{{ item.object_id }}" 
+													title="{% trans 'Mark unread' %}">
+												<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+													<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+													<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+												</svg>
+											</button>
+										{% endif %}
+									</div>
+								</div>
+								
+								<h6 class="mb-2">
+									<a href="{{ item.url }}" class="text-decoration-none {% if not item.is_read %}fw-bold{% endif %}">
+										{{ item.title }}
+									</a>
+								</h6>
+								
+								{% if item.description %}
+									<p class="text-muted small mb-3">{{ item.description|safe }}</p>
+								{% endif %}
+								
+								<div class="d-flex justify-content-between">
+									<a href="{{ item.url }}" class="btn btn-sm btn-outline-primary">
+										{% trans 'View' %}
+									</a>
+								</div>
+							</div>
+						</div>
+					{% empty %}
+						<div class="p-4 text-center text-muted">
+							{% trans 'No recent activity' %}
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
 </div>
+
+<style>
+.feed-item {
+	transition: background-color 0.2s ease;
+}
+
+.feed-item.unread {
+	background-color: #2d3748;
+	border-left: 4px solid #3182ce;
+}
+
+.feed-item:hover {
+	background-color: #1a202c;
+}
+
+.feed-item .badge {
+	font-size: 0.7em;
+}
+
+.mark-read:hover, .mark-unread:hover {
+	cursor: pointer;
+}
+
+/* Dark theme for cards */
+.card {
+	background-color: #1a202c;
+	border-color: #2d3748;
+}
+
+.card-header {
+	background-color: #2d3748;
+	border-color: #4a5568;
+	color: #e2e8f0;
+}
+
+.card-body {
+	color: #e2e8f0;
+}
+
+.feed-item {
+	border-color: #4a5568;
+	color: #e2e8f0;
+}
+
+.feed-item .text-muted {
+	color: #a0aec0 !important;
+}
+
+.feed-item .btn-outline-primary {
+	border-color: #3182ce;
+	color: #63b3ed;
+}
+
+.feed-item .btn-outline-primary:hover {
+	background-color: #3182ce;
+	border-color: #3182ce;
+	color: white;
+}
+
+.feed-item .btn-outline-secondary {
+	border-color: #718096;
+	color: #a0aec0;
+	padding: 0.25rem 0.5rem;
+}
+
+.feed-item .btn-outline-secondary:hover {
+	background-color: #718096;
+	border-color: #718096;
+	color: white;
+}
+
+.btn-warning {
+	background-color: #d69e2e;
+	border-color: #d69e2e;
+	color: white;
+}
+
+.btn-warning:hover {
+	background-color: #b7791f;
+	border-color: #b7791f;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+	// Auto-scroll to first unread if URL contains #first-unread
+	if (window.location.hash === '#first-unread') {
+		const element = document.getElementById('first-unread');
+		if (element) {
+			element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}
+	}
+	
+	// Mark as read functionality
+	document.querySelectorAll('.mark-read').forEach(button => {
+		button.addEventListener('click', function() {
+			const feedItem = this.closest('.feed-item');
+			const dataId = this.getAttribute('data-id');
+			const [contentType, objectId] = dataId.split('-');
+			
+			// Make AJAX call to mark as read
+			fetch('{% url "mark_as_read" %}', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'X-CSRFToken': getCookie('csrftoken'),
+				},
+				body: `content_type=${contentType}&object_id=${objectId}`
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					// Update UI to show as read
+					feedItem.classList.remove('unread');
+					feedItem.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
+					
+					// Replace "Mark as read" icon with "Mark unread" icon
+					const newButton = document.createElement('button');
+					newButton.className = 'btn btn-sm btn-outline-secondary mark-unread';
+					newButton.setAttribute('data-id', dataId);
+					newButton.setAttribute('title', '{% trans "Mark unread" %}');
+					newButton.innerHTML = `
+						<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+							<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+							<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+						</svg>
+					`;
+					newButton.addEventListener('click', handleMarkUnread);
+					
+					this.parentNode.replaceChild(newButton, this);
+				} else {
+					console.error('Failed to mark as read:', data.error);
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+			});
+		});
+	});
+	
+	// Mark as unread functionality
+	document.querySelectorAll('.mark-unread').forEach(button => {
+		button.addEventListener('click', handleMarkUnread);
+	});
+});
+
+function handleMarkUnread(event) {
+	const feedItem = event.target.closest('.feed-item');
+	const dataId = event.target.closest('button').getAttribute('data-id');
+	const [contentType, objectId] = dataId.split('-');
+	
+	// Make AJAX call to mark as unread
+	fetch('{% url "mark_unread" %}', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			'X-CSRFToken': getCookie('csrftoken'),
+		},
+		body: `content_type=${contentType}&object_id=${objectId}`
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.success) {
+			// Update UI to show as unread
+			feedItem.classList.add('unread');
+			feedItem.querySelector('a').classList.add('fw-bold');
+			
+			// Replace "Mark unread" icon with "Mark as read" icon
+			const newButton = document.createElement('button');
+			newButton.className = 'btn btn-sm btn-outline-secondary mark-read';
+			newButton.setAttribute('data-id', dataId);
+			newButton.setAttribute('title', '{% trans "Mark as read" %}');
+			newButton.innerHTML = `
+				<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+					<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+					<path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+				</svg>
+			`;
+			newButton.addEventListener('click', function() {
+				// Re-add mark as read functionality
+				const feedItem = this.closest('.feed-item');
+				const dataId = this.getAttribute('data-id');
+				const [contentType, objectId] = dataId.split('-');
+				
+				fetch('{% url "mark_as_read" %}', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						'X-CSRFToken': getCookie('csrftoken'),
+					},
+					body: `content_type=${contentType}&object_id=${objectId}`
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.success) {
+						feedItem.classList.remove('unread');
+						feedItem.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
+						
+						const newUnreadButton = document.createElement('button');
+						newUnreadButton.className = 'btn btn-sm btn-outline-secondary mark-unread';
+						newUnreadButton.setAttribute('data-id', dataId);
+						newUnreadButton.setAttribute('title', '{% trans "Mark unread" %}');
+						newUnreadButton.innerHTML = `
+							<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+								<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+								<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+							</svg>
+						`;
+						newUnreadButton.addEventListener('click', handleMarkUnread);
+						
+						this.parentNode.replaceChild(newUnreadButton, this);
+					}
+				});
+			});
+			
+			event.target.closest('button').parentNode.replaceChild(newButton, event.target.closest('button'));
+		} else {
+			console.error('Failed to mark as unread:', data.error);
+		}
+	})
+	.catch(error => {
+		console.error('Error:', error);
+	});
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+	let cookieValue = null;
+	if (document.cookie && document.cookie !== '') {
+		const cookies = document.cookie.split(';');
+		for (let i = 0; i < cookies.length; i++) {
+			const cookie = cookies[i].trim();
+			if (cookie.substring(0, name.length + 1) === (name + '=')) {
+				cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+				break;
+			}
+		}
+	}
+	return cookieValue;
+}
+</script>
 {% endif %}
 {% endblock %}

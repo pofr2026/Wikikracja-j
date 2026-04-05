@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-05 09:45+0200\n"
+"POT-Creation-Date: 2026-04-05 10:41+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -59,7 +59,6 @@ msgstr "Utworzone"
 #: .\board\templates\board\board.html:52
 #: .\board\templates\board\post_detail.html:11
 #: .\events\templates\events\event_detail.html:109
-#: .\home\templates\home\home.html:94
 msgid "Updated"
 msgstr "Zaktualizowane"
 
@@ -69,7 +68,6 @@ msgstr "Zaktualizowane"
 #: .\chat\templates\chat\chat.html:38 .\events\models.py:52
 #: .\events\templates\events\event_detail.html:80
 #: .\events\templates\events\event_list.html:67
-#: .\home\templates\home\home.html:94
 msgid "Public"
 msgstr "Publiczne"
 
@@ -191,7 +189,6 @@ msgstr "Skasuj"
 #: .\board\templates\board\post_detail.html:11
 #: .\events\templates\events\event_detail.html:84
 #: .\events\templates\events\event_list.html:71
-#: .\home\templates\home\home.html:94
 msgid "Private"
 msgstr "Prywatne"
 
@@ -600,11 +597,6 @@ msgstr "dniach"
 #: .\chat\templates\chat\chat.html:75 .\chat\templates\chat\chat.html:89
 #: .\chat\templates\chat\chat.html:103 .\chat\templates\chat\chat.html:117
 #: .\chat\templates\chat\chat.html:136 .\chat\templates\chat\chat.html:149
-#: .\home\templates\home\home.html:37 .\home\templates\home\home.html:48
-#: .\home\templates\home\home.html:59 .\home\templates\home\home.html:72
-#: .\home\templates\home\home.html:83 .\home\templates\home\home.html:96
-#: .\home\templates\home\home.html:107 .\home\templates\home\home.html:118
-#: .\home\templates\home\home.html:129
 #: .\tasks\templates\tasks\task_list.html:31
 #: .\tasks\templates\tasks\task_list.html:35
 msgid "None"
@@ -923,7 +915,7 @@ msgstr "Odznacz aby wyłączyć to wydarzenie"
 msgid "Public events are visible to everyone. Private events are only visible to logged-in users."
 msgstr "Wydarzenia publiczne są widoczne dla wszystkich. Wydarzenia prywatne są widoczne tylko dla zalogowanych użytkowników."
 
-#: .\events\models.py:58
+#: .\events\models.py:58 .\home\models.py:16 .\home\models.py:46
 msgid "Event"
 msgstr "Wydarzenie"
 
@@ -1235,7 +1227,8 @@ msgstr "Argument Przeciw"
 
 #: .\glosowania\models.py:124
 #: .\glosowania\templates\glosowania\delete_argument.html:13
-#: .\glosowania\templates\glosowania\edit_argument.html:10
+#: .\glosowania\templates\glosowania\edit_argument.html:10 .\home\models.py:18
+#: .\home\models.py:48
 msgid "Decision"
 msgstr "Decyzja"
 
@@ -1668,7 +1661,31 @@ msgstr "Zespół %(site_name)s"
 msgid "Keep me signed in"
 msgstr "Nie wylogowuj mnie"
 
-#: .\home\templates\home\base.html:66 .\home\templates\home\home.html:46
+#: .\home\models.py:13 .\home\models.py:43
+msgid "Post"
+msgstr "Ogłoszenie"
+
+#: .\home\models.py:14 .\home\models.py:44
+msgid "Task"
+msgstr "Zadanie"
+
+#: .\home\models.py:15 .\home\models.py:45
+msgid "Book"
+msgstr "Biblioteka"
+
+#: .\home\models.py:17 .\home\models.py:47
+msgid "Message"
+msgstr "Wiadomość"
+
+#: .\home\models.py:49
+msgid "Membership"
+msgstr "Członkostwo"
+
+#: .\home\models.py:50
+msgid "Transaction"
+msgstr "Transakcja"
+
+#: .\home\templates\home\base.html:66
 msgid "Start"
 msgstr "Start"
 
@@ -1680,14 +1697,14 @@ msgstr "Ogłoszenia"
 msgid "Calendar"
 msgstr "Kalendarz"
 
-#: .\home\templates\home\base.html:85 .\home\templates\home\home.html:14
+#: .\home\templates\home\base.html:85 .\home\templates\home\home.html:13
 #: .\home\templates\home\login.html:4 .\home\templates\home\login.html:13
 #: .\home\templates\home\login.html:34
 #: .\obywatele\management\commands\count_citizens.py:175
 msgid "Login"
 msgstr "Zaloguj"
 
-#: .\home\templates\home\base.html:89 .\home\templates\home\home.html:17
+#: .\home\templates\home\base.html:89 .\home\templates\home\home.html:16
 #: .\home\templates\home\login.html:35
 #: .\templates\allauth\account\signup.html:28
 msgid "Sign Up"
@@ -1747,50 +1764,39 @@ msgstr "Hasło"
 msgid "Change password"
 msgstr "Zmień hasło"
 
-#: .\home\templates\home\home.html:20 .\home\templates\home\login.html:36
+#: .\home\templates\home\home.html:19 .\home\templates\home\login.html:36
 #: .\home\templates\home\password_reset_form.html:5
 msgid "Reset password"
 msgstr "Odzyskaj hasło"
 
-#: .\home\templates\home\home.html:23
+#: .\home\templates\home\home.html:22
 msgid "Send message to developer"
 msgstr "Wyślij wiadomość do developera"
 
-#: .\home\templates\home\home.html:32
-msgid "Ongoing referendums"
-msgstr "Trwające referenda"
+#: .\home\templates\home\home.html:36
+msgid "Jump to first unread"
+msgstr "Przejdź do pierwszej nieprzeczytanej"
 
-#: .\home\templates\home\home.html:35
-msgid "End"
-msgstr "Koniec"
+#: .\home\templates\home\home.html:44
+msgid "Activity Feed"
+msgstr "Kanał aktywności"
 
-#: .\home\templates\home\home.html:43
-msgid "Upcoming referendums"
-msgstr "Nadchodzące referenda"
+#: .\home\templates\home\home.html:67 .\home\templates\home\home.html:285
+msgid "Mark as read"
+msgstr "Oznacz jako przeczytane"
 
-#: .\home\templates\home\home.html:54
-msgid "Gathering signatures"
-msgstr "Zbierają podpisy"
+#: .\home\templates\home\home.html:76 .\home\templates\home\home.html:234
+#: .\home\templates\home\home.html:315
+msgid "Mark unread"
+msgstr "Oznacz jako nieprzeczytane"
 
-#: .\home\templates\home\home.html:57
-msgid "Date of creation"
-msgstr "Data powstania"
+#: .\home\templates\home\home.html:98
+msgid "View"
+msgstr "Zobacz"
 
-#: .\home\templates\home\home.html:67
-msgid "New people"
-msgstr "Nowe osoby"
-
-#: .\home\templates\home\home.html:70 .\home\templates\home\home.html:81
-msgid "Since"
-msgstr "Od"
-
-#: .\home\templates\home\home.html:78
-msgid "Waiting people"
-msgstr "Oczekujące osoby"
-
-#: .\home\templates\home\home.html:91
-msgid "Updated posts"
-msgstr "Zaktualizowane ogłoszenia"
+#: .\home\templates\home\home.html:105
+msgid "No recent activity"
+msgstr "Brak ostatniej aktywności"
 
 #: .\home\templates\home\login.html:40
 msgid "The username or password is incorrect."
@@ -1841,11 +1847,15 @@ msgstr "Aby zresetować hasło, wprowadź swój adres e-mail i kliknij \"Wyślij
 msgid "Send"
 msgstr "Wyślij"
 
-#: .\home\views.py:110
+#: .\home\views.py:124
+msgid "Untitled Book"
+msgstr "Książka bez tytułu"
+
+#: .\home\views.py:401
 msgid "Your password has been changed."
 msgstr "Twoje hasło zostało zmienione."
 
-#: .\home\views.py:113
+#: .\home\views.py:404
 msgid "You typed something wrong. See what error appeared above and try again."
 msgstr "Coś źle wpisałeś. Zobacz, jaki błąd pojawił się powyżej i spróbuj ponownie."
 

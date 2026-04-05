@@ -18,72 +18,308 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
 
 # First party imports
 from board.models import Post
-from chat.models import Room
+from chat.models import Room, Message
 from elibrary.models import Book
 
 # from glosowania.views import ZliczajWszystko
 from glosowania.models import Decyzja
 from obywatele.models import Uzytkownik
 from tasks.models import Task
+from events.models import Event
 
 # Local folder imports
 from .forms import RememberLoginForm
+from .models import FeedItem, ReadStatus
 
 log = logging.getLogger(__name__)
 
 
 def home(request: HttpRequest):
-    ongoing = Decyzja.objects.filter(status=3).order_by('data_referendum_start')
-    upcoming = Decyzja.objects.filter(status=2).order_by('data_referendum_start')
-    signatures = Decyzja.objects.filter(status=1).order_by('data_powstania')
-
-    # Show active users younger than 30 days
-    people = Uzytkownik.objects.filter(uid__is_active=True, data_przyjecia__gte=dt.today() - td(days=30))
-    # Show inactive users
-    people_waiting = User.objects.filter(is_active=False)
-
-    posts = Post.objects.filter(updated__gte=timezone.now() - td(days=30)).order_by('-updated')
-    books = Book.objects.filter(uploaded__gte=timezone.now() - td(days=30))
-
-    tasks_in_progress = Task.objects.none()
-    tasks_new = Task.objects.none()
-    rooms_with_new_messages = Room.objects.none()
-
-    if request.user.is_authenticated:
-        tasks_in_progress = Task.objects.filter(
-            status=Task.Status.ACTIVE,
-            assigned_to__isnull=False,
-        ).order_by('-updated_at')[:10]
-
-        tasks_new = Task.objects.filter(
-            status=Task.Status.ACTIVE,
-            assigned_to__isnull=True,
-        ).order_by('-created_at')[:10]
-
-        rooms_with_new_messages = (Room.objects.filter(allowed=request.user).exclude(seen_by=request.user).annotate(messages_count=Count('messages')).filter(messages_count__gt=0).order_by('-last_activity')[:10])
-
-    start = Post.objects.filter(title='Start').order_by('-updated', '-created').first()
-    if not start:
-        log.info('Add Board Message title Start.')
-        start = ''
-
-    # data_referendum_start = ZliczajWszystko.kolejka
+    if not request.user.is_authenticated:
+        start = Post.objects.filter(title='Start').order_by('-updated', '-created').first()
+        if not start:
+            log.info('Add Board Message title Start.')
+            start = ''
+        return render(request, 'home/home.html', {'start': start})
+    
+    # Generate unified feed
+    feed_items = generate_feed_items(request.user)
+    
+    # Find first unread item for jump functionality
+    first_unread = None
+    unread_items = [item for item in feed_items if not item['is_read']]
+    if unread_items:
+        first_unread = unread_items[0]
+        # Mark the first unread item with ID for jumping
+        for i, item in enumerate(feed_items):
+            if item == first_unread:
+                feed_items[i]['is_first_unread'] = True
+                break
+    
+    # Get counts for each section
+    ongoing_count = Decyzja.objects.filter(status=3).count()
+    upcoming_count = Decyzja.objects.filter(status=2).count()
+    signatures_count = Decyzja.objects.filter(status=1).count()
+    
     return render(request, 'home/home.html', {
-        'ongoing': ongoing,
-        'upcoming': upcoming,
-        'signatures': signatures,
-        'start': start,
-        'people': people,
-        'people_waiting': people_waiting,
-        'posts': posts,
-        'books': books,
-        'tasks_in_progress': tasks_in_progress,
-        'tasks_new': tasks_new,
-        'rooms_with_new_messages': rooms_with_new_messages,
+        'feed_items': feed_items,
+        'first_unread': first_unread,
+        'ongoing_count': ongoing_count,
+        'upcoming_count': upcoming_count,
+        'signatures_count': signatures_count,
     })
+
+
+def generate_feed_items(user):
+    """Generate unified chronological feed for a user"""
+    feed_items = []
+    
+    # Get recent posts
+    posts = Post.objects.filter(
+        updated__gte=timezone.now() - td(days=30)
+    ).select_related('author').order_by('-updated')
+    
+    for post in posts:
+        feed_items.append({
+            'content_type': 'post',
+            'title': post.title,
+            'description': post.text[:500] + '...' if len(post.text) > 500 else post.text,
+            'author': post.author,
+            'timestamp': post.updated,
+            'url': f"/board/view/{post.pk}/",
+            'is_read': is_post_read_by_user(post, user),
+            'object_id': post.pk,
+        })
+    
+    # Get recent tasks
+    tasks = Task.objects.filter(
+        updated_at__gte=timezone.now() - td(days=30)
+    ).select_related('created_by', 'assigned_to').order_by('-updated_at')
+    
+    for task in tasks:
+        feed_items.append({
+            'content_type': 'task',
+            'title': task.title,
+            'description': task.description[:500] + '...' if len(task.description) > 500 else task.description,
+            'author': task.created_by or task.assigned_to,
+            'timestamp': task.updated_at,
+            'url': f"/tasks/{task.pk}/",
+            'is_read': is_task_read_by_user(task, user),
+            'object_id': task.pk,
+        })
+    
+    # Get recent books
+    books = Book.objects.filter(
+        uploaded__gte=timezone.now() - td(days=30)
+    ).select_related('uploader').order_by('-uploaded')
+    
+    for book in books:
+        feed_items.append({
+            'content_type': 'book',
+            'title': book.title or _('Untitled Book'),
+            'description': book.abstract[:500] + '...' if book.abstract and len(book.abstract) > 500 else (book.abstract or ''),
+            'author': book.uploader,
+            'timestamp': book.uploaded,
+            'url': f"/elibrary/{book.pk}/detail/",
+            'is_read': is_book_read_by_user(book, user),
+            'object_id': book.pk,
+        })
+    
+    # Get upcoming events (including those starting within 1 day)
+    events = Event.objects.filter(
+        is_active=True,
+        start_date__gte=timezone.now() - td(days=1)
+    ).order_by('-start_date')
+    
+    for event in events:
+        feed_items.append({
+            'content_type': 'event',
+            'title': event.title,
+            'description': event.description[:500] + '...' if event.description and len(event.description) > 500 else (event.description or ''),
+            'author': None,
+            'timestamp': event.start_date,
+            'url': f"/events/{event.pk}/",
+            'is_read': is_event_read_by_user(event, user),
+            'object_id': event.pk,
+        })
+    
+    # Get recent messages from rooms user has access to
+    rooms = Room.objects.filter(allowed=user).prefetch_related('messages', 'messages__sender')
+    for room in rooms:
+        messages = room.messages.filter(
+            time__gte=timezone.now() - td(days=30)
+        ).order_by('-time')[:5]  # Limit to recent messages per room
+        
+        for message in messages:
+            feed_items.append({
+                'content_type': 'message',
+                'title': f"Message in {room.title}",
+                'description': message.text[:500] + '...' if len(message.text) > 500 else message.text,
+                'author': message.sender,
+                'timestamp': message.time,
+                'url': f"/chat/#room_id={room.id}",
+                'is_read': is_message_read_by_user(message, user, room),
+                'object_id': message.pk,
+                'room_id': room.id,
+            })
+    
+    # Get recent decisions
+    decisions = Decyzja.objects.filter(
+        data_ostatniej_modyfikacji__gte=timezone.now() - td(days=30)
+    ).order_by('-data_ostatniej_modyfikacji')
+    
+    for decision in decisions:
+        feed_items.append({
+            'content_type': 'decision',
+            'title': decision.title,
+            'description': '',  # Decisions don't have description field
+            'author': decision.author,
+            'timestamp': decision.data_ostatniej_modyfikacji,
+            'url': f"/glosowania/details/{decision.pk}/",
+            'is_read': is_decision_read_by_user(decision, user),
+            'object_id': decision.pk,
+        })
+    
+    # Sort all items by timestamp
+    feed_items.sort(key=lambda x: x['timestamp'], reverse=True)
+    
+    return feed_items
+
+
+def is_post_read_by_user(post, user):
+    """Check if user has read this post"""
+    return ReadStatus.objects.filter(
+        user=user,
+        content_type=ReadStatus.ContentType.POST,
+        object_id=post.pk
+    ).exists()
+
+
+def is_task_read_by_user(task, user):
+    """Check if user has read this task"""
+    return ReadStatus.objects.filter(
+        user=user,
+        content_type=ReadStatus.ContentType.TASK,
+        object_id=task.pk
+    ).exists()
+
+
+def is_book_read_by_user(book, user):
+    """Check if user has read this book"""
+    return ReadStatus.objects.filter(
+        user=user,
+        content_type=ReadStatus.ContentType.BOOK,
+        object_id=book.pk
+    ).exists()
+
+
+def is_event_read_by_user(event, user):
+    """Check if user has read this event"""
+    return ReadStatus.objects.filter(
+        user=user,
+        content_type=ReadStatus.ContentType.EVENT,
+        object_id=event.pk
+    ).exists()
+
+
+def is_message_read_by_user(message, user, room):
+    """Check if user has read this message"""
+    return ReadStatus.objects.filter(
+        user=user,
+        content_type=ReadStatus.ContentType.MESSAGE,
+        object_id=message.pk
+    ).exists() or room.seen_by.filter(id=user.id).exists()
+
+
+def is_decision_read_by_user(decision, user):
+    """Check if user has read this decision"""
+    return ReadStatus.objects.filter(
+        user=user,
+        content_type=ReadStatus.ContentType.DECISION,
+        object_id=decision.pk
+    ).exists()
+
+
+@login_required
+@require_POST
+def mark_as_read(request):
+    """Mark a feed item as read"""
+    content_type = request.POST.get('content_type')
+    object_id = request.POST.get('object_id')
+    
+    if not content_type or not object_id:
+        return JsonResponse({'success': False, 'error': 'Missing parameters'})
+    
+    try:
+        object_id = int(object_id)
+        # Map content types to ReadStatus content types
+        content_type_map = {
+            'post': ReadStatus.ContentType.POST,
+            'task': ReadStatus.ContentType.TASK,
+            'book': ReadStatus.ContentType.BOOK,
+            'event': ReadStatus.ContentType.EVENT,
+            'message': ReadStatus.ContentType.MESSAGE,
+            'decision': ReadStatus.ContentType.DECISION,
+        }
+        
+        read_status_content_type = content_type_map.get(content_type)
+        if not read_status_content_type:
+            return JsonResponse({'success': False, 'error': 'Invalid content type'})
+        
+        # Create or update read status
+        read_status, created = ReadStatus.objects.get_or_create(
+            user=request.user,
+            content_type=read_status_content_type,
+            object_id=object_id
+        )
+        
+        return JsonResponse({'success': True})
+        
+    except (ValueError, KeyError):
+        return JsonResponse({'success': False, 'error': 'Invalid parameters'})
+
+
+@login_required
+@require_POST
+def mark_unread(request):
+    """Mark a feed item as unread"""
+    content_type = request.POST.get('content_type')
+    object_id = request.POST.get('object_id')
+    
+    if not content_type or not object_id:
+        return JsonResponse({'success': False, 'error': 'Missing parameters'})
+    
+    try:
+        object_id = int(object_id)
+        # Map content types to ReadStatus content types
+        content_type_map = {
+            'post': ReadStatus.ContentType.POST,
+            'task': ReadStatus.ContentType.TASK,
+            'book': ReadStatus.ContentType.BOOK,
+            'event': ReadStatus.ContentType.EVENT,
+            'message': ReadStatus.ContentType.MESSAGE,
+            'decision': ReadStatus.ContentType.DECISION,
+        }
+        
+        read_status_content_type = content_type_map.get(content_type)
+        if not read_status_content_type:
+            return JsonResponse({'success': False, 'error': 'Invalid content type'})
+        
+        # Delete read status to mark as unread
+        deleted_count, _ = ReadStatus.objects.filter(
+            user=request.user,
+            content_type=read_status_content_type,
+            object_id=object_id
+        ).delete()
+        
+        return JsonResponse({'success': True})
+        
+    except (ValueError, KeyError):
+        return JsonResponse({'success': False, 'error': 'Invalid parameters'})
 
 
 class RememberLoginView(LoginView):
