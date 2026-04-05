@@ -10,6 +10,7 @@ from django import forms
 from django.conf import settings as s
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
+from django.db import IntegrityError
 from django.http import HttpRequest
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
@@ -62,6 +63,7 @@ class EmailChangeForm(forms.Form):
     error_messages = {
         'email_mismatch': _("The two email addresses fields didn't match."),
         'not_changed': _("The email address is the same as the one already defined."),
+        'already_exists': _("An account with this email address already exists."),
     }
 
     new_email1 = forms.EmailField(
@@ -87,6 +89,11 @@ class EmailChangeForm(forms.Form):
                     self.error_messages['not_changed'],
                     code='not_changed',
                 )
+        if new_email1 and User.objects.filter(email__iexact=new_email1).exclude(pk=self.user.pk).exists():
+            raise forms.ValidationError(
+                self.error_messages['already_exists'],
+                code='already_exists',
+            )
         return new_email1
 
     def clean_new_email2(self):
@@ -180,7 +187,7 @@ class CustomSignupForm(SignupForm):
 
         try:
             user.save()
-        except Exception as _e:
+        except IntegrityError:
             # Handle unique constraint violation
             # Delete this user if a duplicate with the same email already exists
             existing = User.objects.filter(email__iexact=user.email).exclude(id=user.id).first()

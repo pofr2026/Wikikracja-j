@@ -18,7 +18,8 @@ from django.utils.translation import gettext as _
 # First party imports
 from chat import signals
 from chat.models import Room
-from obywatele.models import Rate, Uzytkownik
+from obywatele.models import CitizenActivity, Rate, Uzytkownik
+from obywatele.signals import track_user_blocked
 from obywatele.views import SendEmailToAll, password_generator, required_reputation
 from zzz.utils import get_site_domain
 
@@ -145,6 +146,12 @@ class Command(BaseCommand):
                 i.data_przyjecia = now()
                 i.save()
 
+                CitizenActivity.objects.create(
+                    uzytkownik=i,
+                    activity_type=CitizenActivity.ActivityType.USER_ACTIVATED,
+                    description=_('Candidate has been accepted as a citizen')
+                )
+
                 # Log the generated password for debugging
                 log.info(f'Generated password for {i.uid.email}: {password}')
                 log.info(f'ACTIVATED: user_id={i.uid.id}, email={i.uid.email}')
@@ -194,6 +201,9 @@ class Command(BaseCommand):
                 i.uid.save()
                 i.save()
                 log.info(f'Blocking user {i.uid}')
+                
+                # Track the blocking activity only if user was previously active
+                track_user_blocked(i, was_previously_active=True)
 
                 # Banned person resets other people's reputation to Neutral
                 Rate.objects.filter(obywatel=i.id).update(rate=0)

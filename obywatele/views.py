@@ -14,10 +14,9 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.messages import error, success
 from django.core.mail import send_mail
-
-# from django.core.management import call_command
 from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
-from django.db.models import Case, IntegerField, Q, Value, When
+from django.db import DatabaseError
+from django.db.models import Case, Count, IntegerField, Q, Value, When
 from django.dispatch import receiver
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
@@ -28,7 +27,7 @@ from django_tables2.views import SingleTableMixin
 # First party imports
 from obywatele.filters import UzytkownikFilter
 from obywatele.forms import EmailChangeForm, OnboardingDetailsForm, ProfileForm, SendEmailToAll, UserForm, UsernameChangeForm
-from obywatele.models import Rate, Uzytkownik
+from obywatele.models import CitizenActivity, Rate, Uzytkownik
 from obywatele.tables import UzytkownikTable
 from zzz.utils import build_site_url, get_site_domain
 
@@ -70,8 +69,8 @@ def population():
     try:
         population = User.objects.filter(is_active=True).count()
         return population
-    except Exception:
-        log.error("Population zero, I don't know what to do.")
+    except DatabaseError:
+        log.exception("Could not calculate population.")
         return 0
 
 
@@ -128,7 +127,7 @@ def change_email(request: HttpRequest):
             success(request, (message))
             return redirect('obywatele:my_profile')
         else:
-            message = form.errors
+            message = form.non_field_errors().as_text() or next(iter(form.errors.values()))
             error(request, (message))
             return redirect('obywatele:my_profile')
     else:
@@ -282,31 +281,47 @@ def obywatele(request: HttpRequest):
 @login_required
 def poczekalnia(request: HttpRequest):
     # zliczaj_obywateli(request)
-    uid = User.objects.filter(is_active=False)
+    uid = User.objects.filter(is_active=False).select_related('uzytkownik')
     verified_user_ids = set(EmailAddress.objects.filter(user__in=uid, verified=True).values_list('user_id', flat=True))
 
     # Get the current user's profile
     try:
-        citizen_profile = Uzytkownik.objects.get(uid=request.user)
+        citizen_profile = request.user.uzytkownik
     except Uzytkownik.DoesNotExist:
         error(request, _('Your profile does not exist. Please contact administrator.'))
         return redirect('home:index')
+
+    candidate_profiles = {user.id: user.uzytkownik for user in uid if hasattr(user, 'uzytkownik')}
+    candidate_profile_ids = [profile.id for profile in candidate_profiles.values()]
+    existing_rates = {
+        rate.kandydat_id: rate
+        for rate in Rate.objects.filter(obywatel=citizen_profile, kandydat_id__in=candidate_profile_ids)
+    }
+    ratings_count_map = {
+        row['kandydat_id']: row['total']
+        for row in Rate.objects.filter(kandydat_id__in=candidate_profile_ids)
+        .values('kandydat_id')
+        .annotate(total=Count('id'))
+    }
 
     # Get ratings from the current user for all candidates
     # Process users and add rating directly to each user object for easy access in template
     users_with_ratings = []
     for user in uid:
-        try:
-            candidate_profile = Uzytkownik.objects.get(uid=user)
-        except Uzytkownik.DoesNotExist:
+        candidate_profile = candidate_profiles.get(user.id)
+        if not candidate_profile:
             continue
-        rate, created = Rate.objects.get_or_create(kandydat=candidate_profile, obywatel=citizen_profile)
+
+        rate = existing_rates.get(candidate_profile.id)
+        if rate is None:
+            rate, _ = Rate.objects.get_or_create(kandydat=candidate_profile, obywatel=citizen_profile)
+            existing_rates[candidate_profile.id] = rate
+
         # Add rating directly to user object as a custom attribute
         user.rating = rate.rate
 
         # Count number of reputation votes from all citizens
-        ratings_count = Rate.objects.filter(kandydat=candidate_profile).count()
-        user.ratings_count = ratings_count
+        user.ratings_count = ratings_count_map.get(candidate_profile.id, 0)
 
         user.email_confirmed = (user.id in verified_user_ids) or bool(candidate_profile.polecajacy)
         user.form_completed = candidate_profile.onboarding_status == Uzytkownik.OnboardingStatus.FORM_COMPLETED
@@ -448,9 +463,8 @@ def dodaj(request: HttpRequest):
 
 @login_required
 def my_profile(request: HttpRequest):
-    pk = request.user.id
-    profile = Uzytkownik.objects.get(pk=pk)
-    user = User.objects.get(pk=pk)
+    user = request.user
+    profile = request.user.uzytkownik
     return render(request, 'obywatele/my_profile.html', {
         'profile': profile,
         'user': user,
@@ -461,9 +475,8 @@ def my_profile(request: HttpRequest):
 
 @login_required
 def my_assets(request: HttpRequest):
-    pk = request.user.id
-    profile = Uzytkownik.objects.get(pk=pk)
-    user = User.objects.get(pk=pk)
+    user = request.user
+    profile = request.user.uzytkownik
     form = ProfileForm(request.POST, request.FILES)
 
     if request.method == 'POST':
@@ -570,26 +583,27 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
 
     rate = Rate.objects.get_or_create(kandydat=candidate_profile, obywatel=citizen_profile)[0]
 
+    if request.method == 'POST' and candidate_profile != citizen_profile:
+        action = request.POST.get('action')
+        if action == 'accept':
+            rate.rate = 1
+            rate.save(update_fields=['rate'])
+        elif action == 'reject':
+            rate.rate = -1
+            rate.save(update_fields=['rate'])
+        elif action == 'reset':
+            rate.rate = 0
+            rate.save(update_fields=['rate'])
+        return redirect(request.path)
+
     if rate.rate == 1:
         r1 = _('positive')
-    if request.GET.get('tak'):
-        rate.rate = 1
-        rate.save()
-        return redirect('obywatele:obywatele_szczegoly', pk)
 
     if rate.rate == -1:
         r1 = _('negative')
-    if request.GET.get('nie'):
-        rate.rate = -1
-        rate.save()
-        return redirect('obywatele:obywatele_szczegoly', pk)
 
     if rate.rate == 0:
         r1 = _('neutral')
-    if request.GET.get('reset'):
-        rate.rate = 0
-        rate.save()
-        return redirect('obywatele:obywatele_szczegoly', pk)
 
     total_rate_count = Rate.objects.filter(kandydat=candidate_profile).count()
 
@@ -639,14 +653,14 @@ def password_generator(size=8, chars=ascii_letters + digits):
 
 @receiver(user_signed_up)
 def DeactivateNewUser(sender, **kwargs):
-    try:
-        u = User.objects.get(username=kwargs['user'])
-        u.is_active = False
-        u.save()
-    except User.DoesNotExist:
-        log.error(f"User {kwargs['user']} does not exist in DeactivateNewUser signal")
-    except User.MultipleObjectsReturned:
-        log.error(f"Multiple users found with username {kwargs['user']} in DeactivateNewUser signal")
+    user = kwargs.get('user')
+    if not user:
+        log.error('Missing user in DeactivateNewUser signal')
+        return
+
+    if user.is_active:
+        user.is_active = False
+        user.save(update_fields=['is_active'])
 
 
 @receiver(email_confirmed)

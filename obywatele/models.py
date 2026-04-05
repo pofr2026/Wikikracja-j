@@ -75,6 +75,30 @@ class Uzytkownik(models.Model):
             instance.uzytkownik.save()
 
 
+class CitizenActivity(models.Model):
+    """Track activities related to citizens"""
+    
+    class ActivityType(models.TextChoices):
+        NEW_CANDIDATE = 'new_candidate', _('New Candidate')
+        USER_ACTIVATED = 'user_activated', _('User Activated')
+        USER_BLOCKED = 'user_blocked', _('User Blocked')
+    
+    uzytkownik = models.ForeignKey(Uzytkownik, on_delete=models.CASCADE, related_name='activities')
+    activity_type = models.CharField(max_length=20, choices=ActivityType.choices)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp'], name='citizen_activity_timestamp_idx'),
+            models.Index(fields=['activity_type'], name='citizen_activity_type_idx'),
+        ]
+    
+    def __str__(self):
+        return f"{self.uzytkownik.uid.username}: {self.get_activity_type_display()}"
+
+
 class Rate(models.Model):
     kandydat = models.ForeignKey(Uzytkownik, on_delete=models.CASCADE, related_name='kandydat')
     obywatel = models.ForeignKey(Uzytkownik, on_delete=models.CASCADE, related_name='obywatel')

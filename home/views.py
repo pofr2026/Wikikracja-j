@@ -24,10 +24,8 @@ from django.views.decorators.http import require_POST
 from board.models import Post
 from chat.models import Room, Message
 from elibrary.models import Book
-
-# from glosowania.views import ZliczajWszystko
 from glosowania.models import Decyzja
-from obywatele.models import Uzytkownik
+from obywatele.models import Uzytkownik, CitizenActivity
 from tasks.models import Task
 from events.models import Event
 
@@ -36,6 +34,16 @@ from .forms import RememberLoginForm
 from .models import FeedItem, ReadStatus
 
 log = logging.getLogger(__name__)
+
+
+def build_read_status_map(user):
+    return {
+        content_type: set(object_ids)
+        for content_type, object_ids in (
+            (content_type, ReadStatus.objects.filter(user=user, content_type=content_type).values_list('object_id', flat=True))
+            for content_type in ReadStatus.ContentType.values
+        )
+    }
 
 
 def home(request: HttpRequest):
@@ -77,7 +85,8 @@ def home(request: HttpRequest):
 def generate_feed_items(user):
     """Generate unified chronological feed for a user"""
     feed_items = []
-    
+    read_status_map = build_read_status_map(user)
+
     # Get recent posts
     posts = Post.objects.filter(
         updated__gte=timezone.now() - td(days=30)
@@ -91,7 +100,7 @@ def generate_feed_items(user):
             'author': post.author,
             'timestamp': post.updated,
             'url': f"/board/view/{post.pk}/",
-            'is_read': is_post_read_by_user(post, user),
+            'is_read': post.pk in read_status_map[ReadStatus.ContentType.POST],
             'object_id': post.pk,
         })
     
@@ -108,7 +117,7 @@ def generate_feed_items(user):
             'author': task.created_by or task.assigned_to,
             'timestamp': task.updated_at,
             'url': f"/tasks/{task.pk}/",
-            'is_read': is_task_read_by_user(task, user),
+            'is_read': task.pk in read_status_map[ReadStatus.ContentType.TASK],
             'object_id': task.pk,
         })
     
@@ -125,7 +134,7 @@ def generate_feed_items(user):
             'author': book.uploader,
             'timestamp': book.uploaded,
             'url': f"/elibrary/{book.pk}/detail/",
-            'is_read': is_book_read_by_user(book, user),
+            'is_read': book.pk in read_status_map[ReadStatus.ContentType.BOOK],
             'object_id': book.pk,
         })
     
@@ -143,12 +152,13 @@ def generate_feed_items(user):
             'author': None,
             'timestamp': event.start_date,
             'url': f"/events/{event.pk}/",
-            'is_read': is_event_read_by_user(event, user),
+            'is_read': event.pk in read_status_map[ReadStatus.ContentType.EVENT],
             'object_id': event.pk,
         })
-    
+
     # Get recent messages from rooms user has access to
     rooms = Room.objects.filter(allowed=user).prefetch_related('messages', 'messages__sender')
+    seen_room_ids = set(Room.objects.filter(allowed=user, seen_by=user).values_list('id', flat=True))
     for room in rooms:
         messages = room.messages.filter(
             time__gte=timezone.now() - td(days=30)
@@ -162,7 +172,7 @@ def generate_feed_items(user):
                 'author': message.sender,
                 'timestamp': message.time,
                 'url': f"/chat/#room_id={room.id}",
-                'is_read': is_message_read_by_user(message, user, room),
+                'is_read': message.pk in read_status_map[ReadStatus.ContentType.MESSAGE] or room.id in seen_room_ids,
                 'object_id': message.pk,
                 'room_id': room.id,
             })
@@ -180,68 +190,31 @@ def generate_feed_items(user):
             'author': decision.author,
             'timestamp': decision.data_ostatniej_modyfikacji,
             'url': f"/glosowania/details/{decision.pk}/",
-            'is_read': is_decision_read_by_user(decision, user),
+            'is_read': decision.pk in read_status_map[ReadStatus.ContentType.DECISION],
             'object_id': decision.pk,
+        })
+    
+    # Get recent citizen activities
+    citizen_activities = CitizenActivity.objects.filter(
+        timestamp__gte=timezone.now() - td(days=30)
+    ).select_related('uzytkownik', 'uzytkownik__uid').order_by('-timestamp')
+    
+    for activity in citizen_activities:
+        feed_items.append({
+            'content_type': 'citizen',
+            'title': activity.get_activity_type_display(),
+            'description': f"{activity.uzytkownik.uid.username} - {_(activity.description)}",
+            'author': activity.uzytkownik.uid,
+            'timestamp': activity.timestamp,
+            'url': f"/obywatele/{activity.uzytkownik.uid.id}/",
+            'is_read': activity.pk in read_status_map[ReadStatus.ContentType.CITIZEN],
+            'object_id': activity.pk,
         })
     
     # Sort all items by timestamp
     feed_items.sort(key=lambda x: x['timestamp'], reverse=True)
     
     return feed_items
-
-
-def is_post_read_by_user(post, user):
-    """Check if user has read this post"""
-    return ReadStatus.objects.filter(
-        user=user,
-        content_type=ReadStatus.ContentType.POST,
-        object_id=post.pk
-    ).exists()
-
-
-def is_task_read_by_user(task, user):
-    """Check if user has read this task"""
-    return ReadStatus.objects.filter(
-        user=user,
-        content_type=ReadStatus.ContentType.TASK,
-        object_id=task.pk
-    ).exists()
-
-
-def is_book_read_by_user(book, user):
-    """Check if user has read this book"""
-    return ReadStatus.objects.filter(
-        user=user,
-        content_type=ReadStatus.ContentType.BOOK,
-        object_id=book.pk
-    ).exists()
-
-
-def is_event_read_by_user(event, user):
-    """Check if user has read this event"""
-    return ReadStatus.objects.filter(
-        user=user,
-        content_type=ReadStatus.ContentType.EVENT,
-        object_id=event.pk
-    ).exists()
-
-
-def is_message_read_by_user(message, user, room):
-    """Check if user has read this message"""
-    return ReadStatus.objects.filter(
-        user=user,
-        content_type=ReadStatus.ContentType.MESSAGE,
-        object_id=message.pk
-    ).exists() or room.seen_by.filter(id=user.id).exists()
-
-
-def is_decision_read_by_user(decision, user):
-    """Check if user has read this decision"""
-    return ReadStatus.objects.filter(
-        user=user,
-        content_type=ReadStatus.ContentType.DECISION,
-        object_id=decision.pk
-    ).exists()
 
 
 @login_required
@@ -264,6 +237,7 @@ def mark_as_read(request):
             'event': ReadStatus.ContentType.EVENT,
             'message': ReadStatus.ContentType.MESSAGE,
             'decision': ReadStatus.ContentType.DECISION,
+            'citizen': ReadStatus.ContentType.CITIZEN,
         }
         
         read_status_content_type = content_type_map.get(content_type)
@@ -303,6 +277,7 @@ def mark_unread(request):
             'event': ReadStatus.ContentType.EVENT,
             'message': ReadStatus.ContentType.MESSAGE,
             'decision': ReadStatus.ContentType.DECISION,
+            'citizen': ReadStatus.ContentType.CITIZEN,
         }
         
         read_status_content_type = content_type_map.get(content_type)
