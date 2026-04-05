@@ -167,7 +167,7 @@ def generate_feed_items(user):
         for message in messages:
             feed_items.append({
                 'content_type': 'message',
-                'title': f"Message in {room.title}",
+                'title': _("Message in %(room_title)s") % {'room_title': room.title},
                 'description': message.text[:500] + '...' if len(message.text) > 500 else message.text,
                 'author': message.sender,
                 'timestamp': message.time,

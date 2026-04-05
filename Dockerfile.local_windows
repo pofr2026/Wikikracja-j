@@ -16,7 +16,6 @@ RUN apt-get update \
         gettext \
         mc \
         sqlite3 \
-        vim \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/

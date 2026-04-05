@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-05 11:52+0200\n"
+"POT-Creation-Date: 2026-04-05 12:16+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -1860,15 +1860,20 @@ msgstr "Członkostwo"
 msgid "Transaction"
 msgstr "Transakcja"
 
-#: .\home\views.py:134
+#: .\home\views.py:132
 msgid "Untitled Book"
 msgstr "Książka bez tytułu"
 
-#: .\home\views.py:386
+#: .\home\views.py:170
+#, python-format
+msgid "Message in %(room_title)s"
+msgstr "Wiadomość w %(room_title)s"
+
+#: .\home\views.py:321
 msgid "Your password has been changed."
 msgstr "Twoje hasło zostało zmienione."
 
-#: .\home\views.py:389
+#: .\home\views.py:324
 msgid "You typed something wrong. See what error appeared above and try again."
 msgstr "Coś źle wpisałeś. Zobacz, jaki błąd pojawił się powyżej i spróbuj ponownie."
 
@@ -2300,7 +2305,7 @@ msgid "Your email address is confirmed."
 msgstr "Twój email został potwierdzony."
 
 #: .\obywatele\templates\obywatele\onboarding_waiting.html:17
-#: .\obywatele\views.py:363
+#: .\obywatele\views.py:362
 msgid "Your onboarding form has been saved."
 msgstr "Twoje zgłoszenie zostało zapisane."
 
@@ -2435,35 +2440,35 @@ msgstr "Neutralny"
 msgid "I do not accept"
 msgstr "Nie akceptuję"
 
-#: .\obywatele\views.py:127
+#: .\obywatele\views.py:126
 msgid "Your new email has been saved."
 msgstr "Twój nowy email został zapisany."
 
-#: .\obywatele\views.py:147
+#: .\obywatele\views.py:146
 msgid "Your name has been saved."
 msgstr "Twój imię i nazwisko zostały zapisane."
 
-#: .\obywatele\views.py:292
+#: .\obywatele\views.py:291
 msgid "Your profile does not exist. Please contact administrator."
 msgstr "Twój profil nie istnieje. Skontaktuj się z grupą."
 
-#: .\obywatele\views.py:347 .\obywatele\views.py:380
+#: .\obywatele\views.py:346 .\obywatele\views.py:379
 msgid "Could not find your onboarding account."
 msgstr "Nie udało się znaleźć Twojego konta rejestracyjnego."
 
-#: .\obywatele\views.py:399
+#: .\obywatele\views.py:398
 msgid "Email already exist"
 msgstr "Email już istnieje"
 
-#: .\obywatele\views.py:433
+#: .\obywatele\views.py:432
 msgid "The new user has been saved"
 msgstr "Nowy użytkownik został zapisany."
 
-#: .\obywatele\views.py:436 .\obywatele\views.py:437
+#: .\obywatele\views.py:435 .\obywatele\views.py:436
 msgid "New citizen has been proposed"
 msgstr "Został zaproponowany nowy użytkownik"
 
-#: .\obywatele\views.py:437
+#: .\obywatele\views.py:436
 msgid ""
 "proposed new citizen\n"
 "You can approve him/her here:"
@@ -2471,35 +2476,35 @@ msgstr ""
 "zaproponował/a nową osobę\n"
 "Możesz ją zatwierdzić tutaj:"
 
-#: .\obywatele\views.py:449
+#: .\obywatele\views.py:448
 msgid "Please correct the highlighted errors."
 msgstr "Popraw podświetlone błędy."
 
-#: .\obywatele\views.py:508
+#: .\obywatele\views.py:507
 msgid "Changes was saved"
 msgstr "Zmiany zostały zapisane"
 
-#: .\obywatele\views.py:517
+#: .\obywatele\views.py:516
 msgid "Form is not valid!"
 msgstr "Formularz zawiera błędy"
 
-#: .\obywatele\views.py:601
+#: .\obywatele\views.py:600
 msgid "positive"
 msgstr "pozytywny"
 
-#: .\obywatele\views.py:604
+#: .\obywatele\views.py:603
 msgid "negative"
 msgstr "negatywny"
 
-#: .\obywatele\views.py:607
+#: .\obywatele\views.py:606
 msgid "neutral"
 msgstr "obojętny"
 
-#: .\obywatele\views.py:678
+#: .\obywatele\views.py:677
 msgid "Fill out your onboarding form"
 msgstr "Wypełnij formularz rejestracyjny"
 
-#: .\obywatele\views.py:679
+#: .\obywatele\views.py:678
 #, python-format
 msgid "Your email has been confirmed. Please fill out your onboarding form here: %(link)s"
 msgstr "Twoj email został potwierdzony. Wypełnij proszę formularz rejestracyjny (jeśli jeszcze tego nie zrobiłeś/aś): %(link)s"
