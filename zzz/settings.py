@@ -76,7 +76,6 @@ SESSION_COOKIE_SAMESITE = "Lax"
 # Reverse proxy configuration (required when behind Traefik/nginx)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
-USE_X_FORWARDED_PORT = True
 
 TIME_ZONE = getenv("TIME_ZONE", "Europe/Warsaw")
 LANGUAGE_CODE = getenv("LANGUAGE_CODE", "pl")

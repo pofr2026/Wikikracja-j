@@ -64,6 +64,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Mobile: scroll to last message when keyboard appears
+    if (window.visualViewport && window.innerWidth < 768) {
+        let lastHeight = window.visualViewport.height;
+        
+        window.visualViewport.addEventListener('resize', () => {
+            const currentHeight = window.visualViewport.height;
+            const heightDiff = Math.abs(currentHeight - lastHeight);
+            
+            // Keyboard appeared (viewport got smaller by significant amount)
+            if (heightDiff > 100 && currentHeight < lastHeight) {
+                setTimeout(() => {
+                    const messagesContainer = document.querySelector('.messages');
+                    if (messagesContainer) {
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                }, 300);
+            }
+            
+            lastHeight = currentHeight;
+        });
+    }
+
     document.addEventListener('click', (e) => {
         const container = e.target.closest('.attachment-image-container');
         if (container) {

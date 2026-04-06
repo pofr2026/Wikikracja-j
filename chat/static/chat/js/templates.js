@@ -47,7 +47,7 @@ const room_template = `
         <!-- Those two-->
 
       <div class='chat-controls-row'>
-        <input id='message-input'>
+        <input type="text" id="message-input">
         <button class='send-message chat-control btn btn-primary'>
           <i class='fas fa-paper-plane'></i>
         </button>

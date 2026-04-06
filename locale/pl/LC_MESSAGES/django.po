@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-05 12:48+0200\n"
+"POT-Creation-Date: 2026-04-06 11:13+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -3039,10 +3039,10 @@ msgstr ""
 msgid "<strong>Note:</strong> you can still <a href=\"%(email_url)s\">change your e-mail address</a>."
 msgstr "<strong>Uwaga:</strong> nadal możesz <a href=\"%(email_url)s\">zmienić swój adres e-mail</a>."
 
-#: .\zzz\settings.py:103
+#: .\zzz\settings.py:102
 msgid "English"
 msgstr "Angielski"
 
-#: .\zzz\settings.py:104
+#: .\zzz\settings.py:103
 msgid "Polish"
 msgstr "Polski"
