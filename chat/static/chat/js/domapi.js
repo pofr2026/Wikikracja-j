@@ -173,7 +173,7 @@ export default class DomApi {
     }
 
     getMessageTimeDiv(message_id) {
-        return $(`.message-timestamp[data-message-id=${message_id}]`);
+        return $(`.message-timestamp[data-message-id="${message_id}"]`);
     }
 
     getMessageInput() {

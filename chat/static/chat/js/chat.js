@@ -280,6 +280,12 @@ export async function onReceiveEdit(edit_info) {
         DOM_API.updateMessageAttachments(edit_info.message_id, edit_info.attachments);
     }
     DOM_API.showHistoryButton(edit_info.message_id);
+    
+    // Stop editing mode if this was the message being edited
+    const editedId = DOM_API.getEditedMessageId();
+    if (DOM_API.isEditing() && editedId && parseInt(editedId) === edit_info.message_id) {
+        DOM_API.stopEditing();
+    }
 }
 
 export async function onReceiveOnlineUpdates(updates) {
@@ -389,18 +395,17 @@ export async function onSubmitMessage(message, editing_message_id) {
             attachments.images = (await WS_API.uploadFiles(files)).filenames;
         }
         WS_API.editMessage(editing_message_id, message, attachments, DOM_API.getRemovedAttachments(), DOM_API.getOriginalMessageText(editing_message_id));
-        DOM_API.stopEditing();
-        return;
+        // Don't stop editing immediately - let onReceiveEdit handle it after server confirms
+    } else {
+        const files = DOM_API.getFiles();
+        const attachments = {};
+        if (message.replace(" ", "").length == 0 && (!files || files.length == 0)) return;
+        if (files?.length) {
+            attachments.images = (await WS_API.uploadFiles(files)).filenames;
+        }
+        WS_API.sendMessage(CurrentRoomId, message, DOM_API.getAnonymousValue(), attachments);
+        // remove files from input and image preview
+        DOM_API.clearFiles();
+        DOM_API.getMessageInput().value = "";
     }
-
-    const files = DOM_API.getFiles();
-    const attachments = {};
-    if (message.replace(" ", "").length == 0 && (!files || files.length == 0)) return;
-    if (files?.length) {
-        attachments.images = (await WS_API.uploadFiles(files)).filenames;
-    }
-    WS_API.sendMessage(CurrentRoomId, message, DOM_API.getAnonymousValue(), attachments);
-    // remove files from input and image preview
-    DOM_API.clearFiles();
-    DOM_API.getMessageInput().value = "";
 }

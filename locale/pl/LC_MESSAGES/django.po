@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-06 13:49+0200\n"
+"POT-Creation-Date: 2026-04-06 14:31+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -1782,12 +1782,12 @@ msgstr "Przejdź do pierwszej nieprzeczytanej"
 msgid "Activity Feed"
 msgstr "Kanał aktywności"
 
-#: .\home\templates\home\home.html:67 .\home\templates\home\home.html:288
+#: .\home\templates\home\home.html:67 .\home\templates\home\home.html:290
 msgid "Mark as read"
 msgstr "Oznacz jako przeczytane"
 
-#: .\home\templates\home\home.html:76 .\home\templates\home\home.html:237
-#: .\home\templates\home\home.html:318
+#: .\home\templates\home\home.html:76 .\home\templates\home\home.html:239
+#: .\home\templates\home\home.html:320
 msgid "Mark unread"
 msgstr "Oznacz jako nieprzeczytane"
 
@@ -1795,11 +1795,11 @@ msgstr "Oznacz jako nieprzeczytane"
 msgid "messages"
 msgstr "wiadomości"
 
-#: .\home\templates\home\home.html:101
+#: .\home\templates\home\home.html:102
 msgid "View"
 msgstr "Zobacz"
 
-#: .\home\templates\home\home.html:108
+#: .\home\templates\home\home.html:110
 msgid "No recent activity"
 msgstr "Brak ostatniej aktywności"
 
@@ -1872,16 +1872,16 @@ msgstr "Transakcja"
 msgid "Untitled Book"
 msgstr "Książka bez tytułu"
 
-#: .\home\views.py:192
+#: .\home\views.py:202
 #, python-format
 msgid "Messages in %(room_title)s"
 msgstr "Wiadomości w %(room_title)s"
 
-#: .\home\views.py:347
+#: .\home\views.py:366
 msgid "Your password has been changed."
 msgstr "Twoje hasło zostało zmienione."
 
-#: .\home\views.py:350
+#: .\home\views.py:369
 msgid "You typed something wrong. See what error appeared above and try again."
 msgstr "Coś źle wpisałeś. Zobacz, jaki błąd pojawił się powyżej i spróbuj ponownie."
 
