@@ -17,6 +17,7 @@ from django.db.models import Count
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 
@@ -93,10 +94,11 @@ def generate_feed_items(user):
     ).select_related('author').order_by('-updated')
     
     for post in posts:
+        clean_text = strip_tags(post.text)
         feed_items.append({
             'content_type': 'post',
             'title': post.title,
-            'description': post.text[:500] + '...' if len(post.text) > 500 else post.text,
+            'description': clean_text[:500] + '...' if len(clean_text) > 500 else clean_text,
             'author': post.author,
             'timestamp': post.updated,
             'url': f"/board/view/{post.pk}/",
@@ -110,10 +112,11 @@ def generate_feed_items(user):
     ).select_related('created_by', 'assigned_to').order_by('-updated_at')
     
     for task in tasks:
+        clean_description = strip_tags(task.description)
         feed_items.append({
             'content_type': 'task',
             'title': task.title,
-            'description': task.description[:500] + '...' if len(task.description) > 500 else task.description,
+            'description': clean_description[:500] + '...' if len(clean_description) > 500 else clean_description,
             'author': task.created_by or task.assigned_to,
             'timestamp': task.updated_at,
             'url': f"/tasks/{task.pk}/",
@@ -127,10 +130,11 @@ def generate_feed_items(user):
     ).select_related('uploader').order_by('-uploaded')
     
     for book in books:
+        clean_abstract = strip_tags(book.abstract) if book.abstract else ''
         feed_items.append({
             'content_type': 'book',
             'title': book.title or _('Untitled Book'),
-            'description': book.abstract[:500] + '...' if book.abstract and len(book.abstract) > 500 else (book.abstract or ''),
+            'description': clean_abstract[:500] + '...' if clean_abstract and len(clean_abstract) > 500 else clean_abstract,
             'author': book.uploader,
             'timestamp': book.uploaded,
             'url': f"/elibrary/{book.pk}/detail/",
@@ -145,10 +149,11 @@ def generate_feed_items(user):
     ).order_by('-start_date')
     
     for event in events:
+        clean_description = strip_tags(event.description) if event.description else ''
         feed_items.append({
             'content_type': 'event',
             'title': event.title,
-            'description': event.description[:500] + '...' if event.description and len(event.description) > 500 else (event.description or ''),
+            'description': clean_description[:500] + '...' if clean_description and len(clean_description) > 500 else clean_description,
             'author': None,
             'timestamp': event.start_date,
             'url': f"/events/{event.pk}/",
@@ -166,17 +171,21 @@ def generate_feed_items(user):
         ).order_by('-time')[:5]  # Limit to recent messages per room
         
         if messages:  # Only add room if it has recent messages
-            # Create a description that shows the most recent message
-            latest_message = messages[0]
-            message_count = messages.count()
+            # Create description showing all messages with authors
+            message_list = []
+            for message in messages:
+                clean_text = strip_tags(message.text)
+                if message.sender:
+                    author_name = message.sender.username
+                else:
+                    author_name = 'System'
+                message_list.append(f"{author_name}: {clean_text}")
             
-            # Build description showing latest message and count
-            if message_count == 1:
-                description = latest_message.text[:500] + '...' if len(latest_message.text) > 500 else latest_message.text
-            else:
-                description = _("Latest: %(message)s") % {
-                    'message': latest_message.text[:300] + '...' if len(latest_message.text) > 300 else latest_message.text
-                }
+            # Join messages with newlines for better readability
+            description = '\n'.join(message_list)
+            
+            # Use latest message for timestamp and author
+            latest_message = messages[0]
             
             feed_items.append({
                 'content_type': 'room_messages',
@@ -188,7 +197,7 @@ def generate_feed_items(user):
                 'is_read': room.id in seen_room_ids,  # Room is read if all messages are seen
                 'object_id': room.id,  # Use room ID as object_id for grouping
                 'room_id': room.id,
-                'message_count': message_count,
+                'message_count': len(messages),
             })
     
     # Get recent decisions
@@ -197,10 +206,11 @@ def generate_feed_items(user):
     ).order_by('-data_ostatniej_modyfikacji')
     
     for decision in decisions:
+        clean_tresc = strip_tags(decision.tresc) if decision.tresc else ''
         feed_items.append({
             'content_type': 'decision',
             'title': decision.title,
-            'description': '',  # Decisions don't have description field
+            'description': clean_tresc[:500] + '...' if clean_tresc and len(clean_tresc) > 500 else clean_tresc,
             'author': decision.author,
             'timestamp': decision.data_ostatniej_modyfikacji,
             'url': f"/glosowania/details/{decision.pk}/",
