@@ -230,12 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', handleRoomNameClick);
-    document.addEventListener('touchstart', handleRoomNameClick, { passive: false });
 
     function handleRoomNameClick(e) {
         const roomName = e.target.closest('.room-name');
         if (!roomName) return;
-        if (e.type === 'touchstart') e.preventDefault();
         const room_id = roomName.parentElement.getAttribute("data-room-id");
         if (!roomName.classList.contains("joined")) {
             roomName.parentElement.classList.add('room-tapping');
