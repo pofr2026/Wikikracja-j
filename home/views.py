@@ -69,6 +69,11 @@ def home(request: HttpRequest):
                 feed_items[i]['is_first_unread'] = True
                 break
     
+    # Check if we should filter to show only unread items
+    filter_unread = request.GET.get('filter') == 'unread'
+    if filter_unread:
+        feed_items = unread_items
+    
     # Get counts for each section
     ongoing_count = Decyzja.objects.filter(status=3).count()
     upcoming_count = Decyzja.objects.filter(status=2).count()
@@ -77,6 +82,8 @@ def home(request: HttpRequest):
     return render(request, 'home/home.html', {
         'feed_items': feed_items,
         'first_unread': first_unread,
+        'unread_items': unread_items,
+        'filter_unread': filter_unread,
         'ongoing_count': ongoing_count,
         'upcoming_count': upcoming_count,
         'signatures_count': signatures_count,

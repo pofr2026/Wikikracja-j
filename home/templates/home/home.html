@@ -29,12 +29,12 @@
 <div class="container-fluid">
 	<!-- Main Feed -->
 	<div class="col-12">
-		{% if first_unread %}
+		{% if unread_items %}
 		<div class="card mb-3">
 			<div class="card-body">
-				<a href="#first-unread" class="btn btn-warning btn-sm w-100">
-					{% trans 'Jump to first unread' %}
-				</a>
+				<button id="toggle-unread" class="btn btn-warning btn-sm w-100" data-filtered="false">
+					{% trans 'Show unread only' %}
+				</button>
 			</div>
 		</div>
 		{% endif %}
@@ -201,11 +201,39 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-	// Auto-scroll to first unread if URL contains #first-unread
-	if (window.location.hash === '#first-unread') {
-		const element = document.getElementById('first-unread');
-		if (element) {
-			element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	// Handle toggle unread filter button
+	const toggleButton = document.getElementById('toggle-unread');
+	if (toggleButton) {
+		// Set initial state based on URL parameter
+		const urlParams = new URLSearchParams(window.location.search);
+		const isFiltered = urlParams.get('filter') === 'unread';
+		toggleButton.setAttribute('data-filtered', isFiltered.toString());
+		updateButtonText(toggleButton, isFiltered);
+		
+		toggleButton.addEventListener('click', function() {
+			const isCurrentlyFiltered = this.getAttribute('data-filtered') === 'true';
+			const newFilteredState = !isCurrentlyFiltered;
+			
+			// Update button state
+			this.setAttribute('data-filtered', newFilteredState.toString());
+			updateButtonText(this, newFilteredState);
+			
+			// Update URL and reload page
+			const url = new URL(window.location);
+			if (newFilteredState) {
+				url.searchParams.set('filter', 'unread');
+			} else {
+				url.searchParams.delete('filter');
+			}
+			window.location.href = url.toString();
+		});
+	}
+	
+	function updateButtonText(button, isFiltered) {
+		if (isFiltered) {
+			button.textContent = '{% trans "Show all" %}';
+		} else {
+			button.textContent = '{% trans "Show unread only" %}';
 		}
 	}
 	

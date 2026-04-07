@@ -283,7 +283,12 @@ export async function onReceiveEdit(edit_info) {
     
     // Stop editing mode if this was the message being edited
     const editedId = DOM_API.getEditedMessageId();
-    if (DOM_API.isEditing() && editedId && parseInt(editedId) === edit_info.message_id) {
+    
+    // Convert both to strings for comparison since message_id can be string or number
+    const editedIdStr = editedId ? String(editedId) : null;
+    const messageIdStr = String(edit_info.message_id);
+    
+    if (DOM_API.isEditing() && editedIdStr && editedIdStr === messageIdStr) {
         DOM_API.stopEditing();
     }
 }
@@ -407,5 +412,9 @@ export async function onSubmitMessage(message, editing_message_id) {
         // remove files from input and image preview
         DOM_API.clearFiles();
         DOM_API.getMessageInput().value = "";
+        // Reset editing mode if it was active
+        if (DOM_API.isEditing()) {
+            DOM_API.stopEditing();
+        }
     }
 }
