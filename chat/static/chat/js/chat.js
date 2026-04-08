@@ -120,6 +120,13 @@ async function expandCategoryForRoom(room_id) {
 
     const toggleButton = $(categoryMap[container.id]);
     if (toggleButton) {
+        // Only expand if the user hasn't manually collapsed it
+        // Check if the accordion button is not activated (meaning it's collapsed)
+        if (toggleButton.classList.contains('accordion') && !toggleButton.classList.contains('activated')) {
+            // User manually collapsed this category, don't auto-expand
+            return;
+        }
+        
         const isHidden = container.style.display === 'none' || getComputedStyle(container).display === 'none';
         if (isHidden) {
             container.style.display = 'block';
