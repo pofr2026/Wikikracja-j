@@ -33,8 +33,8 @@ def create_chat_room_for_referendum(sender, instance, created, **kwargs):
 
         if not existing_room:
             try:
-                # Create new public chat room
-                room = Room.objects.create(title=room_title, public=True, archived=False, protected=True)
+                # Create new private chat room for voting
+                room = Room.objects.create(title=room_title, public=False, archived=False, protected=True)
 
                 # Add all active users to the room
                 active_users = User.objects.filter(is_active=True)
