@@ -354,25 +354,38 @@ if not DEBUG and EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
 #########################
 # AllAuth Configuration #
 #########################
+# CRITICAL: Custom signup form and adapter for Wikikracja onboarding flow
 ACCOUNT_FORMS = {
-    'signup': 'obywatele.forms.CustomSignupForm',  # disable signup form if spam bots
+    'signup': 'obywatele.forms.CustomSignupForm',  # Custom form: email + captcha only
 }
+ACCOUNT_ADAPTER = 'obywatele.adapter.CustomAccountAdapter'  # Handles session and redirects
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# CRITICAL: Redirect to onboarding form immediately after signup
+# Without this, users get stuck or redirected to wrong pages
 ACCOUNT_SIGNUP_REDIRECT_URL = '/obywatele/onboarding/'
+ACCOUNT_RATE_LIMITS = {
+    'login_failed': '5/m',
+    'confirm_email': '0/m',  # Disable cooldown (0 per minute = no cooldown)
+}
+ACCOUNT_INACTIVE_REDIRECT_URL = '/obywatele/onboarding/'
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*']  # , 'password2*'*/]
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/obywatele/onboarding/'
-ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/obywatele/onboarding/'
+# CRITICAL: Email verification settings for onboarding flow
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Must verify email to continue
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True  # Allow GET requests for email confirmation
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/obywatele/onboarding/'  # After email confirmation
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/obywatele/onboarding/'  # Same for logged in
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 7  # IMPORTANT: Links valid for 7 days (prevents "expired" errors)
 ACCOUNT_PASSWORD_MIN_LENGTH = 8
 # ACCOUNT_RATE_LIMITS = True  # doesn't work despite documentation
 RATE_LIMITS = 5  # at least doesn't break signup
 ACCOUNT_SESSION_REMEMBER = True  # Controls the life time of the session. Set to None to ask the user ("Remember me?"), False to not remember, and True to always remember.
 ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = False
+ACCOUNT_SIGNUP_PASSWORD_GENERATION = True  # Auto-generate passwords for signup
 
 # Captcha https://django-simple-captcha.readthedocs.io/en/latest/advanced.html
 CAPTCHA_FONT_SIZE = 40

@@ -1,6 +1,9 @@
 # OGÓLNE
 
-- Dokończyć Fixtures i dodać je do skryptu instalacyjnego. Fixtures z przepisami, pokojami i ogłoszeniami. Start: (publiczna strona startowa dla niezalogowanych) i Footer: (publiczna stopka).
+- Do czatu: filtr tylko nieprzeczytane
+- Do emaila powitalnego dodać https://lobbyobywatelskie.wikikracja.pl/board/view/25/
+- Nowa osoba akceptuje zasady w momencie pierwszego logowania
+- Dokończyć Fixtures i dodać je do skryptu instalacyjnego. Fixtures z przepisami, pokojami i ogłoszeniami. Start: (publiczna strona startowa dla niezalogowanych) i Footer: (publiczna stopka). Customowy email. Wszystkie te elementy dać do nowego działu.
 - Backup kontaktów, przepisów, ogłoszeń, itd. Każdy powinien móc zrobić w postaci fixtures i md.
 
 # ZADANIA (TASKS)
@@ -17,53 +20,14 @@
 
 ## Funkcjonalności
 
-- Treść u góry, wszystkie inne elementy wiadomości u dołu.
-- Kolejne wiadomości od tej samej osoby: bez 
-- Chat room dla Task i Vote znika za szybko - częściowo zrobione ale nie są zachowywane na wieki
-- Czaty pod ogłoszeniami
-- Archiwum czatów powinno być pod guzikiem, nie pod rozwijaną listą. Bardziej ukryte żeby nie zaśmiecać interfejsu.
-- Po utworzeniu propozycji - utworzyć dla niej pokój
-- Po kliknięciu "Kliknij tutaj aby włączyć powiadomienia" — informacja, że trzeba zrestartować stronę.
-- Linki do poszczególnych pokoi i wiadomości
+- Kolejne wiadomości od tej samej osoby: bez ramek
+- Czaty pod ogłoszeniami?
 - Każdy sam ustawia jak często chce otrzymywać wiadomości
-- Tryb powolny nie powinien liczyć czasu od własnej ostatniej wypowiedzi ale od wypowiedzi ostatniej osoby.
-- Warto ustawić "Tryb powolny" na wysoką wartość żeby wysyłanie na "Ważne Ogłoszenia" było rzadkie.
 - Szeregowanie wypowiedzi po ocenie
 - Przypomnij wszystkim o danej wiadomości w danej dacie. Każdy może to włączyć.
 - Wiadomość do wszystkich - chaty z najwyżej punktowanymi wypowiedziami
-- W dużych grupach (cała Polska) nie powinno być opcji wyrzucania z grupy. Zamiast tego tylko wyrzucanie z czatu.
 - Możliwość oznaczania wypowiedzi jako predykcji. Data przypomnienia albo wydarzenie po którym będzie można sprawdzić predykcję.
-- Pole tekstowe rośnie dynamicznie
-- Przenieść wszystko z home do chat
-- Zabrać wszystkie niepotrzebne czynności z `chat(request)`
-- Więcej informacji w logach przy otwieraniu czatu. Szczególnie brakuje informacji które rekordy w bazie nie istnieją.
-
-## Powiadomienia
-
-- Powiadomienia o wiadomości na czacie:
-  - https://dev.pippi.im/writing/build-github-like-notifications-with-django-messages-and-angular-js/
-  - https://stackoverflow.com/questions/64768807/how-can-i-get-unread-messages-for-each-user
-  - https://evileg.com/en/post/418/
-  - https://github.com/django-notifications/django-notifications
-
-## Refactoring
-
-1. **Konsolidacja JS** — chat.js, templates.js, utility.js, notifications.js → jeden plik lub lepszy podział w katalogu chat/
-2. **Uproszczenie Room** — zastąpić seen_by i muted_by M2M jednym modelem RoomUserPreference
-3. **Uproszczenie Message** — rozbić szablon w templates.js na mniejsze komponenty, voting do osobnego komponentu
-4. **CSS** — zmienne CSS zamiast hardcoded wartości, usunąć nieużywane style
-5. **WebSocket** — rozbić ChatConsumer na mniejsze klasy (MessageHandler, RoomHandler)
-6. **Szablony** — wyeliminować duplikaty kodu public/private, uprościć archive toggle
-7. **Baza danych** — uprościć constraint w Message, uprościć voting, dodać indeksy
-8. **Organizacja** — pliki statyczne do chat/static/chat/, rozważyć React/Vue
-9. **Obsługa błędów** — retry dla WebSocket, lepsze logowanie
-10. **Wydajność** — paginacja wiadomości, cache, optymalizacja zapytań
-
-## CHAT2 - Mobile API
-
-- `/chat2/api/rooms/` — lista i tworzenie pokoi
-- `/chat2/api/messages/` — lista i wysyłanie wiadomości
-- `/ws/chat2/<room_id>/` — WebSocket dla wiadomości real-time
+- Zmiana nazwy pokoju
 
 # EMAILE
 
@@ -87,25 +51,18 @@
 
 - Automatyczne głosowania Wiki. Poziom akceptacji, itd. https://www.kialo.com/ https://github.com/ehsanfakhraie/kialo/
 - Głosowania stałe nad parametrami systemu (ile podpisów pod wnioskiem, czas trwania dyskusji, itd.)
-- 1 dzień przerwy pomiędzy końcem zbierania podpisów a możliwością wycofania podpisu
+- Szablony głosowań: sojusz z inną grupą, wymagana reputacja, czas trwania referendum, zrzutka, archiwizacja pokoi, wybory skarbnika, customowe
 - Fixtures: przywrócić startowe referenda
 - Dodać pole: ten przepis powinien być stosowany jeśli (czas, warunek)
-- Imienne dodawanie argumentów za i przeciw
 - Podświetlanie guzików kiedy jest trwające referendum
-- Te same kolory na guzikach co na obrazku
 - Pokazywać kto podpisał wniosek o referendum
 - Zegarek odliczający czas do końca referendum
-- Pozytywy, negatywy referendum - każdy może komentować oba?
 - Opis przy dodawaniu nowego przepisu: Co się dzieje; Jaki jest mechanizm; Jak to zmienić; Jakie będą konsekwencje
-- Szablony głosowań: sojusz z inną grupą, wymagana reputacja, czas trwania referendum, zrzutka, archiwizacja pokoi, wybory skarbnika, customowe
-- Możliwość wyświetlania listy osób, które podpisały się pod wnioskiem o referendum
 - Wersjonowanie Przepisów
 
 # BOOKKEEPING
 
 - Mechanizm do opłacania składki
-- Raporty używają "lazy loading" i przez to nie odświeżają się
-- Kasowanie/edycja wpisów tylko przez autora
 - Umowy - ja pożyczam tobie, ja przechowuję tobie.
 - Między sobą: kto, komu, ile, kiedy, za co. Squash: jeśli A wisi B, B wisi C, C wisi A 100zł to wszystko się zeruje. Rozliczenia gotówkowe / Śledzenie przekazywania przedmiotów
 - Okresowe składki. Opłaty roczne, miesięczne, jednorazowe
@@ -294,3 +251,16 @@ Do oddania / na sprzedaż / do wypożyczenia:
 - Zadania - małe guziczki za/przeciw w widoku listy.
 - Jeśli ktoś próbuje zapisać się po raz drugi (ten sam email) to dostaje informację, że kandydatura jest w kolejce.
 - Do Start dodano Zadania w realizacji i nowe wiadomości na czacie
+- Chat: Treść u góry, wszystkie inne elementy wiadomości u dołu.
+- Chat: room dla Task i Vote znika za szybko - częściowo zrobione ale nie są zachowywane na wieki
+- Chat: Archiwum czatów powinno być pod guzikiem, nie pod rozwijaną listą. Bardziej ukryte żeby nie zaśmiecać interfejsu.
+- Chat: Po utworzeniu propozycji - utworzyć dla niej pokój
+- Chat: Linki do poszczególnych pokoi i wiadomości
+- Chat: Po kliknięciu "Kliknij tutaj aby włączyć powiadomienia" — informacja, że trzeba zrestartować stronę.
+- Chat: Pole tekstowe rośnie dynamicznie
+- Chat: Przenieść wszystko z home do chat
+- Głosowania: 2 dni przerwy pomiędzy końcem zbierania podpisów a możliwością wycofania podpisu
+- Głosowania: Imienne dodawanie argumentów za i przeciw
+- Głosowania: Pozytywy, negatywy referendum - każdy może komentować oba?
+- Bookkeeping: Raporty używają "lazy loading" i przez to nie odświeżają się
+- Bookkeeping: Kasowanie/edycja wpisów tylko przez autora

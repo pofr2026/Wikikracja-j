@@ -160,12 +160,32 @@ class OnboardingDetailsForm(forms.ModelForm):
 
 
 class CustomSignupForm(SignupForm):
+    """
+    Custom signup form for Wikikracja onboarding process.
+    
+    KEY DESIGN NOTES:
+    - Only email and captcha are shown to user (simplified signup)
+    - Password is auto-generated (12 chars, alphanumeric) 
+    - User never sees password - login via email only
+    - Email confirmation is manually triggered (allauth auto-send disabled)
+    - After signup: user redirected to onboarding form
+    - After email confirmation: second email with onboarding link sent
+    """
     email = forms.CharField(max_length=100, label='Email', required=True)
     captcha = CaptchaField()
 
     def __init__(self, *args, **kwargs):
         super(CustomSignupForm, self).__init__(*args, **kwargs)
-        self.fields.pop('password1')
+        # CRITICAL: allauth requires password1 field, but we hide it and auto-generate
+        # This prevents "field required" validation errors while keeping UI simple
+        self.fields['password1'].widget = forms.HiddenInput()
+        self.fields['password1'].required = False
+        
+        # Auto-generate secure password (user never sees it)
+        import secrets
+        import string
+        password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+        self.fields['password1'].initial = password
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -179,11 +199,26 @@ class CustomSignupForm(SignupForm):
 
         return email
 
+    def clean_password1(self):
+        """
+        Auto-generate password for hidden password1 field.
+        
+        DESIGN NOTE: allauth requires password validation but we want email-only signup.
+        This method satisfies allauth's requirements while keeping UI simple.
+        Password is secure (12 chars, alphanumeric) but user never sees it.
+        """
+        import secrets
+        import string
+        password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+        return password
+
+    def clean(self):
+        return super().clean()
+
     def save(self, request: HttpRequest):
         user = super(CustomSignupForm, self).save(request)
         user.email = self.cleaned_data['email']
-        if not User.objects.filter(username=user.username).exists():
-            user.set_unusable_password()
+        # Pozwolmy allauth zarzadac haslem - nie ustawiamy set_unusable_password()
 
         try:
             user.save()
@@ -201,10 +236,31 @@ class CustomSignupForm(SignupForm):
         profile.onboarding_status = Uzytkownik.OnboardingStatus.EMAIL_ENTERED
         profile.save()
 
-        request.session['onboarding_user_id'] = user.id
-        request.session.modified = True
+        # CRITICAL: Manual email confirmation sending
+        # DESIGN NOTE: allauth auto-send is disabled due to custom form structure
+        # We must manually trigger email confirmation with proper HMAC signing
+        try:
+            from allauth.account.models import EmailAddress, EmailConfirmationHMAC
+            from allauth.account.adapter import get_adapter
+            
+            # Ensure EmailAddress exists (allauth requirement for email confirmation)
+            email_address, created = EmailAddress.objects.get_or_create(
+                user=user,
+                email=user.email,
+                defaults={'verified': False, 'primary': True}
+            )
+            
+            if created or not email_address.verified:
+                # IMPORTANT: Use EmailConfirmationHMAC (not EmailConfirmation)
+                # HMAC provides secure signed links that don't expire quickly
+                # Old EmailConfirmation.create() was causing "link expired" errors
+                confirmation = EmailConfirmationHMAC.create(email_address)
+                adapter = get_adapter()
+                adapter.send_confirmation_mail(request, confirmation, signup=True)
+                
+        except Exception as e:
+            log.error(f'Failed to send confirmation email: {e}', exc_info=True)
 
-        log.info(f'EMAIL_DIAG trigger=new_person_requested_membership source=obywatele.forms.CustomSignupForm.save user_id={user.id} email={user.email} username={user.username} subject={_("New person requested membership")}')
         SendEmailToAll(_('New person requested membership'),
                        _('User %(username)s just requested membership') % {
                            'username': user.username

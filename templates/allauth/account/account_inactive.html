@@ -7,5 +7,13 @@
 {% block content %}
 <h1>{% trans "Your account is inactive" %}</h1>
 
-<p>{% trans "If you are new user you need to wait until community will accept you. You will receive email once it will happen." %}</p>
+<p>{% trans "Your account has been created but is currently inactive. Please fill out the onboarding form to continue the registration process." %}</p>
+
+<p>
+  <a href="{% url 'obywatele:onboarding_details' %}" class="btn btn-primary">
+    {% trans "Fill out onboarding form" %}
+  </a>
+</p>
+
+<p>{% trans "After submitting the onboarding form, you will need to wait for community approval. You will receive an email once your account is activated." %}</p>
 {% endblock %}

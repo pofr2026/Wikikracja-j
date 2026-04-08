@@ -45,8 +45,19 @@ def is_email_confirmed_for_candidate(user: User, profile: Uzytkownik) -> bool:
 
 
 def get_onboarding_user_from_request(request: HttpRequest):
+    """
+    CRITICAL: Find user for onboarding form access.
+    
+    DESIGN NOTE: Three ways to access onboarding form:
+    1. Session (immediate after signup) - primary method
+    2. Email link with uid/token (backup after email confirmation)
+    3. Fallback for already active users with incomplete onboarding
+    
+    Without this logic, users get "Could not find your onboarding account" error.
+    """
     onboarding_user_id = request.session.get('onboarding_user_id')
 
+    # METHOD 2: Email link with signed token (backup method)
     uid = request.GET.get('uid')
     token = request.GET.get('token')
     if uid and token:
@@ -62,7 +73,23 @@ def get_onboarding_user_from_request(request: HttpRequest):
     if not onboarding_user_id:
         return None
 
-    return User.objects.filter(pk=onboarding_user_id, is_active=False).first()
+    # METHOD 1: Standard flow - inactive user (just signed up)
+    user = User.objects.filter(pk=onboarding_user_id, is_active=False).first()
+    if user:
+        return user
+    
+    # METHOD 3: Fallback - active user with incomplete onboarding
+    # This handles edge cases where user became active but didn't complete onboarding
+    user = User.objects.filter(pk=onboarding_user_id).first()
+    if user and hasattr(user, 'uzytkownik'):
+        profile = user.uzytkownik
+        if profile.onboarding_status in [
+            Uzytkownik.OnboardingStatus.EMAIL_ENTERED,
+            Uzytkownik.OnboardingStatus.EMAIL_CONFIRMED
+        ]:
+            return user
+    
+    return None
 
 
 def population():

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-08 18:15+0200\n"
+"POT-Creation-Date: 2026-04-08 23:34+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -1171,7 +1171,7 @@ msgid "Rejected"
 msgstr "Odrzucone"
 
 #: .\glosowania\management\commands\vote.py:172 .\glosowania\views.py:379
-#: .\obywatele\forms.py:223
+#: .\obywatele\forms.py:279
 #, python-brace-format
 msgid "Why you received this email? Here is explanation: {url}"
 msgstr "Dlaczego otrzymałeś ten e-mail? Tutaj jest wyjaśnienie: {url}"
@@ -1955,7 +1955,7 @@ msgstr "Dwa pola adresów e-mail nie zgadzają się"
 msgid "The email address is the same as the one already defined."
 msgstr "Nowy email jest taki sam jak obecny."
 
-#: .\obywatele\forms.py:66 .\obywatele\forms.py:178
+#: .\obywatele\forms.py:66 .\obywatele\forms.py:198
 msgid "An account with this email address already exists."
 msgstr "Konto z tym adresem email już istnieje."
 
@@ -1983,15 +1983,15 @@ msgstr "Miasto jest wymagane"
 msgid "Job is required."
 msgstr "Zawód jest wymagany"
 
-#: .\obywatele\forms.py:176
+#: .\obywatele\forms.py:196
 msgid "Your candidacy is still in the queue. Please wait for verification."
 msgstr "Twoja kandydatura nadal czeka na zatwierdzenie. Poprosimy jeszcze o trochę cierpliwości."
 
-#: .\obywatele\forms.py:207 .\obywatele\forms.py:208
+#: .\obywatele\forms.py:264
 msgid "New person requested membership"
 msgstr "Nowa osoba poprosiła o dołączenie do grupy"
 
-#: .\obywatele\forms.py:209
+#: .\obywatele\forms.py:265
 #, python-format
 msgid "User %(username)s just requested membership"
 msgstr "Użytkownik %(username)s właśnie poprosił/a o dołączenie do grupy"
@@ -2348,7 +2348,7 @@ msgid "Your email address is confirmed."
 msgstr "Twój email został potwierdzony."
 
 #: .\obywatele\templates\obywatele\onboarding_waiting.html:17
-#: .\obywatele\views.py:373
+#: .\obywatele\views.py:400
 msgid "Your onboarding form has been saved."
 msgstr "Twoje zgłoszenie zostało zapisane."
 
@@ -2495,35 +2495,35 @@ msgstr "Nie akceptuję"
 msgid "Profile Details"
 msgstr "Szczegóły"
 
-#: .\obywatele\views.py:124
+#: .\obywatele\views.py:151
 msgid "Your new email has been saved."
 msgstr "Twój nowy email został zapisany."
 
-#: .\obywatele\views.py:144
+#: .\obywatele\views.py:171
 msgid "Your name has been saved."
 msgstr "Twój imię i nazwisko zostały zapisane."
 
-#: .\obywatele\views.py:302
+#: .\obywatele\views.py:329
 msgid "Your profile does not exist. Please contact administrator."
 msgstr "Twój profil nie istnieje. Skontaktuj się z grupą."
 
-#: .\obywatele\views.py:357 .\obywatele\views.py:390
+#: .\obywatele\views.py:384 .\obywatele\views.py:417
 msgid "Could not find your onboarding account."
 msgstr "Nie udało się znaleźć Twojego konta rejestracyjnego."
 
-#: .\obywatele\views.py:409
+#: .\obywatele\views.py:436
 msgid "Email already exist"
 msgstr "Email już istnieje"
 
-#: .\obywatele\views.py:443
+#: .\obywatele\views.py:470
 msgid "The new user has been saved"
 msgstr "Nowy użytkownik został zapisany."
 
-#: .\obywatele\views.py:446 .\obywatele\views.py:447
+#: .\obywatele\views.py:473 .\obywatele\views.py:474
 msgid "New citizen has been proposed"
 msgstr "Został zaproponowany nowy użytkownik"
 
-#: .\obywatele\views.py:447
+#: .\obywatele\views.py:474
 msgid ""
 "proposed new citizen\n"
 "You can approve him/her here:"
@@ -2531,35 +2531,35 @@ msgstr ""
 "zaproponował/a nową osobę\n"
 "Możesz ją zatwierdzić tutaj:"
 
-#: .\obywatele\views.py:459
+#: .\obywatele\views.py:486
 msgid "Please correct the highlighted errors."
 msgstr "Popraw podświetlone błędy."
 
-#: .\obywatele\views.py:518
+#: .\obywatele\views.py:545
 msgid "Changes was saved"
 msgstr "Zmiany zostały zapisane"
 
-#: .\obywatele\views.py:527
+#: .\obywatele\views.py:554
 msgid "Form is not valid!"
 msgstr "Formularz zawiera błędy"
 
-#: .\obywatele\views.py:611
+#: .\obywatele\views.py:638
 msgid "positive"
 msgstr "pozytywny"
 
-#: .\obywatele\views.py:614
+#: .\obywatele\views.py:641
 msgid "negative"
 msgstr "negatywny"
 
-#: .\obywatele\views.py:617
+#: .\obywatele\views.py:644
 msgid "neutral"
 msgstr "obojętny"
 
-#: .\obywatele\views.py:688
+#: .\obywatele\views.py:715
 msgid "Fill out your onboarding form"
 msgstr "Wypełnij formularz rejestracyjny"
 
-#: .\obywatele\views.py:689
+#: .\obywatele\views.py:716
 #, python-format
 msgid "Your email has been confirmed. Please fill out your onboarding form here: %(link)s"
 msgstr "Twoj email został potwierdzony. Wypełnij proszę formularz rejestracyjny (jeśli jeszcze tego nie zrobiłeś/aś): %(link)s"
@@ -2751,7 +2751,15 @@ msgid "Your account is inactive"
 msgstr "Twoje konto zostało założone ale nie jest jeszcze aktywne"
 
 #: .\templates\allauth\account\account_inactive.html:10
-msgid "If you are new user you need to wait until community will accept you. You will receive email once it will happen."
+msgid "Your account has been created but is currently inactive. Please fill out the onboarding form to continue the registration process."
+msgstr "Twoje konto zostało założone ale nie jest jeszcze aktywne. Wypełnij formularz onboarding aby kontynuować proces rejestracji."
+
+#: .\templates\allauth\account\account_inactive.html:14
+msgid "Fill out onboarding form"
+msgstr "Wypełnij formularz rejestracyjny"
+
+#: .\templates\allauth\account\account_inactive.html:18
+msgid "After submitting the onboarding form, you will need to wait for community approval. You will receive an email once your account is activated."
 msgstr "Musisz poczekać, aż społeczność zaakceptuje twoją kandydaturę. Gdy to się stanie otrzymasz wiadomość e-mail."
 
 #: .\templates\allauth\account\email.html:5
@@ -3041,14 +3049,14 @@ msgid "We have sent an e-mail to you for verification. Follow the link provided 
 msgstr "Wysłaliśmy do Ciebie e-mail w celu weryfikacji. Kliknij link z emaila aby dokończyć rejestrację."
 
 #: .\templates\allauth\account\verification_sent.html:11
-msgid "You can already fill out your onboarding form now. It is available right away after signup."
-msgstr "Teraz możesz wypełnić formularz (następny krok)."
+msgid "After you verify your email, you will receive another email with a special link to fill out your onboarding form."
+msgstr "Po zweryfikowaniu maila otrzymasz kolejny email z linkiem do wypełnienia formularza onboarding."
 
-#: .\templates\allauth\account\verification_sent.html:14
-msgid "Open onboarding form"
-msgstr "Otwórz formularz"
+#: .\templates\allauth\account\verification_sent.html:12
+msgid "The onboarding form link will contain the required access token. Please check your inbox after email verification."
+msgstr "Link do formularza onboarding będzie zawierał wymagany token dostępu. Sprawdź skrzynkę po weryfikacji emaila."
 
-#: .\templates\allauth\account\verification_sent.html:17
+#: .\templates\allauth\account\verification_sent.html:13
 msgid "After verifying your email and submitting the onboarding form, you still need to wait for group approval."
 msgstr "Po zweryfikowaniu maila i wypełnieniu formularza, musisz poczekać, aż grupa zaakceptuje Twoje zgłoszenie."
 

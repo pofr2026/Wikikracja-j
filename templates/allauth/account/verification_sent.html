@@ -8,12 +8,8 @@
   <h1>{% trans "Verify Your E-mail Address" %}</h1>
 
   <p><b>{% blocktrans %}We have sent an e-mail to you for verification. Follow the link provided to finalize the signup process.{% endblocktrans %}</b></p>
-  <p>{% blocktrans %}You can already fill out your onboarding form now. It is available right away after signup.{% endblocktrans %}</p>
-  <p>
-    <a class="btn btn-info btn-sm" href="{% url 'obywatele:onboarding_details' %}">
-      {% trans "Open onboarding form" %}
-    </a>
-  </p>
+  <p>{% blocktrans %}After you verify your email, you will receive another email with a special link to fill out your onboarding form.{% endblocktrans %}</p>
+  <p>{% blocktrans %}The onboarding form link will contain the required access token. Please check your inbox after email verification.{% endblocktrans %}</p>
   <p>{% blocktrans %}After verifying your email and submitting the onboarding form, you still need to wait for group approval.{% endblocktrans %}</p>
 
 {% endblock %}
