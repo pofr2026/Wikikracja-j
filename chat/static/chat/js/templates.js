@@ -21,39 +21,36 @@ const room_template = `
     </div>
   </div>
 
-  <div style='position: relative'>
-    <div class='image-preview-container' style='display:none'>
-      <div class='preview-images'></div>
-      <div class='delete-images-preview'>
-        <i class='fas fa fa-times'></i>
-      </div>
+  <div class='image-preview-container' style='display:none'>
+    <div class='preview-images'></div>
+    <div class='delete-images-preview'>
+      <i class='fas fa fa-times'></i>
     </div>
-  </div> 
+  </div>
 
-  <div class='chat-controls sticky-bottom'>
-    <div class='checkbox-container'>
+  <div class='chat-controls'>
+    <div class='chat-controls-row'>
+      <!-- Image upload button -->
+      <input type='file' id='file-input' class='file-input' multiple='multiple'/>
+      <label class='btn btn-primary chat-control' for='file-input'>
+        <i class='fas fa-image'></i>
+      </label>
+      
+      <!-- Anonymous toggle button (icon only) -->
       <% if (is_public) { %>
-        <input class='anonymous-switch' id='anonymous-switch-id' type='checkbox' />
-        <label for='anonymous-switch-id'>${_("Anonymous")}</label>
-      <% } %>
-    </div>
-
-    <div>
-        <!-- Those two have to go one after another for some CSS trickery -->
-          <input type='file' id='file-input' class='file-input' multiple='multiple'/>
-          <label class='btn btn-primary chat-control' for='file-input'>
-              <i class='fas fa-image'></i>
-          </label>
-        <!-- Those two-->
-
-      <div class='chat-controls-row'>
-        <textarea id="message-input" rows="1" placeholder="${_("Divide the message into several parts...")}"></textarea>
-        <button class='send-message chat-control btn btn-primary'>
-          <i class='fas fa-paper-plane'></i>
+        <button class='btn chat-control anonymous-toggle' id='anonymous-toggle' type='button' title='${_("Anonymous")}'>
+          <i class='fas fa-user-secret'></i>
         </button>
-      </div>
+      <% } %>
+      
+      <!-- Message input -->
+      <textarea id="message-input" rows="1" placeholder="${_("Divide the message into several parts...")}"></textarea>
+      
+      <!-- Send button -->
+      <button class='send-message chat-control btn btn-primary'>
+        <i class='fas fa-paper-plane'></i>
+      </button>
     </div>
-
   </div>
 </div>
 `;

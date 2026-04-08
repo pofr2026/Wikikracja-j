@@ -57,10 +57,6 @@ export default class DomApi {
         this.getVoteDiv(message_id, vote)?.classList.add('active');
     }
 
-    addDateBanner(text) {
-        this.getMessagesDiv()?.insertAdjacentHTML('beforeend', `<div>${text}</div>`);
-    }
-
     getMessageDiv(message_id) {
         return $(`.message[data-message-id="${message_id}"]`);
     }
@@ -140,13 +136,7 @@ export default class DomApi {
     formatMessage(raw_message) {
         let escaped = escapeHtml(raw_message);
         const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/g;
-        const matches = escaped.match(URL_REGEX);
-        if (matches) {
-            for (const match of matches) {
-                escaped = raw_message.replace(match, `<a href='${match}' target="_blank">${match}</a>`);
-            }
-        }
-        return escaped;
+        return escaped.replace(URL_REGEX, (match) => `<a href='${match}' target="_blank">${match}</a>`);
     }
 
     getPreviewDiv() {
@@ -185,7 +175,7 @@ export default class DomApi {
     }
 
     getAnonymousValue() {
-        return $(`.anonymous-switch`)?.checked ?? false;
+        return $(`#anonymous-toggle`)?.classList.contains('active') ?? false;
     }
 
     getFileInput() {
@@ -461,5 +451,17 @@ export default class DomApi {
     hideFoldedRoomHeader() {
         const chatRooms = $(".chat-rooms");
         if (chatRooms) chatRooms.classList.remove('mobile-room-selected');
+    }
+
+    updateMobileLayout() {
+        if (window.innerWidth >= 768) return;
+        const vvHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+        const offsetTop = window.visualViewport ? window.visualViewport.offsetTop : 0;
+        const controls = document.querySelector('#room .chat-controls');
+        const controlsHeight = controls ? controls.offsetHeight : 50;
+        const messagesHeight = vvHeight - 50 - controlsHeight;
+        document.documentElement.style.setProperty('--messages-height', `${messagesHeight}px`);
+        const header = document.querySelector('.folded-room-header');
+        if (header) header.style.top = `${offsetTop}px`;
     }
 }

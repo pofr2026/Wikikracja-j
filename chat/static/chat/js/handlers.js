@@ -83,40 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Mobile: handle viewport changes for keyboard
-    if (window.visualViewport && window.innerWidth < 768) {
-        let lastHeight = window.visualViewport.height;
-        
-        const updateHeaderPosition = () => {
-            const header = document.querySelector('.folded-room-header');
-            if (header && header.style.display !== 'none') {
-                const offsetTop = window.visualViewport.offsetTop;
-                header.style.top = `${offsetTop}px`;
-            }
-        };
-        
-        window.visualViewport.addEventListener('resize', () => {
-            const currentHeight = window.visualViewport.height;
-            const heightDiff = Math.abs(currentHeight - lastHeight);
-            
-            // Update header position to account for keyboard
-            updateHeaderPosition();
-            
-            // Keyboard appeared (viewport got smaller by significant amount)
-            if (heightDiff > 100 && currentHeight < lastHeight) {
-                setTimeout(() => {
-                    const messagesContainer = document.querySelector('.messages');
-                    if (messagesContainer) {
-                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    }
-                }, 300);
-            }
-            
-            lastHeight = currentHeight;
-        });
-        
-        window.visualViewport.addEventListener('scroll', updateHeaderPosition);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => DOM_API.updateMobileLayout());
+        window.visualViewport.addEventListener('scroll', () => DOM_API.updateMobileLayout());
     }
+    window.addEventListener('resize', () => DOM_API.updateMobileLayout());
 
     document.addEventListener('click', (e) => {
         const container = e.target.closest('.attachment-image-container');
@@ -147,6 +118,13 @@ document.addEventListener('DOMContentLoaded', () => {
             DOM_API.getRoomLinkDiv(btn.dataset.roomId)?.classList.toggle('room-not-seen', !newState);
             DOM_API.setRoomSeenIconState(btn.dataset.roomId, newState);
             onToggleSeen(btn.dataset.roomId, newState);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.anonymous-toggle');
+        if (btn) {
+            btn.classList.toggle('active');
         }
     });
 
@@ -284,29 +262,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function slideToggle(element, duration) {
     const isHidden = element.style.display === 'none' || getComputedStyle(element).display === 'none';
-    element.style.overflow = 'hidden';
+    
     if (isHidden) {
         element.style.display = 'block';
         element.style.height = '0';
-        animate(element, { height: element.scrollHeight + 'px' }, duration);
+        element.style.overflow = 'hidden';
+        element.style.transition = `height ${duration}ms ease`;
+        requestAnimationFrame(() => {
+            element.style.height = element.scrollHeight + 'px';
+        });
     } else {
         element.style.height = element.scrollHeight + 'px';
-        animate(element, { height: '0' }, duration, () => {
+        element.style.overflow = 'hidden';
+        element.style.transition = `height ${duration}ms ease`;
+        requestAnimationFrame(() => {
+            element.style.height = '0';
+        });
+        element.addEventListener('transitionend', function handler() {
+            element.removeEventListener('transitionend', handler);
             element.style.display = 'none';
             element.style.height = '';
             element.style.overflow = '';
         });
     }
-}
-
-function animate(element, properties, duration, callback) {
-    element.style.transition = `height ${duration}ms ease`;
-    for (const prop in properties) {
-        element.style[prop] = properties[prop];
-    }
-    const onTransitionEnd = () => {
-        element.removeEventListener('transitionend', onTransitionEnd);
-        callback?.();
-    };
-    element.addEventListener('transitionend', onTransitionEnd);
 }

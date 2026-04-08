@@ -131,15 +131,15 @@ export function formatDateTime(ts) {
 /**
  * Escapes HTML special characters to prevent XSS
  * @param {string} unsafe - Unsafe string that may contain HTML
- * @returns {string} - HTML-safe string (currently returns unchanged, placeholder for escaping logic)
+ * @returns {string} - HTML-safe string
  */
 export function escapeHtml(unsafe) {
     return unsafe
-        // .replace(/&/g, "&")
-        // .replace(/</g, "<")
-        // .replace(/>/g, ">")
-        // .replace(/"/g, """)
-        // .replace(/'/g, "&#039;");
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 /**

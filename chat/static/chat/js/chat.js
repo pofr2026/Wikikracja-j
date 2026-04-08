@@ -22,14 +22,6 @@ let WS_API;
 let DOM_API;
 
 /**
- * Check if we're on mobile (based on screen width)
- * @returns {boolean}
- */
-function isMobile() {
-    return window.innerWidth < 768;
-}
-
-/**
  * Lock for preventing concurrent room join/leave operations
  * @type {Lock}
  */
@@ -174,6 +166,7 @@ export async function onRoomTryJoin(room_id) {
     DOM_API.createRoomDiv(CurrentRoomId, response.title, response.public, response.notifications);
     DOM_API.setFoldedRoomTitle(response.title);
     DOM_API.showFoldedRoomHeader();
+    DOM_API.updateMobileLayout();
     $("#message-input")?.focus();
 }
 
