@@ -31,7 +31,7 @@ def create_task_chat_room(sender, instance, created, **kwargs):
             room_title = instance.get_chat_room_title()
 
             # Check if room already exists (e.g. from a previous attempt)
-            existing = Room.objects.filter(title=room_title).first()
+            existing = Room.objects.filter(title__iexact=room_title).first()
             if existing:
                 log.info(f"Chat room '{room_title}' already exists, linking to task #{instance.id}")
                 Task.objects.filter(pk=instance.pk).update(chat_room=existing)

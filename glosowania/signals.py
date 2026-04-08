@@ -29,7 +29,7 @@ def create_chat_room_for_referendum(sender, instance, created, **kwargs):
         }
 
         # Check if room already exists (safety check)
-        existing_room = Room.objects.filter(title=room_title).first()
+        existing_room = Room.objects.filter(title__iexact=room_title).first()
 
         if not existing_room:
             try:
