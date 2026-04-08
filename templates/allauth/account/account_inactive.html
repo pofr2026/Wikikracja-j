@@ -7,7 +7,7 @@
 {% block content %}
 <h1>{% trans "Your account is inactive" %}</h1>
 
-<p>{% trans "Your account has been created but is currently inactive. Please fill out the onboarding form to continue the registration process." %}</p>
+<p>{% trans "In the meantime, please complete the form with basic information." %}</p>
 
 <p>
   <a href="{% url 'obywatele:onboarding_details' %}" class="btn btn-primary">
@@ -15,5 +15,5 @@
   </a>
 </p>
 
-<p>{% trans "After submitting the onboarding form, you will need to wait for community approval. You will receive an email once your account is activated." %}</p>
+<p>{% trans "After filling out the form, you'll need to wait a moment for community approval. You'll receive an email once it's been approved." %}</p>
 {% endblock %}

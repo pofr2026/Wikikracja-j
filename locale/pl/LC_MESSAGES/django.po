@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-08 23:34+0200\n"
+"POT-Creation-Date: 2026-04-09 00:31+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -2748,19 +2748,19 @@ msgstr "Konto Wyłączone"
 
 #: .\templates\allauth\account\account_inactive.html:8
 msgid "Your account is inactive"
-msgstr "Twoje konto zostało założone ale nie jest jeszcze aktywne"
+msgstr "Twoje konto nie jest jeszcze aktywne"
 
 #: .\templates\allauth\account\account_inactive.html:10
-msgid "Your account has been created but is currently inactive. Please fill out the onboarding form to continue the registration process."
-msgstr "Twoje konto zostało założone ale nie jest jeszcze aktywne. Wypełnij formularz onboarding aby kontynuować proces rejestracji."
+msgid "In the meantime, please complete the form with basic information."
+msgstr "W międzyczasie, wypełnij proszę formularz z podstawowymi informacjami."
 
 #: .\templates\allauth\account\account_inactive.html:14
 msgid "Fill out onboarding form"
 msgstr "Wypełnij formularz rejestracyjny"
 
 #: .\templates\allauth\account\account_inactive.html:18
-msgid "After submitting the onboarding form, you will need to wait for community approval. You will receive an email once your account is activated."
-msgstr "Musisz poczekać, aż społeczność zaakceptuje twoją kandydaturę. Gdy to się stanie otrzymasz wiadomość e-mail."
+msgid "After filling out the form, you'll need to wait a moment for community approval. You'll receive an email once it's been approved."
+msgstr "Po wypełnieniu formularza, poczekaj chwilę na zatwierdzenie przez społeczność. Otrzymasz wiadomość e-mail, gdy to się stanie."
 
 #: .\templates\allauth\account\email.html:5
 #: .\templates\allauth\account\email.html:8

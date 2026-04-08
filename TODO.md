@@ -8,8 +8,8 @@
 
 # ZADANIA (TASKS)
 
-- Etykiety w Zadaniach. Tworzenie, przypisywanie i filtrowanie.
 - Filtr, który pokazuje tylko moje zadania
+- Etykiety w Zadaniach. Tworzenie, przypisywanie i filtrowanie.
 
 # CHAT
 
