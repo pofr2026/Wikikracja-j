@@ -144,10 +144,27 @@ def run_meeting_notification():
             # Format event time for display
             event_time = event.start_date.strftime('%H:%M')
             
+            # Build detailed notification message
+            body_parts = [event.title]
+            
+            # Add time
+            body_parts.append(f"Godzina: {event_time}")
+            
+            # Add place if available
+            if event.place:
+                body_parts.append(f"Miejsce: {event.place}")
+            
+            # Add description (truncated if too long)
+            if event.description:
+                description = event.description.strip()
+                if len(description) > 100:
+                    description = description[:100] + "..."
+                body_parts.append(f"Opis: {description}")
+            
             # Build notification message
             message = json.dumps({
                 "title": "Wydarzenie rozpoczyna sie!",
-                "body": f"{event.title}{f' - {event.place}' if event.place else ''}",
+                "body": " | ".join(body_parts),
                 "icon": '/favicon.ico',
                 "badge": '/favicon.ico',
                 "data": {
