@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-09 22:33+0200\n"
+"POT-Creation-Date: 2026-04-09 23:13+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -1802,7 +1802,7 @@ msgstr "Odzyskaj hasło"
 
 #: .\home\templates\home\home.html:22
 msgid "Send message to developer"
-msgstr "Wyślij wiadomość do developera"
+msgstr ""
 
 #: .\home\templates\home\home.html:36 .\home\templates\home\home.html:236
 msgid "Show unread only"
