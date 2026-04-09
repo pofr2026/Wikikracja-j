@@ -119,6 +119,8 @@ def run_meeting_notification():
     from events.models import Event
     from django.utils import timezone
     from datetime import timedelta
+    from django.conf import settings
+    from django.utils.translation import gettext_lazy as _
     
     # Get events that are starting now (within the current minute)
     now = timezone.now()
@@ -163,12 +165,12 @@ def run_meeting_notification():
             
             # Build notification message
             message = json.dumps({
-                "title": "Wydarzenie rozpoczyna sie!",
+                "title": f"{settings.SITE_NAME} {_('Event')}",
                 "body": " | ".join(body_parts),
                 "icon": '/favicon.ico',
                 "badge": '/favicon.ico',
                 "data": {
-                    'click_action': f"https://rozmowy.wikikracja.pl/otwarte" if not event.link else event.link,
+                    'click_action': event.link if event.link else f"{settings.HOST}/events/{event.id}/",
                     'event_id': event.id,
                 }
             })
