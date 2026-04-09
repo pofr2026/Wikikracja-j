@@ -22,7 +22,29 @@ class EventListView(ListView):
         if not self.request.user.is_authenticated:
             queryset = queryset.filter(is_public=True)
 
-        return queryset
+        # Get all events and sort by next occurrence date
+        events = []
+        now = timezone.now()
+        
+        for event in queryset:
+            if event.frequency != 'once':
+                next_occurrence = event.get_next_occurrence()
+                if next_occurrence:
+                    # For recurring events, use next occurrence date
+                    event.sort_date = next_occurrence
+                else:
+                    # If no future occurrences, use original start date
+                    event.sort_date = event.start_date
+            else:
+                # For one-time events, use start date
+                event.sort_date = event.start_date
+            
+            events.append(event)
+        
+        # Sort by sort_date (upcoming first, then past)
+        events.sort(key=lambda x: (x.sort_date < now, x.sort_date))
+        
+        return events
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

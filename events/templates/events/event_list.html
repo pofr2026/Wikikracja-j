@@ -21,17 +21,25 @@
                             <div class="card-body">
                                 <h5 class="card-title">{{ event.title }}</h5>
 
-                                {% if event.frequency != 'once' and event.is_upcoming %}
+                                {% if event.frequency != 'once' %}
                                     {% with next_occurrence=event.get_next_occurrence %}
                                         {% if next_occurrence %}
                                             <div class="alert alert-success mb-3 py-2">
                                                 <strong><i class="fas fa-calendar-check"></i> {% trans "Next" %}:</strong> {{ next_occurrence|date:"D, Y-m-d H:i" }}
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-secondary mb-3 py-2" style="background-color: #222222ea; opacity: 0.7;">
+                                                <strong><i class="fas fa-calendar-check"></i> {% trans "No upcoming occurrences" %}:</strong> {{ event.start_date|date:"D, Y-m-d H:i" }}
                                             </div>
                                         {% endif %}
                                     {% endwith %}
                                 {% else %}
                                     {% if event.start_date > now %}
                                         <div class="alert alert-success mb-3 py-2">
+                                            <strong><i class="fas fa-calendar-check"></i> {% trans "Date" %}:</strong> {{ event.start_date|date:"D, Y-m-d H:i" }}
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-secondary mb-3 py-2" style="background-color: #222222ea; opacity: 0.7;">
                                             <strong><i class="fas fa-calendar-check"></i> {% trans "Date" %}:</strong> {{ event.start_date|date:"D, Y-m-d H:i" }}
                                         </div>
                                     {% endif %}
@@ -61,6 +69,8 @@
                                     </span>
                                     {% if event.is_upcoming %}
                                         <span class="badge text-bg-success">{% trans "Upcoming" %}</span>
+                                    {% elif event.frequency == 'once' and event.start_date <= now %}
+                                        <span class="badge text-bg-secondary" style="opacity: 0.7;">{% trans "Past" %}</span>
                                     {% endif %}
                                     {% if event.is_public %}
                                         <span class="badge text-bg-primary" title="{% trans 'Visible to everyone' %}">

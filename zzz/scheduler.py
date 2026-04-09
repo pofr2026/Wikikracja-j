@@ -150,22 +150,22 @@ def run_meeting_notification():
             body_parts = [event.title]
             
             # Add time
-            body_parts.append(f"Godzina: {event_time}")
+            body_parts.append(f"{_('Time')}: {event_time}")
             
             # Add place if available
             if event.place:
-                body_parts.append(f"Miejsce: {event.place}")
+                body_parts.append(f"{_('Place')}: {event.place}")
             
             # Add description (truncated if too long)
             if event.description:
                 description = event.description.strip()
-                if len(description) > 100:
-                    description = description[:100] + "..."
-                body_parts.append(f"Opis: {description}")
+                if len(description) > 200:
+                    description = description[:200] + "..."
+                body_parts.append(f"{_('Description')}: {description}")
             
             # Build notification message
             message = json.dumps({
-                "title": f"{settings.SITE_NAME} {_('Event')}",
+                "title": f"{settings.SITE_NAME} {_('Reminder')}",
                 "body": " | ".join(body_parts),
                 "icon": '/favicon.ico',
                 "badge": '/favicon.ico',
