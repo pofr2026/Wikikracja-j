@@ -1,6 +1,7 @@
 # OGÓLNE
 
-- Do czatu: filtr tylko nieprzeczytane
+- Chat: filtr tylko nieprzeczytane
+- Chat: automatycznie rozwijaj kategorię w której jest aktywny pokój
 - Do emaila powitalnego dodać https://lobbyobywatelskie.wikikracja.pl/board/view/25/
 - Nowa osoba akceptuje zasady w momencie pierwszego logowania
 - Dokończyć Fixtures i dodać je do skryptu instalacyjnego. Fixtures z przepisami, pokojami i ogłoszeniami. Start: (publiczna strona startowa dla niezalogowanych) i Footer: (publiczna stopka). Customowy email. Wszystkie te elementy dać do nowego działu.
