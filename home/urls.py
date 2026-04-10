@@ -9,6 +9,7 @@ from . import views
 urlpatterns = [
     path('', views.home, name='home'),
     path('mark-as-read/', views.mark_as_read, name='mark_as_read'),
+    path('mark-all-read/', views.mark_all_read, name='mark_all_read'),
     path('mark-unread/', views.mark_unread, name='mark_unread'),
 
     # not in use at this point. Contact through https://wikikracja.pl/kontakt/

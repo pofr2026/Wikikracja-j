@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-09 23:46+0200\n"
+"POT-Creation-Date: 2026-04-10 00:41+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -1809,41 +1809,73 @@ msgid "Reset password"
 msgstr "Odzyskaj hasło"
 
 #: .\home\templates\home\home.html:22
-msgid "Send message to developer"
-msgstr ""
+msgid "Message developer"
+msgstr "Kontakt z twórcą"
 
-#: .\home\templates\home\home.html:36 .\home\templates\home\home.html:236
+#: .\home\templates\home\home.html:38
+msgid "Welcome back"
+msgstr "Witaj spowrotem"
+
+#: .\home\templates\home\home.html:40
+msgid "Here's what's happening in your community"
+msgstr "Oto co się dzieje w twojej społeczności"
+
+#: .\home\templates\home\home.html:45
+msgid "unread"
+msgstr "nieprzeczytane"
+
+#: .\home\templates\home\home.html:62
+msgid "Filter options"
+msgstr "Opcje filtrowania"
+
+#: .\home\templates\home\home.html:66 .\home\templates\home\home.html:258
+msgid "Mark all as read"
+msgstr "Oznacz wszystkie jako przeczytane"
+
+#: .\home\templates\home\home.html:70 .\home\templates\home\home.html:191
 msgid "Show unread only"
 msgstr "Pokaż tylko nieprzeczytane"
 
-#: .\home\templates\home\home.html:44
+#: .\home\templates\home\home.html:85
 msgid "Activity Feed"
 msgstr "Kanał aktywności"
 
-#: .\home\templates\home\home.html:67 .\home\templates\home\home.html:318
+#: .\home\templates\home\home.html:109 .\home\templates\home\home.html:359
 msgid "Mark as read"
 msgstr "Oznacz jako przeczytane"
 
-#: .\home\templates\home\home.html:76 .\home\templates\home\home.html:267
-#: .\home\templates\home\home.html:348
+#: .\home\templates\home\home.html:115 .\home\templates\home\home.html:234
+#: .\home\templates\home\home.html:310 .\home\templates\home\home.html:384
 msgid "Mark unread"
 msgstr "Oznacz jako nieprzeczytane"
 
-#: .\home\templates\home\home.html:90
+#: .\home\templates\home\home.html:126
 msgid "messages"
 msgstr "wiadomości"
 
-#: .\home\templates\home\home.html:102
+#: .\home\templates\home\home.html:138
 msgid "View"
 msgstr "Zobacz"
 
-#: .\home\templates\home\home.html:110
+#: .\home\templates\home\home.html:146
 msgid "No recent activity"
 msgstr "Brak ostatniej aktywności"
 
-#: .\home\templates\home\home.html:234
+#: .\home\templates\home\home.html:189
 msgid "Show all"
 msgstr "Pokaż wszystkie"
+
+#: .\home\templates\home\home.html:209
+msgid "Processing..."
+msgstr "Przetwarzanie..."
+
+#: .\home\templates\home\home.html:271
+msgid "No unread items"
+msgstr "Brak nieprzeczytanych pozycji"
+
+#: .\home\templates\home\home.html:277
+msgid "Mark all items as read"
+msgstr "Oznacz wszystkie jako przeczytane"
 
 #: .\home\templates\home\login.html:40
 msgid "The username or password is incorrect."
@@ -1914,16 +1946,16 @@ msgstr "Transakcja"
 msgid "Untitled Book"
 msgstr "Książka bez tytułu"
 
-#: .\home\views.py:209
+#: .\home\views.py:213
 #, python-format
 msgid "Messages in %(room_title)s"
 msgstr "Wiadomości w %(room_title)s"
 
-#: .\home\views.py:373
+#: .\home\views.py:454
 msgid "Your password has been changed."
 msgstr "Twoje hasło zostało zmienione."
 
-#: .\home\views.py:376
+#: .\home\views.py:457
 msgid "You typed something wrong. See what error appeared above and try again."
 msgstr "Coś źle wpisałeś. Zobacz, jaki błąd pojawił się powyżej i spróbuj ponownie."
 

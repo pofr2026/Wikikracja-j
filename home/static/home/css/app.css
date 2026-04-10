@@ -32,16 +32,7 @@ body {
   letter-spacing: 0.01em;
 }
 
-.card {
-  border-radius: 0.6rem;
-  border-color: var(--bs-gray-700);
-}
-
-.card-header {
-  font-weight: 600;
-  background: var(--bs-gray-800);
-  border-bottom-color: var(--bs-gray-700);
-}
+/* Card styles handled by Darkly theme */
 
 .list-group-item {
   background: var(--bs-dark);
@@ -89,13 +80,7 @@ tr.user-row:hover .copy-btn {
   white-space: nowrap;
 }
 
-.btn {
-  line-height: 1.35;
-}
-
-.btn-sm {
-  padding: 0.3rem 0.65rem;
-}
+/* Button styles handled by Bootstrap */
 
 .copy-btn {
   background: transparent;
@@ -201,4 +186,60 @@ img {
 
 .task-actions .btn {
   white-space: nowrap;
+}
+
+
+.card-header.bg-gradient {
+  background: linear-gradient(135deg, var(--bs-primary), var(--bs-secondary));
+  border-bottom: none;
+}
+
+/* Feed item styles */
+.feed-item {
+  transition: all 0.2s ease;
+}
+
+.feed-item:hover {
+  background-color: var(--bs-gray-dark);
+  transform: translateX(4px);
+}
+
+.feed-item.unread {
+  background-color: var(--bs-gray-800);
+  border-left: 4px solid var(--bs-primary);
+  position: relative;
+}
+
+.feed-item.unread::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--bs-primary);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.feed-item .badge {
+  font-size: 0.7em;
+}
+
+.mark-read:hover, .mark-unread:hover {
+  cursor: pointer;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.badge.bg-danger {
+  animation: pulse 2s infinite;
 }

@@ -19,29 +19,71 @@
 				<a href="{% url 'password_reset' %}" class="btn btn-primary m-2 btn-sm d-flex justify-content-around">{% trans 'Reset password' %}</a>
 			</div>
 			<div class="col-md-3">
-				<a href="https://wikikracja.pl/kontakt/" target="_blank" class="btn btn-primary m-2 btn-sm d-flex justify-content-around">{% trans 'Send message to developer' %}</a>
+				<a href="https://wikikracja.pl/kontakt/" target="_blank" class="btn btn-primary m-2 btn-sm d-flex justify-content-around">{% trans 'Message developer' %}</a>
 			</div>
 		</div>
 	</div>
 {% endif %}
 
 {% if user.is_authenticated %}
-<div class="container-fluid">
-	<!-- Main Feed -->
-	<div class="col-12">
-		{% if unread_items %}
-		<div class="card mb-3">
-			<div class="card-body">
-				<button id="toggle-unread" class="btn btn-warning btn-sm w-100" data-filtered="false">
-					{% trans 'Show unread only' %}
-				</button>
+<div class="container">
+	<!-- Welcome Header -->
+	<div class="row mb-4">
+		<div class="col-lg-10 mx-auto">
+			<div class="card border-primary bg-primary bg-opacity-10">
+				<div class="card-body p-4">
+					<div class="d-flex justify-content-between align-items-center flex-wrap">
+						<div class="mb-2 mb-md-0">
+							<h2 class="mb-1 text-white">
+								<i class="fas fa-home me-2"></i>{% trans 'Welcome back' %}, {{ user.username }}!
+							</h2>
+							<p class="mb-0 text-white-50">{% trans "Here's what's happening in your community" %}</p>
+						</div>
+						<div class="text-end">
+							{% if unread_items %}
+								<span class="badge bg-info btn-sm">
+									<i class="fas fa-bell me-2"></i>{{ unread_items|length }} {% trans 'unread' %}
+								</span>
+							{% endif %}
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
-		{% endif %}
-		
-		<div class="card">
-				<div class="card-header">
-					<h4 class="mb-0">{% trans 'Activity Feed' %}</h4>
+	</div>
+
+	<!-- Filter Controls -->
+	<div class="row mb-3">
+		<div class="col-lg-10 mx-auto">
+			<div class="card border-warning bg-warning bg-opacity-10">
+				<div class="card-body">
+					<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+						<span class="text-white">
+							<i class="fas fa-filter me-2"></i>{% trans 'Filter options' %}
+						</span>
+						<div class="d-flex gap-2">
+							<button id="mark-all-read" class="btn btn-success btn-sm">
+								<i class="fas fa-check-double me-2"></i>{% trans 'Mark all as read' %}
+							</button>
+							<button id="toggle-unread" class="btn btn-primary btn-sm" data-filtered="false">
+								<i class="fas fa-eye me-2"></i>
+								<span id="filter-text">{% trans 'Show unread only' %}</span>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Main Feed -->
+	<div class="row">
+		<div class="col-lg-10 mx-auto">
+			<div class="card">
+				<div class="card-header bg-gradient">
+					<h4 class="mb-0 text-white">
+						<i class="fas fa-stream me-2"></i>{% trans 'Activity Feed' %}
+					</h4>
 				</div>
 				<div class="card-body p-0">
 					{% for item in feed_items %}
@@ -49,7 +91,7 @@
 							 {% if item.is_first_unread %}id="first-unread"{% endif %}>
 							<div class="p-3">
 								<div class="d-flex justify-content-between align-items-center mb-2">
-									<span class="badge bg-{{ item.content_type|content_type_color }}">
+									<span class="badge text-bg-{{ item.content_type|content_type_color }}">
 										{{ item.content_type|content_type_label }}
 									</span>
 									
@@ -62,22 +104,16 @@
 										<small class="text-muted ms-2">{{ item.timestamp|date:"Y-m-d H:i" }}</small>
 										
 										{% if not item.is_read %}
-											<button class="btn btn-sm btn-outline-secondary mark-read ms-3" 
+											<button class="btn btn-sm btn-secondary mark-read ms-3" 
 													data-id="{{ item.content_type }}-{{ item.object_id }}" 
 													title="{% trans 'Mark as read' %}">
-												<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-													<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-													<path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
-												</svg>
+												<i class="fas fa-check"></i>
 											</button>
 										{% else %}
-											<button class="btn btn-sm btn-outline-secondary mark-unread ms-3" 
+											<button class="btn btn-sm btn-secondary mark-unread ms-3" 
 													data-id="{{ item.content_type }}-{{ item.object_id }}" 
 													title="{% trans 'Mark unread' %}">
-												<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-													<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-													<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-												</svg>
+												<i class="fas fa-plus"></i>
 											</button>
 										{% endif %}
 									</div>
@@ -87,7 +123,7 @@
 									<a href="{{ item.url }}" class="text-decoration-none {% if not item.is_read %}fw-bold{% endif %}">
 										{{ item.title }}
 										{% if item.content_type == 'room_messages' and item.message_count > 1 %}
-											<span class="badge bg-secondary ms-1">{{ item.message_count }} {% trans 'messages' %}</span>
+											<span class="badge text-bg-secondary ms-1">{{ item.message_count }} {% trans 'messages' %}</span>
 										{% endif %}
 									</a>
 								</h6>
@@ -98,7 +134,7 @@
 								
 								{% if item.content_type != 'event' %}
 									<div class="d-flex justify-content-between">
-										<a href="{{ item.url }}" class="btn btn-sm btn-outline-primary">
+										<a href="{{ item.url }}" class="btn btn-sm btn-primary">
 											{% trans 'View' %}
 										</a>
 									</div>
@@ -117,87 +153,6 @@
 	</div>
 </div>
 
-<style>
-.feed-item {
-	transition: background-color 0.2s ease;
-}
-
-.feed-item.unread {
-	background-color: #2d3748;
-	border-left: 4px solid #3182ce;
-}
-
-.feed-item:hover {
-	background-color: #1a202c;
-}
-
-.feed-item .badge {
-	font-size: 0.7em;
-}
-
-.mark-read:hover, .mark-unread:hover {
-	cursor: pointer;
-}
-
-/* Dark theme for cards */
-.card {
-	background-color: #1a202c;
-	border-color: #2d3748;
-}
-
-.card-header {
-	background-color: #2d3748;
-	border-color: #4a5568;
-	color: #e2e8f0;
-}
-
-.card-body {
-	color: #e2e8f0;
-}
-
-.feed-item {
-	border-color: #4a5568;
-	color: #e2e8f0;
-}
-
-.feed-item .text-muted {
-	color: #a0aec0 !important;
-}
-
-.feed-item .btn-outline-primary {
-	border-color: #3182ce;
-	color: #63b3ed;
-}
-
-.feed-item .btn-outline-primary:hover {
-	background-color: #3182ce;
-	border-color: #3182ce;
-	color: white;
-}
-
-.feed-item .btn-outline-secondary {
-	border-color: #718096;
-	color: #a0aec0;
-	padding: 0.25rem 0.5rem;
-}
-
-.feed-item .btn-outline-secondary:hover {
-	background-color: #718096;
-	border-color: #718096;
-	color: white;
-}
-
-.btn-warning {
-	background-color: #d69e2e;
-	border-color: #d69e2e;
-	color: white;
-}
-
-.btn-warning:hover {
-	background-color: #b7791f;
-	border-color: #b7791f;
-}
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -231,9 +186,97 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	function updateButtonText(button, isFiltered) {
 		if (isFiltered) {
-			button.textContent = '{% trans "Show all" %}';
+			button.innerHTML = '<i class="fas fa-eye me-2"></i><span id="filter-text">{% trans "Show all" %}</span>';
 		} else {
-			button.textContent = '{% trans "Show unread only" %}';
+			button.innerHTML = '<i class="fas fa-eye me-2"></i><span id="filter-text">{% trans "Show unread only" %}</span>';
+		}
+	}
+	
+	// Mark all as read functionality
+	const markAllReadButton = document.getElementById('mark-all-read');
+	if (markAllReadButton) {
+		// Check initial state
+		updateMarkAllReadButton();
+		
+		markAllReadButton.addEventListener('click', function() {
+			const unreadItems = document.querySelectorAll('.feed-item.unread');
+			if (unreadItems.length === 0) {
+				return; // No unread items to mark
+			}
+			
+			// Disable button during processing
+			this.disabled = true;
+			this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>{% trans "Processing..." %}';
+			
+			// Single request to mark all as read
+			fetch('{% url "mark_all_read" %}', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'X-CSRFToken': getCookie('csrftoken'),
+				}
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					// Update UI - remove unread styling from all items
+					unreadItems.forEach(item => {
+						item.classList.remove('unread');
+						item.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
+						
+						// Replace mark-read buttons with mark-unread buttons
+						const readButton = item.querySelector('.mark-read');
+						if (readButton) {
+							const dataId = readButton.getAttribute('data-id');
+							const newButton = document.createElement('button');
+							newButton.className = 'btn btn-sm btn-secondary mark-unread';
+							newButton.setAttribute('data-id', dataId);
+							newButton.setAttribute('title', '{% trans "Mark unread" %}');
+							newButton.innerHTML = '<i class="fas fa-plus"></i>';
+							newButton.addEventListener('click', handleMarkUnread);
+							readButton.parentNode.replaceChild(newButton, readButton);
+						}
+					});
+					
+					// Update unread count badge
+					const unreadBadge = document.querySelector('.badge.bg-danger');
+					if (unreadBadge) {
+						unreadBadge.style.display = 'none';
+					}
+					
+					console.log(`Marked ${data.marked_count} items as read`);
+				} else {
+					console.error('Failed to mark all as read:', data.error);
+				}
+			})
+			.catch(error => {
+				console.error('Error marking all as read:', error);
+			})
+			.finally(() => {
+				// Re-enable button and update state
+				this.disabled = false;
+				this.innerHTML = '<i class="fas fa-check-double me-2"></i>{% trans "Mark all as read" %}';
+				updateMarkAllReadButton();
+			});
+		});
+	}
+	
+	function updateMarkAllReadButton() {
+		if (!markAllReadButton) return;
+		
+		const unreadItems = document.querySelectorAll('.feed-item.unread');
+		if (unreadItems.length === 0) {
+			// Disable button if no unread items
+			markAllReadButton.disabled = true;
+			markAllReadButton.setAttribute('title', '{% trans "No unread items" %}');
+			markAllReadButton.classList.add('btn-secondary');
+			markAllReadButton.classList.remove('btn-success');
+		} else {
+			// Enable button if there are unread items
+			markAllReadButton.disabled = false;
+			markAllReadButton.setAttribute('title', '{% trans "Mark all items as read" %}');
+			markAllReadButton.classList.remove('btn-secondary');
+			markAllReadButton.classList.add('btn-success');
 		}
 	}
 	
@@ -262,18 +305,16 @@ document.addEventListener('DOMContentLoaded', function() {
 					
 					// Replace "Mark as read" icon with "Mark unread" icon
 					const newButton = document.createElement('button');
-					newButton.className = 'btn btn-sm btn-outline-secondary mark-unread';
+					newButton.className = 'btn btn-sm btn-secondary mark-unread';
 					newButton.setAttribute('data-id', dataId);
 					newButton.setAttribute('title', '{% trans "Mark unread" %}');
-					newButton.innerHTML = `
-						<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-							<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-							<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-						</svg>
-					`;
+					newButton.innerHTML = '<i class="fas fa-plus"></i>';
 					newButton.addEventListener('click', handleMarkUnread);
 					
 					this.parentNode.replaceChild(newButton, this);
+					
+					// Update mark all read button state
+					updateMarkAllReadButton();
 				} else {
 					console.error('Failed to mark as read:', data.error);
 				}
@@ -313,15 +354,10 @@ function handleMarkUnread(event) {
 			
 			// Replace "Mark unread" icon with "Mark as read" icon
 			const newButton = document.createElement('button');
-			newButton.className = 'btn btn-sm btn-outline-secondary mark-read';
+			newButton.className = 'btn btn-sm btn-secondary mark-read';
 			newButton.setAttribute('data-id', dataId);
 			newButton.setAttribute('title', '{% trans "Mark as read" %}');
-			newButton.innerHTML = `
-				<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-					<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-					<path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
-				</svg>
-			`;
+			newButton.innerHTML = '<i class="fas fa-check"></i>';
 			newButton.addEventListener('click', function() {
 				// Re-add mark as read functionality
 				const feedItem = this.closest('.feed-item');
@@ -346,12 +382,7 @@ function handleMarkUnread(event) {
 						newUnreadButton.className = 'btn btn-sm btn-outline-secondary mark-unread';
 						newUnreadButton.setAttribute('data-id', dataId);
 						newUnreadButton.setAttribute('title', '{% trans "Mark unread" %}');
-						newUnreadButton.innerHTML = `
-							<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-								<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-								<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-							</svg>
-						`;
+						newUnreadButton.innerHTML = '<i class="fas fa-plus"></i>';
 						newUnreadButton.addEventListener('click', handleMarkUnread);
 						
 						this.parentNode.replaceChild(newUnreadButton, this);
@@ -360,6 +391,9 @@ function handleMarkUnread(event) {
 			});
 			
 			event.target.closest('button').parentNode.replaceChild(newButton, event.target.closest('button'));
+			
+			// Update mark all read button state
+			updateMarkAllReadButton();
 		} else {
 			console.error('Failed to mark as unread:', data.error);
 		}

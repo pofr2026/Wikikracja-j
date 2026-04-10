@@ -177,7 +177,11 @@ def generate_feed_items(user):
 
     # Get recent messages from rooms user has access to, grouped by room
     rooms = Room.objects.filter(allowed=user).prefetch_related('messages', 'messages__sender')
-    seen_room_ids = set(Room.objects.filter(allowed=user, seen_by=user).values_list('id', flat=True))
+    # Use ReadStatus for room messages consistency
+    seen_room_ids = set(ReadStatus.objects.filter(
+        user=user, 
+        content_type=ReadStatus.ContentType.MESSAGE
+    ).values_list('object_id', flat=True))
     
     for room in rooms:
         messages = room.messages.filter(
@@ -211,7 +215,7 @@ def generate_feed_items(user):
                 'author': latest_message.sender,
                 'timestamp': latest_message.time,
                 'url': f"/chat/#room_id={room.id}",
-                'is_read': room.id in seen_room_ids,  # Room is read if all messages are seen
+                'is_read': room.id in seen_room_ids,  # Room is read if marked as read in ReadStatus
                 'object_id': room.id,  # Use room ID as object_id for grouping
                 'room_id': room.id,
                 'message_count': len(messages),
@@ -302,10 +306,78 @@ def mark_as_read(request):
             object_id=object_id
         )
         
+        # For room messages, also update room.seen_by for chat consistency
+        if content_type in ['message', 'room_messages'] and read_status_content_type == ReadStatus.ContentType.MESSAGE:
+            try:
+                from chat.models import Room
+                room = Room.objects.get(id=object_id)
+                room.seen_by.add(request.user)
+            except Room.DoesNotExist:
+                pass  # Room might not exist, ignore
+        
         return JsonResponse({'success': True})
         
     except (ValueError, KeyError):
         return JsonResponse({'success': False, 'error': 'Invalid parameters'})
+
+
+@login_required
+@require_POST
+def mark_all_read(request):
+    """Mark all feed items as read for the current user"""
+    try:
+        user = request.user
+        
+        # Get all current feed items and mark them as read
+        feed_items = generate_feed_items(user)
+        read_status_map = build_read_status_map(user)
+        
+        # Create read statuses for all unread items
+        created_count = 0
+        room_ids_to_mark = []  # Collect room IDs for batch update
+        
+        for item in feed_items:
+            if not item['is_read']:
+                content_type_map = {
+                    'post': ReadStatus.ContentType.POST,
+                    'task': ReadStatus.ContentType.TASK,
+                    'book': ReadStatus.ContentType.BOOK,
+                    'event': ReadStatus.ContentType.EVENT,
+                    'message': ReadStatus.ContentType.MESSAGE,
+                    'room_messages': ReadStatus.ContentType.MESSAGE,
+                    'decision': ReadStatus.ContentType.DECISION,
+                    'citizen': ReadStatus.ContentType.CITIZEN,
+                }
+                
+                read_status_content_type = content_type_map.get(item['content_type'])
+                if read_status_content_type:
+                    read_status, created = ReadStatus.objects.get_or_create(
+                        user=user,
+                        content_type=read_status_content_type,
+                        object_id=item['object_id']
+                    )
+                    if created:
+                        created_count += 1
+                    
+                    # Collect room IDs for batch seen_by update
+                    if item['content_type'] in ['message', 'room_messages'] and read_status_content_type == ReadStatus.ContentType.MESSAGE:
+                        room_ids_to_mark.append(item['object_id'])
+        
+        # Batch update room.seen_by for all rooms
+        if room_ids_to_mark:
+            try:
+                from chat.models import Room
+                rooms = Room.objects.filter(id__in=room_ids_to_mark)
+                for room in rooms:
+                    room.seen_by.add(user)
+            except Exception as e:
+                log.warning(f"Could not update room.seen_by: {e}")
+        
+        return JsonResponse({'success': True, 'marked_count': created_count})
+        
+    except Exception as e:
+        log.error(f"Error marking all as read for user {request.user.id}: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 @login_required
@@ -342,6 +414,15 @@ def mark_unread(request):
             content_type=read_status_content_type,
             object_id=object_id
         ).delete()
+        
+        # For room messages, also remove from room.seen_by for chat consistency
+        if content_type in ['message', 'room_messages'] and read_status_content_type == ReadStatus.ContentType.MESSAGE:
+            try:
+                from chat.models import Room
+                room = Room.objects.get(id=object_id)
+                room.seen_by.remove(request.user)
+            except Room.DoesNotExist:
+                pass  # Room might not exist, ignore
         
         return JsonResponse({'success': True})
         

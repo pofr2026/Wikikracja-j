@@ -177,6 +177,12 @@ export async function onRoomTryJoin(room_id) {
     DOM_API.createRoomDiv(CurrentRoomId, response.title, response.public, response.notifications);
     DOM_API.setFoldedRoomTitle(response.title);
     DOM_API.showFoldedRoomHeader();
+    
+    // Focus the message input field after joining a room
+    const messageInput = DOM_API.getMessageInput();
+    if (messageInput) {
+        messageInput.focus();
+    }
 }
 
 /**
