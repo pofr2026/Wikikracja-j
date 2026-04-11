@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-10 00:41+0200\n"
+"POT-Creation-Date: 2026-04-11 20:44+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -79,15 +79,15 @@ msgstr "Zarchiwizowane"
 msgid "Important"
 msgstr "Ważne"
 
-#: .\board\signals.py:40
-#, python-format
-msgid "New important announcement by <strong>%(username)s</strong>: <a href='%(post_url)s'>%(title)s</a>"
-msgstr "Nowe ważne ogłoszenie od <strong>%(username)s</strong>: <a href='%(post_url)s'>%(title)s</a>"
-
 #: .\board\signals.py:46
 #, python-format
-msgid "Updated important announcement by <strong>%(username)s</strong>: <a href='%(post_url)s'>%(title)s</a>"
-msgstr "Zaktualizowane ważne ogłoszenie od <strong>%(username)s</strong>: <a href='%(post_url)s'>%(title)s</a>"
+msgid "New important announcement by %(username)s: %(title)s - %(post_url)s"
+msgstr "Nowe ważne ogłoszenie od %(username)s: %(title)s - %(post_url)s"
+
+#: .\board\signals.py:52
+#, python-format
+msgid "Updated important announcement by %(username)s: %(title)s - %(post_url)s"
+msgstr "Zaktualizowane ważne ogłoszenie od %(username)s: %(title)s - %(post_url)s"
 
 #: .\board\templates\board\archive.html:12
 #: .\board\templates\board\board.html:16

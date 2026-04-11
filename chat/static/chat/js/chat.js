@@ -106,7 +106,7 @@ async function expandCategoryForRoom(room_id) {
     if (!roomLink) return;
     const container = roomLink.closest('.list-of-rooms, .list-of-pms');
     if (!container) return;
-
+    
     const categoryMap = {
         'content-pub-rooms-active': '#toggleButtonPubRoomsActive',
         'content-pub-rooms-archive': '.archive-toggle[data-target="pub-rooms-archive"]',
@@ -118,25 +118,32 @@ async function expandCategoryForRoom(room_id) {
         'content-prv-archive': '.archive-toggle[data-target="prv-archive"]'
     };
 
+    // Collapse all other categories first
+    const allContainers = $$('.list-of-rooms, .list-of-pms');
+    for (const otherContainer of allContainers) {
+        if (otherContainer.id !== container.id) {
+            const otherToggleButton = $(categoryMap[otherContainer.id]);
+            if (otherToggleButton && otherContainer.style.display !== 'none') {
+                otherContainer.style.display = 'none';
+                if (otherToggleButton.classList.contains('accordion')) {
+                    otherToggleButton.classList.remove('activated');
+                } else {
+                    otherToggleButton.classList.remove('active');
+                }
+            }
+        }
+    }
+
     const toggleButton = $(categoryMap[container.id]);
     if (toggleButton) {
-        // Only expand if the user hasn't manually collapsed it
-        // Check if the accordion button is not activated (meaning it's collapsed)
-        if (toggleButton.classList.contains('accordion') && !toggleButton.classList.contains('activated')) {
-            // User manually collapsed this category, don't auto-expand
-            return;
-        }
-        
-        const isHidden = container.style.display === 'none' || getComputedStyle(container).display === 'none';
-        if (isHidden) {
-            container.style.display = 'block';
-            container.style.height = '';
-            container.style.overflow = '';
-            if (toggleButton.classList.contains('accordion')) {
-                toggleButton.classList.add('activated');
-            } else {
-                toggleButton.classList.add('active');
-            }
+        // Always expand the active room's category
+        container.style.display = 'block';
+        container.style.height = '';
+        container.style.overflow = '';
+        if (toggleButton.classList.contains('accordion')) {
+            toggleButton.classList.add('activated');
+        } else {
+            toggleButton.classList.add('active');
         }
     }
 }

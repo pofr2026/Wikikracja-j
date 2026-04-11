@@ -227,8 +227,8 @@ def send_message_to_room(room_title, message_text, sender=None, anonymous=True):
 
         # Send the message to the room group
         async_to_sync(channel_layer.group_send)(f"room-{room.id}", {
-            "type": "chat_message",
-            "message": message_data
+            "type": "chat.message",
+            **message_data
         })
 
         # Send browser notification to each online user who should receive it

@@ -1,12 +1,18 @@
 # OGÓLNE
 
-- dynamiczne przenoszenie nieaktywnych czatów do archiwum. Np tylko ostatnie 5 jest widoczne.
+- Chat: na pc automatycznie rozwijaj kategorię w której jest aktywny pokój i zwijaj inne kategorie.
+- Start: zapamiętuj stan guzika 'Show unread only' w localStorage przeglądarki
+- Chat: guzik powrotu do listy pokoi chowa się gdy klawiatura ekranowa podnosi się na mobile.
+- Start: godzina wydarzenia pokazuje się nieprawidłowo w Start.
 - Chat: filtr tylko nieprzeczytane
-- Chat: automatycznie rozwijaj kategorię w której jest aktywny pokój
+- swipe left right żeby przejść do różnych działów
+- Chat: w pierwszej wiadomości w automatycznym czacie musi być tytuł Zadania albo Głosowania.
+- dynamiczne przenoszenie nieaktywnych czatów do archiwum. Np tylko ostatnie 5 jest widoczne.
 - Do emaila powitalnego dodać https://lobbyobywatelskie.wikikracja.pl/board/view/25/
 - Nowa osoba akceptuje zasady w momencie pierwszego logowania
 - Dokończyć Fixtures i dodać je do skryptu instalacyjnego. Fixtures z przepisami, pokojami i ogłoszeniami. Start: (publiczna strona startowa dla niezalogowanych) i Footer: (publiczna stopka). Customowy email. Wszystkie te elementy dać do nowego działu.
 - Backup kontaktów, przepisów, ogłoszeń, itd. Każdy powinien móc zrobić w postaci fixtures i md.
+- Ograniczyć możliwość dodawania treść po to żeby uniknąć manipulacji polegającej na tym, że zły aktor zarzuca grupę dużą ilością głosowań i przemyca w ten sposób niekorzystne dla grupy rozwiązania.
 
 # ZADANIA (TASKS)
 
@@ -52,9 +58,9 @@
 ## Funkcjonalności
 
 - Automatyczne głosowania Wiki. Poziom akceptacji, itd. https://www.kialo.com/ https://github.com/ehsanfakhraie/kialo/
-- Głosowania stałe nad parametrami systemu (ile podpisów pod wnioskiem, czas trwania dyskusji, itd.)
+- Głosowania stałe nad parametrami systemu (ile podpisów pod wnioskiem, czas trwania dyskusji, itd.) czy chcemy być części konfederacji. Z kim chcemy być częścią konfederacji.
 - Szablony głosowań: sojusz z inną grupą, wymagana reputacja, czas trwania referendum, zrzutka, archiwizacja pokoi, wybory skarbnika, customowe
-- Fixtures: przywrócić startowe referenda
+
 - Dodać pole: ten przepis powinien być stosowany jeśli (czas, warunek)
 - Podświetlanie guzików kiedy jest trwające referendum
 - Pokazywać kto podpisał wniosek o referendum
@@ -117,13 +123,13 @@ Do oddania / na sprzedaż / do wypożyczenia:
 
 # OGŁOSZENIA / BOARD
 
-- Start i Footer powinny być opcjami podczas edycji ogłoszenia
+- Wersjonowanie Ogłoszeń
+- Start, Footer i Custom emails powinny mieć swój oddzielny dział. Zamiast po nazwie - te typy Ogłoszeń powinny mieć specjalne znaczniki (inny dla każdego typu)
 - Dodać komentarze pod artykułami (albo czat room)
 - Powiadomienia email przy zmianie treści artykułu (tylko przy okazji innych wiadomości)
 - Edytowanie ogłoszeń tylko przez autora
 - Zmiana autora jeśli ktoś zostanie wyrzucony z grupy
 - Ocenianie artykułów. Najniżej oceniane trafiają do ukrytego archiwum.
-- Wersjonowanie Ogłoszeń
 - Przewijanie artykułów na blogu
 
 # OBYWATELE
