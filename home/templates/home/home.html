@@ -65,9 +65,9 @@
 							<button id="mark-all-read" class="btn btn-success btn-sm">
 								<i class="fas fa-check-double me-2"></i>{% trans 'Mark all as read' %}
 							</button>
-							<button id="toggle-unread" class="btn btn-primary btn-sm" data-filtered="false">
+							<button id="toggle-unread" class="btn btn-primary btn-sm" data-filtered="{{ filter_unread|lower }}">
 								<i class="fas fa-eye me-2"></i>
-								<span id="filter-text">{% trans 'Show unread only' %}</span>
+								<span id="filter-text">{% if filter_unread %}{% trans 'Show all' %}{% else %}{% trans 'Show unread only' %}{% endif %}</span>
 							</button>
 						</div>
 					</div>
@@ -159,44 +159,55 @@ document.addEventListener('DOMContentLoaded', function() {
 	// Handle toggle unread filter button
 	const toggleButton = document.getElementById('toggle-unread');
 	if (toggleButton) {
-		// Set initial state from localStorage, fallback to URL parameter
-		const savedFilterState = localStorage.getItem('showUnreadOnly');
-		const urlParams = new URLSearchParams(window.location.search);
-		const isFiltered = savedFilterState !== null ? 
-			savedFilterState === 'true' : 
-			urlParams.get('filter') === 'unread';
+		// Get initial state from backend (data-filtered attribute set by Django template)
+		const backendFiltered = toggleButton.getAttribute('data-filtered') === 'true';
+		const localStorageFiltered = localStorage.getItem('showUnreadOnly');
 		
-		toggleButton.setAttribute('data-filtered', isFiltered.toString());
-		updateButtonText(toggleButton, isFiltered);
+		// If localStorage has a value but backend doesn't match, sync backend to localStorage
+		if (localStorageFiltered !== null && localStorageFiltered !== backendFiltered.toString()) {
+			const shouldFilter = localStorageFiltered === 'true';
+			// Sync session with localStorage and reload
+			saveFilterStateAndReload(shouldFilter);
+			return; // Exit early, page will reload
+		}
+		
+		// Otherwise, sync localStorage with backend state
+		localStorage.setItem('showUnreadOnly', backendFiltered.toString());
 		
 		toggleButton.addEventListener('click', function() {
 			const isCurrentlyFiltered = this.getAttribute('data-filtered') === 'true';
 			const newFilteredState = !isCurrentlyFiltered;
 			
-			// Update button state
-			this.setAttribute('data-filtered', newFilteredState.toString());
-			updateButtonText(this, newFilteredState);
-			
 			// Save to localStorage
 			localStorage.setItem('showUnreadOnly', newFilteredState.toString());
 			
-			// Update URL and reload page
-			const url = new URL(window.location);
-			if (newFilteredState) {
-				url.searchParams.set('filter', 'unread');
-			} else {
-				url.searchParams.delete('filter');
-			}
-			window.location.href = url.toString();
+			// Save to session and reload
+			saveFilterStateAndReload(newFilteredState);
 		});
 	}
 	
-	function updateButtonText(button, isFiltered) {
-		if (isFiltered) {
-			button.innerHTML = '<i class="fas fa-eye me-2"></i><span id="filter-text">{% trans "Show all" %}</span>';
-		} else {
-			button.innerHTML = '<i class="fas fa-eye me-2"></i><span id="filter-text">{% trans "Show unread only" %}</span>';
-		}
+	// Function to save filter state to session and reload page
+	function saveFilterStateAndReload(isFiltered) {
+		fetch('{% url "save_filter_state" %}', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'X-CSRFToken': getCookie('csrftoken'),
+			},
+			body: `show_unread_only=${isFiltered.toString()}`
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.success) {
+				// Reload page to apply filter (session is now updated)
+				window.location.href = window.location.pathname;
+			} else {
+				console.error('Failed to save filter state:', data.error);
+			}
+		})
+		.catch(error => {
+			console.error('Error saving filter state:', error);
+		});
 	}
 	
 	// Mark all as read functionality

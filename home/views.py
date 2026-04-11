@@ -70,7 +70,21 @@ def home(request: HttpRequest):
                 break
     
     # Check if we should filter to show only unread items
-    filter_unread = request.GET.get('filter') == 'unread'
+    # Priority: URL parameter > session (synced from localStorage)
+    url_filter = request.GET.get('filter')
+    
+    if url_filter is not None:
+        # URL parameter takes precedence
+        filter_unread = url_filter == 'unread'
+        # Update session to match URL
+        request.session['show_unread_only'] = filter_unread
+    elif 'show_unread_only' in request.session:
+        # Use saved preference from session (synced from localStorage)
+        filter_unread = request.session['show_unread_only']
+    else:
+        # Default: show all items
+        filter_unread = False
+    
     if filter_unread:
         feed_items = unread_items
     
@@ -377,6 +391,20 @@ def mark_all_read(request):
         
     except Exception as e:
         log.error(f"Error marking all as read for user {request.user.id}: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_POST
+def save_filter_state(request):
+    """Save filter state in session"""
+    try:
+        filter_state = request.POST.get('show_unread_only', 'false').lower() == 'true'
+        request.session['show_unread_only'] = filter_state
+        request.session.modified = True
+        return JsonResponse({'success': True})
+    except Exception as e:
+        log.error(f"Error saving filter state: {e}")
         return JsonResponse({'success': False, 'error': str(e)})
 
 
