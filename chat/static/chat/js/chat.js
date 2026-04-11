@@ -61,6 +61,62 @@ document.addEventListener('DOMContentLoaded', () => {
         handleViewportChange(); // Initial call
     }
 
+    // Handle unread filter functionality
+    const unreadFilterBtn = $('#unread-filter-btn');
+    let isUnreadFilterActive = false;
+
+    // Restore filter state from localStorage
+    const savedFilterState = localStorage.getItem('chat-unread-filter');
+    if (savedFilterState === 'active') {
+        isUnreadFilterActive = true;
+        unreadFilterBtn?.classList.add('active');
+        applyUnreadFilter();
+    }
+
+    unreadFilterBtn?.addEventListener('click', () => {
+        isUnreadFilterActive = !isUnreadFilterActive;
+        
+        if (isUnreadFilterActive) {
+            unreadFilterBtn.classList.add('active');
+            localStorage.setItem('chat-unread-filter', 'active');
+            applyUnreadFilter();
+        } else {
+            unreadFilterBtn.classList.remove('active');
+            localStorage.removeItem('chat-unread-filter');
+            removeUnreadFilter();
+        }
+    });
+
+    function applyUnreadFilter() {
+        // Filter rooms - show only unread using CSS class
+        const allRoomLinks = $$('.room-link[data-room-id]');
+        allRoomLinks.forEach(roomLink => {
+            // Add class to hide read rooms
+            if (!roomLink.classList.contains('room-not-seen')) {
+                roomLink.classList.add('filtered-out');
+            } else {
+                roomLink.classList.remove('filtered-out');
+            }
+        });
+    }
+
+    function removeUnreadFilter() {
+        const allRoomLinks = $$('.room-link[data-room-id]');
+        allRoomLinks.forEach(roomLink => {
+            roomLink.classList.remove('filtered-out');
+        });
+    }
+
+// Function to reapply unread filter when room seen status changes
+    function updateUnreadFilter() {
+        if (isUnreadFilterActive) {
+            applyUnreadFilter();
+        }
+    }
+
+    // Make function globally available for other modules
+    window.updateUnreadFilter = updateUnreadFilter;
+
     WS_API.wsOnConnect = async () => {
         for (const user of (await WS_API.getOnlineUsers()).online_data) {
             DOM_API.updateOnline(user.room_id, user.online);
@@ -116,60 +172,12 @@ export async function onReceiveNotification(notification) {
     makeNotification(notification);
 }
 
-async function expandCategoryForRoom(room_id) {
-    const roomLink = $(`.room-link[data-room-id="${room_id}"]`);
-    if (!roomLink) return;
-    const container = roomLink.closest('.list-of-rooms, .list-of-pms');
-    if (!container) return;
-    
-    const categoryMap = {
-        'content-pub-rooms-active': '#toggleButtonPubRoomsActive',
-        'content-pub-rooms-archive': '.archive-toggle[data-target="pub-rooms-archive"]',
-        'content-tasks-active': '#toggleButtonTasksActive',
-        'content-tasks-archive': '.archive-toggle[data-target="tasks-archive"]',
-        'content-votes-active': '#toggleButtonVotesActive',
-        'content-votes-archive': '.archive-toggle[data-target="votes-archive"]',
-        'content-prv-active': '#toggleButtonPrvActive',
-        'content-prv-archive': '.archive-toggle[data-target="prv-archive"]'
-    };
-
-    // Collapse all other categories first
-    const allContainers = $$('.list-of-rooms, .list-of-pms');
-    for (const otherContainer of allContainers) {
-        if (otherContainer.id !== container.id) {
-            const otherToggleButton = $(categoryMap[otherContainer.id]);
-            if (otherToggleButton && otherContainer.style.display !== 'none') {
-                otherContainer.style.display = 'none';
-                if (otherToggleButton.classList.contains('accordion')) {
-                    otherToggleButton.classList.remove('activated');
-                } else {
-                    otherToggleButton.classList.remove('active');
-                }
-            }
-        }
-    }
-
-    const toggleButton = $(categoryMap[container.id]);
-    if (toggleButton) {
-        // Always expand the active room's category
-        container.style.display = 'block';
-        container.style.height = '';
-        container.style.overflow = '';
-        if (toggleButton.classList.contains('accordion')) {
-            toggleButton.classList.add('activated');
-        } else {
-            toggleButton.classList.add('active');
-        }
-    }
-}
-
 export async function onRoomTryJoin(room_id) {
     if (room_id == CurrentRoomId) return; // already in this room
     if (RoomLock.locked()) await RoomLock.wait();
     if (CurrentRoomId) await onRoomTryLeave(false);
 
     DOM_API.getRoomLinkDiv(room_id)?.classList.add("joined");
-    expandCategoryForRoom(room_id); // Expand category containing this room
     if (CurrentRoomId) return; // joined another room while awaiting confirmation
 
     RoomLock.lock();
@@ -332,11 +340,13 @@ export async function onRoomUnsee(room_id) {
     if (CurrentRoomId == room_id) return;
     DOM_API.getRoomLinkDiv(room_id)?.classList.add("room-not-seen");
     DOM_API.setRoomSeenIconState(room_id, false);
+    updateUnreadFilter();
 }
 
 export async function onRoomSeen(room_id) {
     DOM_API.getRoomLinkDiv(room_id)?.classList.remove("room-not-seen");
     DOM_API.setRoomSeenIconState(room_id, true);
+    updateUnreadFilter();
 }
 
 export async function onUpdateVote(vote, message_id, is_add) {

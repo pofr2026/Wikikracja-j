@@ -153,6 +153,10 @@ export default class DomApi {
         if ($$('.room-not-seen').length === 0) {
             removeNotification();
         }
+        // Trigger unread filter update if it's active
+        if (typeof window.updateUnreadFilter === 'function') {
+            window.updateUnreadFilter();
+        }
     }
 
     updateOnline(room_id, is_online) {

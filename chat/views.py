@@ -187,6 +187,8 @@ def get_translations():
         "Oct",
         "Nov",
         "Dec",
+        "Unread",
+        "Show only unread rooms",
     ]
     translation = {
         x: _(x) for x in strings

@@ -492,6 +492,24 @@ body:has(.chat-rooms) {
     color: var(--bs-success);
 }
 
+/* Unread filter button active state */
+#unread-filter-btn.active {
+    background-color: var(--bs-info);
+    color: var(--bs-dark);
+    border-color: var(--bs-info);
+}
+
+#unread-filter-btn.active:hover {
+    background-color: var(--bs-info);
+    color: var(--bs-black);
+    border-color: var(--bs-info);
+}
+
+/* Hide filtered out rooms */
+.room-link.filtered-out {
+    display: none !important;
+}
+
 .room-link.room-tapping {
     background-color: rgba(51, 153, 243, 0.3);
     border-color: var(--bs-info);

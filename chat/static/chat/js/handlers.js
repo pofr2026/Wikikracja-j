@@ -163,6 +163,10 @@ document.addEventListener('DOMContentLoaded', () => {
             DOM_API.getRoomLinkDiv(btn.dataset.roomId)?.classList.toggle('room-not-seen', !newState);
             DOM_API.setRoomSeenIconState(btn.dataset.roomId, newState);
             onToggleSeen(btn.dataset.roomId, newState);
+            // Update unread filter if it's active
+            if (typeof window.updateUnreadFilter === 'function') {
+                window.updateUnreadFilter();
+            }
         }
     });
 
@@ -284,6 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
             DOM_API.getRoomLinkDiv(room_id)?.classList.remove("room-not-seen");
             DOM_API.setRoomSeenIconState(room_id, true);
             onRoomTryJoin(room_id);
+            // Update unread filter if it's active
+            if (typeof window.updateUnreadFilter === 'function') {
+                window.updateUnreadFilter();
+            }
         }
     }
 
