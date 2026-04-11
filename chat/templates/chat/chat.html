@@ -25,11 +25,16 @@
         
         if (archiveSection && archiveBtn) {
           const savedState = localStorage.getItem(`chat-archive-${targetId}`);
+          const hasUnreadRooms = archiveSection.querySelector('.room-not-seen') !== null;
           
-          // Default to hidden (archives not shown by default)
-          if (savedState === 'visible') {
+          // Auto-expand if has unread rooms, otherwise respect saved state
+          if (hasUnreadRooms || savedState === 'visible') {
             archiveSection.style.display = 'block';
             archiveBtn.classList.add('active');
+            // Save state if auto-expanded due to unread rooms
+            if (hasUnreadRooms && savedState !== 'visible') {
+              localStorage.setItem(`chat-archive-${targetId}`, 'visible');
+            }
           } else {
             archiveSection.style.display = 'none';
             archiveBtn.classList.remove('active');

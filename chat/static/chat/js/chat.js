@@ -172,6 +172,61 @@ export async function onReceiveNotification(notification) {
     makeNotification(notification);
 }
 
+/**
+ * Expands the category (accordion and archive section if needed) for the given room
+ * @param {HTMLElement} roomLink - The room link element
+ */
+function expandCategoryForRoom(roomLink) {
+    // Find which section this room belongs to (could be active or archive)
+    const listContainer = roomLink.closest('.list-of-rooms, .list-of-pms');
+    if (!listContainer) return;
+    
+    const sectionId = listContainer.id; // e.g., 'content-pub-rooms-active' or 'content-pub-rooms-archive'
+    
+    // Expand accordion for the main category
+    const accordionMap = {
+        'content-pub-rooms-active': 'toggleButtonPubRoomsActive',
+        'content-pub-rooms-archive': 'toggleButtonPubRoomsActive',
+        'content-tasks-active': 'toggleButtonTasksActive',
+        'content-tasks-archive': 'toggleButtonTasksActive',
+        'content-votes-active': 'toggleButtonVotesActive',
+        'content-votes-archive': 'toggleButtonVotesActive',
+        'content-prv-active': 'toggleButtonPrvActive',
+        'content-prv-archive': 'toggleButtonPrvActive'
+    };
+    
+    const accordionId = accordionMap[sectionId];
+    if (accordionId) {
+        const accordion = document.getElementById(accordionId);
+        const contentEl = document.getElementById(sectionId.replace('-archive', '-active'));
+        
+        if (accordion && contentEl) {
+            // Expand the accordion if it's collapsed
+            if (!accordion.classList.contains('activated')) {
+                accordion.classList.add('activated');
+                contentEl.style.display = 'block';
+                contentEl.style.height = '';
+                contentEl.style.overflow = '';
+                localStorage.setItem(`chat-accordion-${accordionId}`, 'expanded');
+            }
+        }
+    }
+    
+    // If it's an archived room, also expand the archive section
+    const archiveSection = roomLink.closest('.archive-section');
+    if (archiveSection) {
+        const archiveSectionId = archiveSection.id; // e.g., 'content-pub-rooms-archive'
+        const targetId = archiveSectionId.replace('content-', ''); // e.g., 'pub-rooms-archive'
+        
+        const archiveBtn = document.querySelector(`.archive-toggle[data-target="${targetId}"]`);
+        if (archiveBtn) {
+            archiveSection.style.display = 'block';
+            archiveBtn.classList.add('active');
+            localStorage.setItem(`chat-archive-${targetId}`, 'visible');
+        }
+    }
+}
+
 export async function onRoomTryJoin(room_id) {
     if (room_id == CurrentRoomId) return; // already in this room
     if (RoomLock.locked()) await RoomLock.wait();
@@ -207,6 +262,12 @@ export async function onRoomTryJoin(room_id) {
     DOM_API.createRoomDiv(CurrentRoomId, response.title, response.public, response.notifications);
     DOM_API.setFoldedRoomTitle(response.title);
     DOM_API.showFoldedRoomHeader();
+    
+    // Auto-expand category and archive section if needed
+    const roomLink = DOM_API.getRoomLinkDiv(room_id);
+    if (roomLink) {
+        expandCategoryForRoom(roomLink);
+    }
     
     // Focus the message input field after joining a room
     const messageInput = DOM_API.getMessageInput();

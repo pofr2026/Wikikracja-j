@@ -266,7 +266,6 @@ Do oddania / na sprzedaż / do wypożyczenia:
 - Głosowania: Pozytywy, negatywy referendum - każdy może komentować oba?
 - Bookkeeping: Raporty używają "lazy loading" i przez to nie odświeżają się
 - Bookkeeping: Kasowanie/edycja wpisów tylko przez autora
-- Chat: na pc automatycznie rozwijaj kategorię w której jest aktywny pokój i zwijaj inne kategorie.
 - Start: zapamiętuj stan guzika 'Show unread only' w localStorage przeglądarki
 - Chat: guzik powrotu do listy pokoi chowa się gdy klawiatura ekranowa podnosi się na mobile.
 - Start: godzina wydarzenia pokazuje się nieprawidłowo w Start.

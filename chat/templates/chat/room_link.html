@@ -3,7 +3,8 @@
 
 <div class="room-link {{ room|seen_by:user }}"
   data-room-type="{% if room.public %}public{% else %}private{% endif %}"
-  data-room-id="{{ room.id }}">
+  data-room-id="{{ room.id }}"
+  data-room-archived="{{ room.archived }}">
   <div class="room-name flex-grow-1">
     {{ room|name_for:user }}
   </div>

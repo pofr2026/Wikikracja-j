@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-11 21:57+0200\n"
+"POT-Creation-Date: 2026-04-11 22:17+0200\n"
 "PO-Revision-Date: 2025-04-14 01:32+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Polish <LL@li.org>\n"
@@ -65,7 +65,7 @@ msgstr "Zaktualizowane"
 #: .\board\models.py:16 .\board\templates\board\board.html:32
 #: .\board\templates\board\board.html:52
 #: .\board\templates\board\post_detail.html:11
-#: .\chat\templates\chat\chat.html:77 .\events\models.py:52
+#: .\chat\templates\chat\chat.html:82 .\events\models.py:52
 #: .\events\templates\events\event_detail.html:80
 #: .\events\templates\events\event_list.html:77
 msgid "Public"
@@ -187,7 +187,7 @@ msgid "Delete"
 msgstr "Skasuj"
 
 #: .\board\templates\board\post_detail.html:11
-#: .\chat\templates\chat\chat.html:155
+#: .\chat\templates\chat\chat.html:160
 #: .\events\templates\events\event_detail.html:84
 #: .\events\templates\events\event_list.html:81
 msgid "Private"
@@ -575,119 +575,119 @@ msgstr "Skocz do czatu żeby to zrobić {HOST}/chat"
 msgid "New room"
 msgstr "Nowy pokój"
 
-#: .\chat\templates\chat\chat.html:49
+#: .\chat\templates\chat\chat.html:54
 msgid "Back to room list"
 msgstr "Powrót do listy pokoi"
 
-#: .\chat\templates\chat\chat.html:62
+#: .\chat\templates\chat\chat.html:67
 msgid "Room"
 msgstr "Pokój"
 
-#: .\chat\templates\chat\chat.html:65
+#: .\chat\templates\chat\chat.html:70
 msgid "Info"
 msgstr "Info"
 
-#: .\chat\templates\chat\chat.html:67
+#: .\chat\templates\chat\chat.html:72
 msgid "Show only unread rooms"
 msgstr "Poka tylko nieprzeczytane pokoje"
 
-#: .\chat\templates\chat\chat.html:68
+#: .\chat\templates\chat\chat.html:73
 msgid "Unread"
 msgstr "Nieprzeczytane"
 
-#: .\chat\templates\chat\chat.html:78 .\chat\templates\chat\chat.html:104
-#: .\chat\templates\chat\chat.html:130 .\chat\templates\chat\chat.html:156
+#: .\chat\templates\chat\chat.html:83 .\chat\templates\chat\chat.html:109
+#: .\chat\templates\chat\chat.html:135 .\chat\templates\chat\chat.html:161
 msgid "Show archived rooms"
 msgstr "Pokaż zarchiwizowane pokoje"
 
-#: .\chat\templates\chat\chat.html:87 .\chat\templates\chat\chat.html:96
-#: .\chat\templates\chat\chat.html:113 .\chat\templates\chat\chat.html:122
-#: .\chat\templates\chat\chat.html:139 .\chat\templates\chat\chat.html:148
-#: .\chat\templates\chat\chat.html:165 .\chat\templates\chat\chat.html:174
+#: .\chat\templates\chat\chat.html:92 .\chat\templates\chat\chat.html:101
+#: .\chat\templates\chat\chat.html:118 .\chat\templates\chat\chat.html:127
+#: .\chat\templates\chat\chat.html:144 .\chat\templates\chat\chat.html:153
+#: .\chat\templates\chat\chat.html:170 .\chat\templates\chat\chat.html:179
 #: .\tasks\templates\tasks\task_list.html:31
 #: .\tasks\templates\tasks\task_list.html:35
 msgid "None"
 msgstr "Brak"
 
-#: .\chat\templates\chat\chat.html:103 .\chat\templates\chat\chat.html:216
+#: .\chat\templates\chat\chat.html:108 .\chat\templates\chat\chat.html:221
 #: .\home\templates\home\base.html:79
 msgid "Tasks"
 msgstr "Zadania"
 
-#: .\chat\templates\chat\chat.html:129 .\chat\templates\chat\chat.html:220
+#: .\chat\templates\chat\chat.html:134 .\chat\templates\chat\chat.html:225
 msgid "Referendums"
 msgstr "Głosowania"
 
-#: .\chat\templates\chat\chat.html:190
+#: .\chat\templates\chat\chat.html:195
 msgid "Changes history"
 msgstr "Historia zmian"
 
-#: .\chat\templates\chat\chat.html:195 .\chat\templates\chat\chat.html:233
+#: .\chat\templates\chat\chat.html:200 .\chat\templates\chat\chat.html:238
 #: .\tasks\templates\tasks\task_detail.html:155
 msgid "Close"
 msgstr "Zamknij"
 
-#: .\chat\templates\chat\chat.html:207
+#: .\chat\templates\chat\chat.html:212
 msgid "Chat Information"
 msgstr "Informacje o czacie"
 
-#: .\chat\templates\chat\chat.html:212
+#: .\chat\templates\chat\chat.html:217
 msgid "Public Rooms"
 msgstr "Publiczne"
 
-#: .\chat\templates\chat\chat.html:213
+#: .\chat\templates\chat\chat.html:218
 #, python-format
 msgid "Public chat rooms are archived if they are not used for %(archive_days)s days. After %(delete_days)s days they are deleted."
 msgstr "Publiczne pokoje czatu są archiwizowane, jeśli nie są używane przez %(archive_days)s dni. Po %(delete_days)s dniach są usuwane."
 
-#: .\chat\templates\chat\chat.html:217
+#: .\chat\templates\chat\chat.html:222
 msgid "Task rooms are created for specific tasks and projects. They are protected from automatic deletion and are used for collaborative work discussions."
 msgstr "Pokoje zadań są tworzone dla konkretnych zadań i projektów. Są one chronione przed automatycznym usunięciem i służą do dyskusji nad pracą zespołową."
 
-#: .\chat\templates\chat\chat.html:221
+#: .\chat\templates\chat\chat.html:226
 msgid "Referendum rooms are created for voting and decision-making processes. They are protected from automatic deletion and provide a space for discussions about proposals."
 msgstr "Pokoje głosowań są tworzone dla procesów głosowania i podejmowania decyzji. Są one chronione przed automatycznym usunięciem i zapewniają przestrzeń do dyskusji na temat propozycji."
 
-#: .\chat\templates\chat\chat.html:224
+#: .\chat\templates\chat\chat.html:229
 msgid "Private Messages"
 msgstr "Prywatne wiadomości"
 
-#: .\chat\templates\chat\chat.html:225
+#: .\chat\templates\chat\chat.html:230
 #, python-format
 msgid "Private messages are archived when user is blocked and deleted after %(delete_days)s days."
 msgstr "Prywatne wiadomości są archiwizowane, gdy użytkownik jest blokowany i usuwany po %(delete_days)s dniach."
 
-#: .\chat\templates\chat\chat.html:228
+#: .\chat\templates\chat\chat.html:233
 msgid "Archives"
 msgstr "Archiwa"
 
-#: .\chat\templates\chat\chat.html:229
+#: .\chat\templates\chat\chat.html:234
 msgid "Click the archive button (folder icon) next to each category to show archived rooms."
 msgstr "Kliknij przycisk archiwum (ikona folderu) obok każdej kategorii, aby pokazać zarchiwizowane pokoje."
 
-#: .\chat\templates\chat\room_link.html:16
+#: .\chat\templates\chat\room_link.html:17
 msgid "Mark as unread"
 msgstr "Oznacz jako nieprzeczytane"
 
-#: .\chat\templates\chat\room_link.html:17
+#: .\chat\templates\chat\room_link.html:18
 #, python-format
 msgid "Mark room %(room_name)s as unread"
 msgstr "Oznacz pokój %(room_name)s jako nieprzeczytany"
 
-#: .\chat\templates\chat\room_link.html:24
+#: .\chat\templates\chat\room_link.html:25
 msgid "Toggle notifications (chat and email)"
 msgstr "Przełącz powiadomienia (czat i email)"
 
-#: .\chat\templates\chat\room_link.html:25
+#: .\chat\templates\chat\room_link.html:26
 #, python-format
 msgid "Toggle notifications for room %(room_name)s"
 msgstr "Przełącz powiadomienia dla pokoju %(room_name)s"
 
-#: .\chat\templates\chat\room_link.html:31
+#: .\chat\templates\chat\room_link.html:32
 msgid "Copy link"
 msgstr "Skopiuj link"
 
-#: .\chat\templates\chat\room_link.html:32
+#: .\chat\templates\chat\room_link.html:33
 #, python-format
 msgid "Copy link to room %(room_name)s"
 msgstr "Skopiuj link do pokoju %(room_name)s"
