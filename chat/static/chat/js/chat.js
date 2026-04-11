@@ -46,6 +46,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set the WebSocket message handler to break circular dependency
     WS_API.socketMessageHandler = onSocketMessage;
 
+    // Handle mobile keyboard viewport changes for back button visibility
+    if (window.visualViewport) {
+        const handleViewportChange = () => {
+            const header = document.getElementById('folded-room-header');
+            if (header && window.innerWidth <= 767) { // Only on mobile
+                const offsetTop = window.visualViewport.offsetTop;
+                header.style.transform = `translateY(${offsetTop}px)`;
+            }
+        };
+
+        window.visualViewport.addEventListener('resize', handleViewportChange);
+        window.visualViewport.addEventListener('scroll', handleViewportChange);
+        handleViewportChange(); // Initial call
+    }
+
     WS_API.wsOnConnect = async () => {
         for (const user of (await WS_API.getOnlineUsers()).online_data) {
             DOM_API.updateOnline(user.room_id, user.online);

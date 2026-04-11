@@ -81,6 +81,7 @@ body:has(.chat-rooms) {
     height: 50px;
     transform: translateZ(0);
     /* Force GPU acceleration for better mobile performance */
+    transition: transform 0.1s ease-out;
 }
 
 .btn-back-room {
