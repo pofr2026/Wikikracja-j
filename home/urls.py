@@ -12,6 +12,7 @@ urlpatterns = [
     path('mark-all-read/', views.mark_all_read, name='mark_all_read'),
     path('mark-unread/', views.mark_unread, name='mark_unread'),
     path('save-filter-state/', views.save_filter_state, name='save_filter_state'),
+    path('search/', views.global_search, name='search'),
 
     # not in use at this point. Contact through https://wikikracja.pl/kontakt/
     # path('contact/', TemplateView.as_view(template_name="home/contact.html"), name='contact'),

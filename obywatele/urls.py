@@ -20,4 +20,5 @@ urlpatterns = (
     path('change_username/', v.change_username, name='change_username'),
     path("assets/", login_required(v.AssetListView.as_view()), name='assets'),
     path('parameters/', v.parameters, name='parameters'),
+    path('wspolnota/', v.wspolnota, name='wspolnota'),
 )

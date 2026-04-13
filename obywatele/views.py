@@ -1,6 +1,7 @@
 # Standard library imports
 import logging
 import time
+from datetime import timedelta
 from random import choice
 from string import ascii_letters, digits
 
@@ -19,6 +20,7 @@ from django.db import DatabaseError
 from django.db.models import Case, Count, IntegerField, Q, Sum, Value, When
 from django.dispatch import receiver
 from django.http import HttpRequest
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django_filters.views import FilterView
@@ -138,6 +140,42 @@ def parameters(request: HttpRequest):
         'population': population(),
         'acceptance': s.ACCEPTANCE,
         'delete_inactive_user_after': s.DELETE_INACTIVE_USER_AFTER,
+    })
+
+
+@login_required
+def wspolnota(request: HttpRequest):
+    from bookkeeping.models import Transaction
+    from django.db.models import Sum
+
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    pop = population()
+    active_last_month = User.objects.filter(is_active=True, last_login__gte=thirty_days_ago).count()
+    active_pct = round(active_last_month / pop * 100) if pop else 0
+
+    recent_members = (
+        User.objects
+        .filter(is_active=True)
+        .select_related('uzytkownik')
+        .order_by('-uzytkownik__data_przyjecia')[:5]
+    )
+
+    this_year = timezone.now().year
+    income = Transaction.objects.filter(
+        type=Transaction.INCOMING, created_date__year=this_year
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    expense = Transaction.objects.filter(
+        type=Transaction.OUTGOING, created_date__year=this_year
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    return render(request, 'obywatele/wspolnota.html', {
+        'member_count': pop,
+        'active_pct': active_pct,
+        'recent_members': recent_members,
+        'income': income,
+        'expense': expense,
+        'balance': income - expense,
+        'current_year': this_year,
     })
 
 
