@@ -39,6 +39,24 @@
     </div>
 
     <div class="col-sm-6 col-xl-3">
+      <a href="{% url 'obywatele:assets' %}" class="card h-100 text-decoration-none">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="text-primary fs-4"><i class="fas fa-brain"></i></span>
+            <span class="text-muted small">{% trans "Umiejętności i zasoby" %}</span>
+          </div>
+          <div class="d-flex flex-wrap gap-3 small">
+            <span><i class="fas fa-brain text-primary me-1"></i><span class="fw-bold">{{ skills_count }}</span> {% trans "umiejętności" %}</span>
+            <span><i class="fas fa-book text-primary me-1"></i><span class="fw-bold">{{ knowledge_count }}</span> {% trans "wiedzy" %}</span>
+            <span>🎁 <span class="fw-bold">{{ give_away_count }}</span> {% trans "do oddania" %}</span>
+            <span>🤝 <span class="fw-bold">{{ borrow_count }}</span> {% trans "do pożyczenia" %}</span>
+            <span>🛒 <span class="fw-bold">{{ for_sale_count }}</span> {% trans "na sprzedaż" %}</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
       <div class="card h-100">
         <div class="card-body">
           <div class="d-flex align-items-center gap-3 mb-3">

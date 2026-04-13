@@ -224,6 +224,13 @@ def wspolnota(request: HttpRequest):
     active_pct = round(active_last_month / pop * 100) if pop else 0
     pending_count = User.objects.filter(is_active=False).count()
 
+    # --- assets & skills ---
+    skills_count = Uzytkownik.objects.exclude(skills__isnull=True).exclude(skills='').count()
+    knowledge_count = Uzytkownik.objects.exclude(knowledge__isnull=True).exclude(knowledge='').count()
+    give_away_count = Uzytkownik.objects.exclude(to_give_away__isnull=True).exclude(to_give_away='').count()
+    borrow_count = Uzytkownik.objects.exclude(to_borrow__isnull=True).exclude(to_borrow='').count()
+    for_sale_count = Uzytkownik.objects.exclude(for_sale__isnull=True).exclude(for_sale='').count()
+
     # --- recent members ---
     recent_members = (
         User.objects
@@ -270,6 +277,11 @@ def wspolnota(request: HttpRequest):
         'member_count': pop,
         'active_pct': active_pct,
         'pending_count': pending_count,
+        'skills_count': skills_count,
+        'knowledge_count': knowledge_count,
+        'give_away_count': give_away_count,
+        'borrow_count': borrow_count,
+        'for_sale_count': for_sale_count,
         'recent_members': recent_members,
         'income': income,
         'expense': expense,

@@ -481,13 +481,6 @@
         {% if unread_items %}<span class="notif-dot"></span>{% endif %}
       </a>
 
-      <!-- CTA button -->
-      {% if user.is_authenticated %}
-      <a href="{% url 'glosowania:dodaj_nowy' %}" class="btn-cta">
-        <i class="fas fa-plus"></i>
-        <span>{% trans "Nowe głosowanie" %}</span>
-      </a>
-      {% endif %}
 
     </header>
     {% endif %}
