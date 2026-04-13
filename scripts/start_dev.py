@@ -61,9 +61,17 @@ def db_path():
         return str(DB_DEFAULT)
 
 
-def run(cmd):
+def run(cmd, allow_failure=False):
     print("$", " ".join(cmd))
-    subprocess.run(cmd, check=True, cwd=BASE_DIR, env=os.environ.copy())
+    try:
+        subprocess.run(cmd, check=True, cwd=BASE_DIR, env=os.environ.copy())
+    except subprocess.CalledProcessError as e:
+        if allow_failure:
+            print(f"Warning: Command failed with exit code {e.returncode}")
+            print(f"STDOUT: {e.stdout}")
+            print(f"STDERR: {e.stderr}")
+        else:
+            raise
 
 
 def main():
@@ -101,7 +109,7 @@ def main():
     if args.full:
         run(manage + ["makemessages", "-v", "0", "--no-wrap", "--no-obsolete", "-l", "en", "--ignore=.git/*", "--ignore=static/*", "--ignore=.mypy_cache/*"])
         run(manage + ["makemessages", "-v", "0", "--no-wrap", "--no-obsolete", "-l", "pl", "--ignore=.git/*", "--ignore=static/*", "--ignore=.mypy_cache/*"])
-        run(manage + ["compilemessages", "-v", "0", "--ignore=.git/*", "--ignore=static/*", "--ignore=.mypy_cache/*"])
+        run(manage + ["compilemessages", "-v", "0"], allow_failure=True)
         run(manage + ["collectstatic", "-v", "0", "--no-input", "-c"])
 
     print("\nDevelopment instance started\n")
