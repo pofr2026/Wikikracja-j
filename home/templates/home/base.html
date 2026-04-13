@@ -113,6 +113,78 @@
 	  .topbar .search-box { width: 130px; }
 	  .topbar .btn-cta span { display: none; }
 	}
+	/* ===== SIDEBAR COLLAPSE ===== */
+	:root {
+	  --sidebar-collapsed-width: 52px;
+	}
+	.sidebar {
+	  transition: width .2s ease;
+	  overflow: hidden;
+	}
+	.sidebar.collapsed {
+	  width: var(--sidebar-collapsed-width);
+	}
+	/* hide text labels and badges when collapsed */
+	.sidebar.collapsed .nav-text,
+	.sidebar.collapsed .nav-badge,
+	.sidebar.collapsed .logo-sub,
+	.sidebar.collapsed .logo-label,
+	.sidebar.collapsed .user-info {
+	  display: none !important;
+	}
+	/* logo: center icon only */
+	.sidebar.collapsed .sidebar-logo {
+	  padding: 1.1rem 0;
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	}
+	/* nav links: icon centered */
+	.sidebar.collapsed .sidebar-nav .nav-item a,
+	.sidebar.collapsed .sidebar-bottom .nav-item a {
+	  justify-content: center;
+	  padding: .6rem 0;
+	  margin: .1rem 4px;
+	  gap: 0;
+	}
+	.sidebar.collapsed .nav-icon {
+	  width: auto;
+	  margin: 0;
+	}
+	/* user area: avatar only */
+	.sidebar.collapsed .sidebar-user {
+	  justify-content: center;
+	  padding: .75rem 0;
+	}
+	/* sidebar toggle arrow button */
+	.sidebar-toggle-btn {
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  width: 100%;
+	  padding: .55rem 0;
+	  background: transparent;
+	  border: none;
+	  border-top: 1px solid var(--border);
+	  color: var(--text-muted);
+	  cursor: pointer;
+	  font-size: .85rem;
+	  transition: color .15s, background .15s;
+	  flex-shrink: 0;
+	}
+	.sidebar-toggle-btn:hover {
+	  color: var(--accent);
+	  background: var(--accent-muted);
+	}
+	.sidebar.collapsed .sidebar-toggle-label {
+	  display: none !important;
+	}
+	.main-area {
+	  transition: margin-left .2s ease;
+	}
+	.main-area.sidebar-collapsed {
+	  margin-left: var(--sidebar-collapsed-width);
+	}
 	</style>
 
   <!-- Main app script with config data -->
@@ -139,7 +211,7 @@
 
     <!-- Logo -->
     <div class="sidebar-logo">
-      <span class="logo-title"><i class="fas fa-fw fa-building-columns me-1"></i>{% trans "W Lobby" %}</span>
+      <span class="logo-title"><i class="fas fa-fw fa-building-columns"></i><span class="logo-label ms-1">{% trans "W Lobby" %}</span></span>
       <span class="logo-sub">{% trans "Obywatelskie" %}</span>
     </div>
 
@@ -149,9 +221,10 @@
 
         <li class="nav-item">
           <a href="{% url 'home' %}"
+             title="{% trans 'Pulpit' %}"
              class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <i class="fas fa-fw fa-house nav-icon"></i>
-            {% trans "Pulpit" %}
+            <span class="nav-text">{% trans "Pulpit" %}</span>
             {% if unread_items %}
               <span class="nav-badge">{{ unread_items|length }}</span>
             {% endif %}
@@ -160,33 +233,37 @@
 
         <li class="nav-item">
           <a href="{% url 'glosowania:approved' %}"
+             title="{% trans 'Agora / Demokracja' %}"
              class="{% if request.resolver_match.namespace == 'glosowania' or request.resolver_match.namespace == 'board' %}active{% endif %}">
             <i class="fas fa-fw fa-landmark nav-icon"></i>
-            {% trans "Agora / Demokracja" %}
+            <span class="nav-text">{% trans "Agora / Demokracja" %}</span>
           </a>
         </li>
 
         <li class="nav-item">
           <a href="{% url 'tasks:list' %}"
+             title="{% trans 'Działanie' %}"
              class="{% if request.resolver_match.namespace == 'tasks' or request.resolver_match.namespace == 'events' %}active{% endif %}">
             <i class="fas fa-fw fa-bolt nav-icon"></i>
-            {% trans "Działanie" %}
+            <span class="nav-text">{% trans "Działanie" %}</span>
           </a>
         </li>
 
         <li class="nav-item">
           <a href="{% url 'elibrary:book_list' %}"
+             title="{% trans 'Baza Wiedzy' %}"
              class="{% if request.resolver_match.namespace == 'elibrary' %}active{% endif %}">
             <i class="fas fa-fw fa-book nav-icon"></i>
-            {% trans "Baza Wiedzy" %}
+            <span class="nav-text">{% trans "Baza Wiedzy" %}</span>
           </a>
         </li>
 
         <li class="nav-item">
           <a href="{% url 'obywatele:wspolnota' %}"
+             title="{% trans 'Wspólnota' %}"
              class="{% if request.resolver_match.namespace == 'obywatele' and request.resolver_match.url_name != 'my_profile' and request.resolver_match.url_name != 'haslo' and request.resolver_match.url_name != 'my_assets' and request.resolver_match.url_name != 'change_email' and request.resolver_match.url_name != 'change_username' %}active{% endif %}">
             <i class="fas fa-fw fa-users nav-icon"></i>
-            {% trans "Wspólnota" %}
+            <span class="nav-text">{% trans "Wspólnota" %}</span>
           </a>
         </li>
 
@@ -198,15 +275,16 @@
       <ul class="list-unstyled mb-0">
         <li class="nav-item">
           <a href="{% url 'obywatele:my_profile' %}"
+             title="{% trans 'Ustawienia' %}"
              class="{% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'haslo' or request.resolver_match.url_name == 'my_assets' or request.resolver_match.url_name == 'change_email' or request.resolver_match.url_name == 'change_username' %}active{% endif %}">
             <i class="fas fa-fw fa-gear nav-icon"></i>
-            {% trans "Ustawienia" %}
+            <span class="nav-text">{% trans "Ustawienia" %}</span>
           </a>
         </li>
         <li class="nav-item">
-          <a href="{% url 'account_logout' %}">
+          <a href="{% url 'account_logout' %}" title="{% trans 'Wyloguj' %}">
             <i class="fas fa-fw fa-right-from-bracket nav-icon"></i>
-            {% trans "Wyloguj" %}
+            <span class="nav-text">{% trans "Wyloguj" %}</span>
           </a>
         </li>
       </ul>
@@ -220,6 +298,13 @@
         <span class="user-role">{% trans "Obywatel" %}</span>
       </div>
     </div>
+
+    <!-- Collapse toggle -->
+    <button class="sidebar-toggle-btn d-none d-md-flex" id="sidebar-collapse-btn"
+            title="{% trans 'Zwiń/rozwiń menu' %}">
+      <i class="fas fa-angles-left" id="sidebar-collapse-icon"></i>
+      <span class="sidebar-toggle-label ms-2">{% trans "Zwiń" %}</span>
+    </button>
 
   </aside>
   <!-- ==================== END SIDEBAR ==================== -->
@@ -474,6 +559,38 @@
       });
     }
   })();
+</script>
+
+<script>
+(function() {
+  var sidebar  = document.getElementById('sidebar');
+  var mainArea = document.querySelector('.main-area');
+  var btn      = document.getElementById('sidebar-collapse-btn');
+  var icon     = document.getElementById('sidebar-collapse-icon');
+  if (!sidebar || !btn) return;
+
+  var STORAGE_KEY = 'sidebar_collapsed';
+
+  function applyState(collapsed) {
+    if (collapsed) {
+      sidebar.classList.add('collapsed');
+      mainArea.classList.add('sidebar-collapsed');
+      icon.classList.replace('fa-angles-left', 'fa-angles-right');
+    } else {
+      sidebar.classList.remove('collapsed');
+      mainArea.classList.remove('sidebar-collapsed');
+      icon.classList.replace('fa-angles-right', 'fa-angles-left');
+    }
+  }
+
+  applyState(localStorage.getItem(STORAGE_KEY) === 'true');
+
+  btn.addEventListener('click', function() {
+    var isCollapsed = sidebar.classList.contains('collapsed');
+    applyState(!isCollapsed);
+    localStorage.setItem(STORAGE_KEY, String(!isCollapsed));
+  });
+})();
 </script>
 
 {% comment %} Needed for chat {% endcomment %}
