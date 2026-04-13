@@ -1,0 +1,126 @@
+{% extends 'home/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <div class="mb-4">
+    <h2 class="mb-1"><i class="fas fa-users me-2 text-primary"></i>{% trans "Wspólnota" %}</h2>
+    <p class="text-muted small mb-0">{% trans "Przegląd społeczności" %}</p>
+  </div>
+
+  <!-- Stats tiles -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="text-primary fs-4"><i class="fas fa-users"></i></span>
+            <span class="text-muted small">{% trans "Liczba członków" %}</span>
+          </div>
+          <div class="fs-2 fw-bold text-primary">{{ member_count }}</div>
+          <div class="text-muted small mt-1">{% trans "aktywnych obywateli" %}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="text-success fs-4"><i class="fas fa-chart-line"></i></span>
+            <span class="text-muted small">{% trans "Aktywni w ostatnim miesiącu" %}</span>
+          </div>
+          <div class="fs-2 fw-bold text-success">{{ active_pct }}%</div>
+          <div class="text-muted small mt-1">{% trans "zalogowanych w ciągu 30 dni" %}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Member directory + Finance tiles -->
+  <div class="row g-3">
+
+    <!-- Member directory tile -->
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold"><i class="fas fa-address-book me-2 text-primary"></i>{% trans "Katalog Obywateli" %}</span>
+          <a href="{% url 'obywatele:obywatele' %}" class="btn btn-sm btn-outline-primary">
+            {% trans "Wszyscy obywatele" %} &rarr;
+          </a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="px-3 py-2 text-muted small">{% trans "Nick" %}</th>
+                  <th class="px-3 py-2 text-muted small">{% trans "Miasto" %}</th>
+                  <th class="px-3 py-2 text-muted small">{% trans "Dołączył/a" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for member in recent_members %}
+                <tr>
+                  <td class="px-3 py-2">
+                    <a href="{% url 'obywatele:obywatele_szczegoly' member.pk %}" class="text-decoration-none text-primary fw-semibold">
+                      {{ member.username }}
+                    </a>
+                  </td>
+                  <td class="px-3 py-2 text-muted small">
+                    {{ member.uzytkownik.city|default:"—" }}
+                  </td>
+                  <td class="px-3 py-2 text-muted small">
+                    {% if member.uzytkownik.data_przyjecia %}
+                      {{ member.uzytkownik.data_przyjecia|date:"d.m.Y" }}
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="3" class="px-3 py-3 text-muted text-center small">{% trans "Brak danych" %}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Finance tile -->
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-semibold"><i class="fas fa-wallet me-2 text-primary"></i>{% trans "Finanse" %} {{ current_year }}</span>
+          <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm btn-outline-primary">
+            {% trans "Raport" %} &rarr;
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-secondary border-opacity-25">
+            <span class="text-muted small"><i class="fas fa-arrow-down me-2 text-success"></i>{% trans "Przychody" %}</span>
+            <span class="fw-semibold text-success">{{ income|floatformat:2 }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-secondary border-opacity-25">
+            <span class="text-muted small"><i class="fas fa-arrow-up me-2 text-danger"></i>{% trans "Wydatki" %}</span>
+            <span class="fw-semibold text-danger">{{ expense|floatformat:2 }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center pt-3">
+            <span class="small fw-semibold">{% trans "Saldo" %}</span>
+            <span class="fw-bold {% if balance >= 0 %}text-success{% else %}text-danger{% endif %} fs-5">
+              {{ balance|floatformat:2 }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
