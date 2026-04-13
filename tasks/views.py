@@ -5,7 +5,7 @@ import math
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models, transaction
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -93,12 +93,34 @@ class TaskListView(LoginRequiredMixin, TemplateView):
             for task in all_tasks:
                 task.chat_room_pulse_class = task.get_chat_room_pulse_class(self.request.user)
 
+        my_tasks_own = []
+        my_tasks_supporting = []
+        if self.request.user.is_authenticated:
+            my_tasks_qs = list(
+                Task.objects.filter(
+                    Q(assigned_to=self.request.user) |
+                    Q(votes__user=self.request.user, votes__value=1)
+                ).filter(status=Task.Status.ACTIVE).distinct().with_metrics().order_by("-votes_score", "-updated_at")
+            )
+            my_vote_map = dict(TaskVote.objects.filter(
+                user=self.request.user,
+                task_id__in=[t.id for t in my_tasks_qs],
+            ).values_list("task_id", "value"))
+            for task in my_tasks_qs:
+                task.user_vote_value = my_vote_map.get(task.id)
+                task.chat_room_pulse_class = task.get_chat_room_pulse_class(self.request.user)
+            user_id = self.request.user.id
+            my_tasks_own = [t for t in my_tasks_qs if t.assigned_to_id == user_id]
+            my_tasks_supporting = [t for t in my_tasks_qs if t.assigned_to_id != user_id]
+
         context.update({
             "active_tasks": active_with_owner,
             "awaiting_tasks": awaiting_tasks,
             "finished_completed": completed_tasks,
             "finished_rejected": rejected_tasks + rejected_active,
             "finished_cancelled": cancelled_tasks,
+            "my_tasks_own": my_tasks_own,
+            "my_tasks_supporting": my_tasks_supporting,
         })
         return context
 

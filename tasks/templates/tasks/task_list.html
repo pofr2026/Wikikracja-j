@@ -15,7 +15,10 @@
   <!-- Nav tabs -->
   <ul class="nav nav-pills mb-3" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active ps-3 pe-3" id="actively-handled-tab" data-bs-toggle="tab" data-bs-target="#actively-handled" type="button" role="tab" aria-controls="actively-handled" aria-selected="true">{% trans "Actively handled" %}</button>
+      <button class="nav-link active ps-3 pe-3" id="moje-tab" data-bs-toggle="tab" data-bs-target="#moje" type="button" role="tab" aria-controls="moje" aria-selected="true">{% trans "Mine" %}</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link ps-3 pe-3" id="actively-handled-tab" data-bs-toggle="tab" data-bs-target="#actively-handled" type="button" role="tab" aria-controls="actively-handled" aria-selected="false">{% trans "Actively handled" %}</button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link ps-3 pe-3" id="awaiting-tab" data-bs-toggle="tab" data-bs-target="#awaiting" type="button" role="tab" aria-controls="awaiting" aria-selected="false">{% trans "Awaiting pickup" %}</button>
@@ -27,7 +30,30 @@
 
   <!-- Tab panes -->
   <div class="tab-content" id="myTabContent">
-    <div class="tab-pane fade show active" id="actively-handled" role="tabpanel" aria-labelledby="actively-handled-tab">
+    <div class="tab-pane fade show active" id="moje" role="tabpanel" aria-labelledby="moje-tab">
+      {% if not my_tasks_own and not my_tasks_supporting %}
+        <p class="text-muted fst-italic">
+          <i class="fas fa-list-check me-2"></i>
+          Nie masz jeszcze żadnych zadań.
+          Znajdź coś dla siebie w zakładce W realizacji.
+        </p>
+      {% else %}
+        {% if my_tasks_own %}
+          <p class="small text-uppercase text-muted mb-2 mt-3">
+            <i class="fas fa-user me-1"></i>Moje zadania
+          </p>
+          {% include "tasks/_task_cards.html" with tasks=my_tasks_own empty_message=_("None") %}
+        {% endif %}
+        {% if my_tasks_supporting %}
+          <p class="small text-uppercase text-muted mb-2 mt-3">
+            <i class="fas fa-thumbs-up me-1"></i>Wspieram
+          </p>
+          {% include "tasks/_task_cards.html" with tasks=my_tasks_supporting empty_message=_("None") %}
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <div class="tab-pane fade" id="actively-handled" role="tabpanel" aria-labelledby="actively-handled-tab">
       {% include "tasks/_task_cards.html" with tasks=active_tasks empty_message=_("None") %}
     </div>
     
