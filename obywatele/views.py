@@ -1,16 +1,12 @@
 # Standard library imports
 import logging
 import time
-from random import choice
-from string import ascii_letters, digits
 
 # Third party imports
 from allauth.account.models import EmailAddress
 from allauth.account.signals import email_confirmed, user_signed_up
 from django.conf import settings as s
-from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.messages import error, success
 from django.core.mail import send_mail
@@ -20,7 +16,6 @@ from django.db.models import Case, Count, IntegerField, Q, Sum, Value, When
 from django.dispatch import receiver
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext_lazy as _
 from django_filters.views import FilterView
@@ -740,28 +735,6 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
         'form_completed': form_completed,
         'total_rate_count': total_rate_count,
     })
-
-
-@login_required
-def change_password(request: HttpRequest):
-    if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Important!
-            success(request, 'Your password was successfully updated!')
-            return redirect('change_password')
-        else:
-            error(request, 'Please correct the error below.')
-    else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'obywatele/change_password.html', {
-        'form': form
-    })
-
-
-def password_generator(size=8, chars=ascii_letters + digits):
-    return ''.join(choice(chars) for i in range(size))
 
 
 @receiver(user_signed_up)

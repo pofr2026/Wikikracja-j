@@ -3,6 +3,8 @@ import logging
 import time
 from collections import defaultdict
 from datetime import timedelta as td
+from random import choice
+from string import ascii_letters, digits
 
 # Third party imports
 from django.conf import settings as s
@@ -20,10 +22,14 @@ from chat import signals
 from chat.models import Room
 from obywatele.models import CitizenActivity, Rate, Uzytkownik
 from obywatele.signals import track_user_blocked
-from obywatele.views import SendEmailToAll, password_generator, required_reputation
+from obywatele.views import SendEmailToAll, required_reputation
 from zzz.utils import get_site_domain
 
 log = logging.getLogger(__name__)
+
+
+def password_generator(size=8, chars=ascii_letters + digits):
+    return ''.join(choice(chars) for i in range(size))
 
 
 # count_citizens command
