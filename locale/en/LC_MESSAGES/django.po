@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-13 08:50+0200\n"
+"POT-Creation-Date: 2026-04-13 18:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -605,8 +605,10 @@ msgstr ""
 #: .\chat\templates\chat\chat.html:118 .\chat\templates\chat\chat.html:127
 #: .\chat\templates\chat\chat.html:144 .\chat\templates\chat\chat.html:153
 #: .\chat\templates\chat\chat.html:170 .\chat\templates\chat\chat.html:179
-#: .\tasks\templates\tasks\task_list.html:31
-#: .\tasks\templates\tasks\task_list.html:35
+#: .\tasks\templates\tasks\task_list.html:45
+#: .\tasks\templates\tasks\task_list.html:51
+#: .\tasks\templates\tasks\task_list.html:57
+#: .\tasks\templates\tasks\task_list.html:61
 msgid "None"
 msgstr ""
 
@@ -1728,122 +1730,131 @@ msgstr ""
 msgid "Citizen Activity"
 msgstr ""
 
-#: .\home\templates\home\base.html:142 .\home\templates\home\base.html:415
+#: .\home\templates\home\base.html:214 .\home\templates\home\base.html:500
 msgid "W Lobby"
 msgstr ""
 
-#: .\home\templates\home\base.html:143
+#: .\home\templates\home\base.html:215
 msgid "Obywatelskie"
 msgstr ""
 
-#: .\home\templates\home\base.html:154 .\home\templates\home\base.html:244
+#: .\home\templates\home\base.html:224 .\home\templates\home\base.html:227
+#: .\home\templates\home\base.html:329
 msgid "Pulpit"
 msgstr ""
 
-#: .\home\templates\home\base.html:165
+#: .\home\templates\home\base.html:236 .\home\templates\home\base.html:239
 msgid "Agora / Demokracja"
 msgstr ""
 
-#: .\home\templates\home\base.html:173
+#: .\home\templates\home\base.html:245 .\home\templates\home\base.html:248
 msgid "Działanie"
 msgstr ""
 
-#: .\home\templates\home\base.html:181
+#: .\home\templates\home\base.html:254 .\home\templates\home\base.html:257
 msgid "Baza Wiedzy"
 msgstr ""
 
-#: .\home\templates\home\base.html:189
+#: .\home\templates\home\base.html:263 .\home\templates\home\base.html:266
 #: .\obywatele\templates\obywatele\wspolnota.html:8
 msgid "Wspólnota"
 msgstr ""
 
-#: .\home\templates\home\base.html:203
+#: .\home\templates\home\base.html:278 .\home\templates\home\base.html:281
 msgid "Ustawienia"
 msgstr ""
 
-#: .\home\templates\home\base.html:209
+#: .\home\templates\home\base.html:285 .\home\templates\home\base.html:287
 msgid "Wyloguj"
 msgstr ""
 
-#: .\home\templates\home\base.html:220
+#: .\home\templates\home\base.html:298
 msgid "Obywatel"
 msgstr ""
 
-#: .\home\templates\home\base.html:241
+#: .\home\templates\home\base.html:304
+msgid "Zwiń/rozwiń menu"
+msgstr ""
+
+#: .\home\templates\home\base.html:306
+msgid "Zwiń"
+msgstr ""
+
+#: .\home\templates\home\base.html:326
 msgid "Lobby Obywatelskie"
 msgstr ""
 
-#: .\home\templates\home\base.html:245 .\home\templates\home\base.html:286
+#: .\home\templates\home\base.html:330 .\home\templates\home\base.html:371
 #: .\home\templates\home\search.html:69
 msgid "Głosowania"
 msgstr ""
 
-#: .\home\templates\home\base.html:246 .\home\templates\home\base.html:278
+#: .\home\templates\home\base.html:331 .\home\templates\home\base.html:363
 #: .\home\templates\home\home.html:31 .\home\templates\home\search.html:57
 msgid "Board"
 msgstr ""
 
-#: .\home\templates\home\base.html:247 .\home\templates\home\base.html:282
+#: .\home\templates\home\base.html:332 .\home\templates\home\base.html:367
 #: .\home\templates\home\search.html:63
 msgid "Zadania"
 msgstr ""
 
-#: .\home\templates\home\base.html:248
+#: .\home\templates\home\base.html:333
 msgid "Kalendarz"
 msgstr ""
 
-#: .\home\templates\home\base.html:249 .\home\templates\home\base.html:294
+#: .\home\templates\home\base.html:334 .\home\templates\home\base.html:379
 #: .\home\templates\home\search.html:81
 msgid "Biblioteka"
 msgstr ""
 
-#: .\home\templates\home\base.html:250 .\home\templates\home\base.html:298
+#: .\home\templates\home\base.html:335 .\home\templates\home\base.html:383
 #: .\home\templates\home\search.html:87
 msgid "Obywatele"
 msgstr ""
 
-#: .\home\templates\home\base.html:251
+#: .\home\templates\home\base.html:336
 msgid "Księgowość"
 msgstr ""
 
-#: .\home\templates\home\base.html:252 .\home\templates\home\base.html:302
+#: .\home\templates\home\base.html:337 .\home\templates\home\base.html:387
 #: .\home\templates\home\home.html:87 .\home\templates\home\search.html:93
 msgid "Chat"
 msgstr ""
 
-#: .\home\templates\home\base.html:268
+#: .\home\templates\home\base.html:353
 msgid "Szukaj w kategoriach"
 msgstr ""
 
-#: .\home\templates\home\base.html:272 .\home\templates\home\search.html:100
+#: .\home\templates\home\base.html:357 .\home\templates\home\search.html:100
 msgid "Wszędzie"
 msgstr ""
 
-#: .\home\templates\home\base.html:290 .\home\templates\home\search.html:75
+#: .\home\templates\home\base.html:375 .\home\templates\home\search.html:75
 msgid "Wydarzenie"
 msgstr ""
 
-#: .\home\templates\home\base.html:311
+#: .\home\templates\home\base.html:396
 msgid "Szukaj…"
 msgstr ""
 
-#: .\home\templates\home\base.html:311 .\home\templates\home\search.html:37
+#: .\home\templates\home\base.html:396 .\home\templates\home\search.html:37
 msgid "Szukaj"
 msgstr ""
 
-#: .\home\templates\home\base.html:313
+#: .\home\templates\home\base.html:398
 msgid "Filtry wyszukiwania"
 msgstr ""
 
-#: .\home\templates\home\base.html:394
+#: .\home\templates\home\base.html:479
 msgid "Aktywność"
 msgstr ""
 
-#: .\home\templates\home\base.html:403
+#: .\home\templates\home\base.html:488
 msgid "Nowe głosowanie"
 msgstr ""
 
-#: .\home\templates\home\base.html:418 .\home\templates\home\home.html:13
+#: .\home\templates\home\base.html:503 .\home\templates\home\home.html:13
 #: .\home\templates\home\login.html:4 .\home\templates\home\login.html:13
 #: .\home\templates\home\login.html:34
 #: .\obywatele\management\commands\count_citizens.py:182
@@ -1851,27 +1862,27 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
-#: .\home\templates\home\base.html:419
+#: .\home\templates\home\base.html:504
 msgid "Zarejestruj się"
 msgstr ""
 
-#: .\home\templates\home\base.html:427
+#: .\home\templates\home\base.html:512
 msgid "Enable notifications to stay updated with new messages and activities"
 msgstr ""
 
-#: .\home\templates\home\base.html:429
+#: .\home\templates\home\base.html:514
 msgid "Enable Notifications"
 msgstr ""
 
-#: .\home\templates\home\base.html:432
+#: .\home\templates\home\base.html:517
 msgid "Not now"
 msgstr ""
 
-#: .\home\templates\home\base.html:437
+#: .\home\templates\home\base.html:522
 msgid "Notifications are blocked. Please enable them in your browser settings"
 msgstr ""
 
-#: .\home\templates\home\base.html:439
+#: .\home\templates\home\base.html:524
 msgid "Dismiss"
 msgstr ""
 
@@ -2599,7 +2610,7 @@ msgid "Your email address is confirmed."
 msgstr ""
 
 #: .\obywatele\templates\obywatele\onboarding_waiting.html:17
-#: .\obywatele\views.py:438
+#: .\obywatele\views.py:543
 msgid "Your onboarding form has been saved."
 msgstr ""
 
@@ -2660,7 +2671,7 @@ msgstr ""
 
 #: .\obywatele\templates\obywatele\poczekalnia.html:23
 #: .\obywatele\templates\obywatele\start.html:20
-#: .\obywatele\templates\obywatele\wspolnota.html:60
+#: .\obywatele\templates\obywatele\wspolnota.html:73
 msgid "Nick"
 msgstr ""
 
@@ -2760,116 +2771,164 @@ msgid "aktywnych obywateli"
 msgstr ""
 
 #: .\obywatele\templates\obywatele\wspolnota.html:33
-msgid "Aktywni w ostatnim miesiącu"
+msgid "Oczekujący na akceptację"
 msgstr ""
 
 #: .\obywatele\templates\obywatele\wspolnota.html:36
+msgid "kandydatów w poczekalni"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:46
+msgid "Aktywni w ostatnim miesiącu"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:49
 msgid "zalogowanych w ciągu 30 dni"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:50
+#: .\obywatele\templates\obywatele\wspolnota.html:63
 msgid "Katalog Obywateli"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:52
+#: .\obywatele\templates\obywatele\wspolnota.html:65
 msgid "Wszyscy obywatele"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:61
+#: .\obywatele\templates\obywatele\wspolnota.html:74
 msgid "Miasto"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:62
+#: .\obywatele\templates\obywatele\wspolnota.html:75
 msgid "Dołączył/a"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:86
+#: .\obywatele\templates\obywatele\wspolnota.html:99
 msgid "Brak danych"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:100
+#: .\obywatele\templates\obywatele\wspolnota.html:113
 msgid "Finanse"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:102
+#: .\obywatele\templates\obywatele\wspolnota.html:115
 msgid "Raport"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:107
+#: .\obywatele\templates\obywatele\wspolnota.html:120
 msgid "Przychody"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:111
+#: .\obywatele\templates\obywatele\wspolnota.html:124
 msgid "Wydatki"
 msgstr ""
 
-#: .\obywatele\templates\obywatele\wspolnota.html:115
+#: .\obywatele\templates\obywatele\wspolnota.html:128
 msgid "Saldo"
 msgstr ""
 
-#: .\obywatele\views.py:189
+#: .\obywatele\templates\obywatele\wspolnota.html:148
+msgid "Poprzedni miesiąc"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:151
+msgid "Następny miesiąc"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:155
+msgid "Pełny kalendarz"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:163
+msgid "Pn"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:164
+msgid "Wt"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:165
+msgid "Śr"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:166
+msgid "Cz"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:167
+msgid "Pt"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:168
+msgid "So"
+msgstr ""
+
+#: .\obywatele\templates\obywatele\wspolnota.html:169
+msgid "Nd"
+msgstr ""
+
+#: .\obywatele\views.py:294
 msgid "Your new email has been saved."
 msgstr ""
 
-#: .\obywatele\views.py:209
+#: .\obywatele\views.py:314
 msgid "Your name has been saved."
 msgstr ""
 
-#: .\obywatele\views.py:367
+#: .\obywatele\views.py:472
 msgid "Your profile does not exist. Please contact administrator."
 msgstr ""
 
-#: .\obywatele\views.py:422 .\obywatele\views.py:455
+#: .\obywatele\views.py:527 .\obywatele\views.py:560
 msgid "Could not find your onboarding account."
 msgstr ""
 
-#: .\obywatele\views.py:474
+#: .\obywatele\views.py:579
 msgid "Email already exist"
 msgstr ""
 
-#: .\obywatele\views.py:508
+#: .\obywatele\views.py:613
 msgid "The new user has been saved"
 msgstr ""
 
-#: .\obywatele\views.py:511 .\obywatele\views.py:512
+#: .\obywatele\views.py:616 .\obywatele\views.py:617
 msgid "New citizen has been proposed"
 msgstr ""
 
-#: .\obywatele\views.py:512
+#: .\obywatele\views.py:617
 msgid ""
 "proposed new citizen\n"
 "You can approve him/her here:"
 msgstr ""
 
-#: .\obywatele\views.py:524
+#: .\obywatele\views.py:629
 msgid "Please correct the highlighted errors."
 msgstr ""
 
-#: .\obywatele\views.py:583
+#: .\obywatele\views.py:688
 msgid "Changes was saved"
 msgstr ""
 
-#: .\obywatele\views.py:592
+#: .\obywatele\views.py:697
 msgid "Form is not valid!"
 msgstr ""
 
-#: .\obywatele\views.py:676
+#: .\obywatele\views.py:781
 msgid "positive"
 msgstr ""
 
-#: .\obywatele\views.py:679
+#: .\obywatele\views.py:784
 msgid "negative"
 msgstr ""
 
-#: .\obywatele\views.py:682
+#: .\obywatele\views.py:787
 msgid "neutral"
 msgstr ""
 
-#: .\obywatele\views.py:753
+#: .\obywatele\views.py:858
 msgid "Fill out your onboarding form"
 msgstr ""
 
-#: .\obywatele\views.py:754
+#: .\obywatele\views.py:859
 #, python-format
 msgid "Your email has been confirmed. Please fill out your onboarding form here: %(link)s"
 msgstr ""
@@ -3013,26 +3072,30 @@ msgid "This module is used to determine which tasks we should complete as a grou
 msgstr ""
 
 #: .\tasks\templates\tasks\task_list.html:18
-msgid "Actively handled"
+msgid "Mine"
 msgstr ""
 
 #: .\tasks\templates\tasks\task_list.html:21
-msgid "Awaiting pickup"
+msgid "Actively handled"
 msgstr ""
 
 #: .\tasks\templates\tasks\task_list.html:24
+msgid "Awaiting pickup"
+msgstr ""
+
+#: .\tasks\templates\tasks\task_list.html:27
 msgid "Finished"
 msgstr ""
 
-#: .\tasks\templates\tasks\task_list.html:40
+#: .\tasks\templates\tasks\task_list.html:66
 msgid "No completed tasks yet."
 msgstr ""
 
-#: .\tasks\templates\tasks\task_list.html:43
+#: .\tasks\templates\tasks\task_list.html:69
 msgid "No cancelled tasks yet."
 msgstr ""
 
-#: .\tasks\templates\tasks\task_list.html:46
+#: .\tasks\templates\tasks\task_list.html:72
 msgid "No rejected tasks yet."
 msgstr ""
 

@@ -143,16 +143,88 @@ def parameters(request: HttpRequest):
     })
 
 
+def _build_calendar_grid(year, month, events):
+    """
+    Returns a list of weeks; each week is a list of dicts:
+      {'day': int or None, 'events': [Event, ...], 'is_today': bool}
+    Days from adjacent months are represented as None.
+    """
+    import calendar as cal_mod
+    from datetime import date
+
+    today = timezone.localdate()
+    days_in_month = cal_mod.monthrange(year, month)[1]
+
+    # Build mapping: day_number -> [Event]
+    events_by_day = {}
+    for event in events:
+        freq = event.frequency
+        sd = timezone.localtime(event.start_date)
+
+        if freq == 'once':
+            if sd.year == year and sd.month == month:
+                events_by_day.setdefault(sd.day, []).append(event)
+
+        elif freq == 'daily':
+            for d in range(1, days_in_month + 1):
+                events_by_day.setdefault(d, []).append(event)
+
+        elif freq == 'weekly':
+            target_weekday = sd.weekday()  # 0=Mon
+            for d in range(1, days_in_month + 1):
+                if date(year, month, d).weekday() == target_weekday:
+                    events_by_day.setdefault(d, []).append(event)
+
+        elif freq == 'monthly':
+            if sd.day <= days_in_month:
+                events_by_day.setdefault(sd.day, []).append(event)
+
+        elif freq == 'monthly_ordinal':
+            occurrence = event._get_nth_weekday_of_month(
+                year, month, event.monthly_weekday, event.monthly_ordinal
+            )
+            if occurrence:
+                d = timezone.localtime(occurrence).day
+                events_by_day.setdefault(d, []).append(event)
+
+        elif freq == 'yearly':
+            if sd.month == month:
+                if sd.day <= days_in_month:
+                    events_by_day.setdefault(sd.day, []).append(event)
+
+    # Build weeks grid (Monday first, 0 = padding)
+    raw_weeks = cal_mod.monthcalendar(year, month)
+    weeks = []
+    for raw_week in raw_weeks:
+        week = []
+        for day_num in raw_week:
+            if day_num == 0:
+                week.append({'day': None, 'events': [], 'is_today': False})
+            else:
+                week.append({
+                    'day': day_num,
+                    'events': events_by_day.get(day_num, []),
+                    'is_today': date(year, month, day_num) == today,
+                })
+        weeks.append(week)
+    return weeks
+
+
 @login_required
 def wspolnota(request: HttpRequest):
+    import calendar as cal_mod
     from bookkeeping.models import Transaction
     from django.db.models import Sum
+    from events.models import Event
 
+    # --- stats ---
     thirty_days_ago = timezone.now() - timedelta(days=30)
     pop = population()
     active_last_month = User.objects.filter(is_active=True, last_login__gte=thirty_days_ago).count()
     active_pct = round(active_last_month / pop * 100) if pop else 0
+    pending_count = User.objects.filter(is_active=False).count()
 
+    # --- recent members ---
     recent_members = (
         User.objects
         .filter(is_active=True)
@@ -160,6 +232,7 @@ def wspolnota(request: HttpRequest):
         .order_by('-uzytkownik__data_przyjecia')[:5]
     )
 
+    # --- finances ---
     this_year = timezone.now().year
     income = Transaction.objects.filter(
         type=Transaction.INCOMING, created_date__year=this_year
@@ -168,14 +241,46 @@ def wspolnota(request: HttpRequest):
         type=Transaction.OUTGOING, created_date__year=this_year
     ).aggregate(total=Sum('amount'))['total'] or 0
 
+    # --- calendar ---
+    now = timezone.localtime(timezone.now())
+    month_param = request.GET.get('month', '')
+    try:
+        cal_year, cal_month = (int(x) for x in month_param.split('-'))
+        if not (1 <= cal_month <= 12):
+            raise ValueError
+    except (ValueError, AttributeError):
+        cal_year, cal_month = now.year, now.month
+
+    events_qs = Event.objects.filter(is_active=True)
+    cal_weeks = _build_calendar_grid(cal_year, cal_month, events_qs)
+
+    # prev / next month strings
+    if cal_month == 1:
+        prev_month = f'{cal_year - 1}-12'
+    else:
+        prev_month = f'{cal_year}-{cal_month - 1:02d}'
+    if cal_month == 12:
+        next_month = f'{cal_year + 1}-01'
+    else:
+        next_month = f'{cal_year}-{cal_month + 1:02d}'
+
+    month_name = cal_mod.month_name[cal_month]
+
     return render(request, 'obywatele/wspolnota.html', {
         'member_count': pop,
         'active_pct': active_pct,
+        'pending_count': pending_count,
         'recent_members': recent_members,
         'income': income,
         'expense': expense,
         'balance': income - expense,
         'current_year': this_year,
+        'cal_weeks': cal_weeks,
+        'cal_year': cal_year,
+        'cal_month': cal_month,
+        'cal_month_name': month_name,
+        'prev_month': prev_month,
+        'next_month': next_month,
     })
 
 
