@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-13 23:18+0200\n"
+"POT-Creation-Date: 2026-04-13 23:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1315,7 +1315,7 @@ msgstr ""
 #: .\glosowania\signals.py:46
 #, python-brace-format
 msgid ""
-"This chat room has been created for project #{id}.\n"
+"This chat room has been created for project #{id} \"{title}\".\n"
 "View details: {details_url}\n"
 "Discuss the proposal, share your thoughts, and ask questions here."
 msgstr ""
@@ -2677,7 +2677,7 @@ msgstr ""
 
 #: .\tasks\signals.py:52
 #, python-format
-msgid "Discussion room for task: %(task_url)s"
+msgid "Discussion room for task \"%(task_title)s\": %(task_url)s"
 msgstr ""
 
 #: .\tasks\templates\tasks\_task_cards.html:51

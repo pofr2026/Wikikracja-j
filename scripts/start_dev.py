@@ -68,8 +68,6 @@ def run(cmd, allow_failure=False):
     except subprocess.CalledProcessError as e:
         if allow_failure:
             print(f"Warning: Command failed with exit code {e.returncode}")
-            print(f"STDOUT: {e.stdout}")
-            print(f"STDERR: {e.stderr}")
         else:
             raise
 
