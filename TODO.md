@@ -1,5 +1,6 @@
 # OGÓLNE
 
+- Możliwość wyłączenia wszystkich powiadomień!
 - Do formularza wstępnego: Czy jesteś zwolennikiem DB? Czy zgadzasz się na przestrzeganie naszych zasad?
 - Do emaila powitalnego dodać https://lobbyobywatelskie.wikikracja.pl/board/view/25/
 - Zalogowanie się w systemie oznacza zgodę na warunki. Będąc członkiem grupy masz wpływ na przepisy w takim samym stopniu jak każdy inny obywatel.
@@ -32,6 +33,8 @@
 
 ## Funkcjonalności
 
+- Zmiana nazwy pokoju (tylko Publiczne)
+- Jeśli Zadanie zostaje zamknięte to pokój powinien zostać zarchiwizowany od razu
 - Ankieta powinna być oddzielnym typem wiadomości
 - Kolejne wiadomości od tej samej osoby: bez ramek
 - Wyszukwiarka do czatu (albo całej strony)
@@ -41,7 +44,6 @@
 - Przypomnij wszystkim o danej wiadomości w danej dacie. Każdy może to włączyć.
 - Wiadomość do wszystkich - chaty z najwyżej punktowanymi wypowiedziami
 - Możliwość oznaczania wypowiedzi jako predykcji. Data przypomnienia albo wydarzenie po którym będzie można sprawdzić predykcję.
-- Zmiana nazwy pokoju
 
 # EMAILE
 
