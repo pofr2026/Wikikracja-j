@@ -28,7 +28,7 @@ from django_tables2.views import SingleTableMixin
 
 # First party imports
 from obywatele.filters import UzytkownikFilter
-from obywatele.forms import EmailChangeForm, OnboardingDetailsForm, ProfileForm, SendEmailToAll, UserForm, UsernameChangeForm
+from obywatele.forms import AvatarForm, EmailChangeForm, OnboardingDetailsForm, ProfileForm, SendEmailToAll, UserForm, UsernameChangeForm
 from obywatele.models import CitizenActivity, Rate, Uzytkownik
 from obywatele.tables import UzytkownikTable
 from zzz.utils import build_site_url, get_site_domain
@@ -664,6 +664,16 @@ def my_profile(request: HttpRequest):
         'population': population(),
         'required_reputation': required_reputation(),
     })
+
+
+@login_required
+def upload_avatar(request: HttpRequest):
+    profile = request.user.uzytkownik
+    if request.method == 'POST':
+        form = AvatarForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+    return redirect('obywatele:my_profile')
 
 
 @login_required

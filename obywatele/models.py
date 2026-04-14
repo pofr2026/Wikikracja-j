@@ -55,6 +55,13 @@ class Uzytkownik(models.Model):
     other = models.CharField(null=True, blank=True, max_length=622, help_text=_('Other things worth mentioning'), verbose_name=_('Other'))
     why = models.CharField(null=True, blank=True, max_length=662, help_text=_("In your own words please explain why do you want join our group"), verbose_name=_("Why do you want to join?"))
 
+    avatar = models.ImageField(
+        upload_to='avatars/',
+        blank=True,
+        null=True,
+        verbose_name=_('Avatar'),
+    )
+
     # Last broadcast time
     last_broadcast = models.DateTimeField(default=make_aware(datetime(1900, 1, 1)))
 

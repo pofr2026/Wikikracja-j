@@ -74,6 +74,7 @@
 	.sidebar-bottom .nav-icon { width: 1.1rem; text-align: center; flex-shrink: 0; font-size: .9rem; }
 	.sidebar-user { flex-shrink: 0; padding: .8rem 1.1rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: .75rem; }
 	.sidebar-user .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .8rem; color: #111; flex-shrink: 0; }
+	.sidebar-user img.user-avatar { background: none; overflow: hidden; }
 	.sidebar-user .user-info { overflow: hidden; }
 	.sidebar-user .user-name { font-size: .8rem; color: var(--text-primary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 	.sidebar-user .user-role { font-size: .68rem; color: var(--text-muted); display: block; }
@@ -292,7 +293,11 @@
 
     <!-- User card -->
     <div class="sidebar-user">
+      {% if user.uzytkownik.avatar %}
+      <img class="user-avatar" src="{{ user.uzytkownik.avatar.url }}" alt="avatar" style="object-fit:cover;">
+      {% else %}
       <div class="user-avatar">{{ user.username|slice:":2"|upper }}</div>
+      {% endif %}
       <div class="user-info">
         <span class="user-name">{{ user.username }}</span>
         <span class="user-role">{% trans "Obywatel" %}</span>
