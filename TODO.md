@@ -1,35 +1,48 @@
 # OGÓLNE
 
+- Do formularza wstępnego: Czy jesteś zwolennikiem DB? Czy zgadzasz się na przestrzeganie naszych zasad?
 - Do emaila powitalnego dodać https://lobbyobywatelskie.wikikracja.pl/board/view/25/
-- Nowa osoba akceptuje zasady w momencie pierwszego logowania
+- Zalogowanie się w systemie oznacza zgodę na warunki. Będąc członkiem grupy masz wpływ na przepisy w takim samym stopniu jak każdy inny obywatel.
+
+- Chat: Przenieś pokoje z Czat do odpowiednich działów do: Zadania, Głosowania, Ludzie
+- Bookkeeping: reguły cykliczne: składka, abonament z i do nas
 - Dokończyć Fixtures i dodać je do skryptu instalacyjnego. Fixtures z przepisami, pokojami i ogłoszeniami. Start: (publiczna strona startowa dla niezalogowanych) i Footer: (publiczna stopka). Customowy email. Wszystkie te elementy dać do nowego działu.
 - Backup kontaktów, przepisów, ogłoszeń, itd. Każdy powinien móc zrobić w postaci fixtures i md.
-- Ograniczyć możliwość dodawania treść po to żeby uniknąć manipulacji polegającej na tym, że zły aktor zarzuca grupę dużą ilością głosowań i przemyca w ten sposób niekorzystne dla grupy rozwiązania.
-- dynamiczne przenoszenie nieaktywnych czatów do archiwum. Np tylko ostatnie 5 jest widoczne.
-- ? swipe left right żeby przejść do różnych działów
+- Wszędzie: Ograniczyć możliwość dodawania treść po to żeby uniknąć manipulacji polegającej na tym, że zły aktor zarzuca grupę dużą ilością głosowań i przemyca w ten sposób niekorzystne dla grupy rozwiązania.
+- Mobile: ? swipe left right żeby przejść do różnych działów
+- Mapa ze społecznościami. Zlinkować otwarte grupy.
+
+## Mam wątpliwości, zapytać grupę
+- Dodaj Wszędzie: jedno zdanie gdzie jesteś i co tu jest
+- Board: zmienić na dokumenty i może zrobić katalogi
+- Chat: Mniej powiadomień - tylko tam gdzie się wypowiedziałem.
 
 # ZADANIA (TASKS)
 
+- Opis do Tasks: Pomysł przechodzi do działu "W realizacji" jeśli zaistnieją 2 warunki: - ktoś wziął na siebie realizację projektu - zwolenników realizacji jest o 2 więcej niż przeciwników.
 - Filtr, który pokazuje tylko moje zadania
-- Etykiety w Zadaniach. Tworzenie, przypisywanie i filtrowanie.
+- Kategorie przypisywane do Zadań i Ludzi. Kategorie: pisanie, ludzie, programowanie, grafika, finanse, itp. Kategorie powinno dać się: tworzyć, przypisać, zmieniać nazwę i filtrować.
+- Task jaki eksperyment: hipoteza, test, wynik. Spodziewamy efekt, eksperymenty, rzeczywisty efekt.
 
 # CHAT
 
 ## Błędy
 
-- Po automatycznym usunięciu użytkownika chat rzuca błędami: `chat/models.py`, line 39, `displayed_name` — `AttributeError: 'NoneType' object has no attribute 'username'`
 - Nie działa na Safari. ReferenceError: can't find variable TRANSLATION. Automate cross browser testing.
 
 ## Funkcjonalności
 
+- Zmiana nazwy pokoju (tylko Publiczne)
+- Jeśli Zadanie zostaje zamknięte to pokój powinien zostać zarchiwizowany od razu
+- Ankieta powinna być oddzielnym typem wiadomości
 - Kolejne wiadomości od tej samej osoby: bez ramek
-- Czaty pod ogłoszeniami?
+- Wyszukwiarka do czatu (albo całej strony)
+- Czaty pod ogłoszeniami, przepisami, zadaniami i głosowaniami
 - Każdy sam ustawia jak często chce otrzymywać wiadomości
 - Szeregowanie wypowiedzi po ocenie
 - Przypomnij wszystkim o danej wiadomości w danej dacie. Każdy może to włączyć.
 - Wiadomość do wszystkich - chaty z najwyżej punktowanymi wypowiedziami
 - Możliwość oznaczania wypowiedzi jako predykcji. Data przypomnienia albo wydarzenie po którym będzie można sprawdzić predykcję.
-- Zmiana nazwy pokoju
 
 # EMAILE
 
@@ -51,14 +64,8 @@
 
 ## Funkcjonalności
 
-- Automatyczne głosowania Wiki. Poziom akceptacji, itd. https://www.kialo.com/ https://github.com/ehsanfakhraie/kialo/
-- Głosowania stałe nad parametrami systemu (ile podpisów pod wnioskiem, czas trwania dyskusji, itd.) czy chcemy być części konfederacji. Z kim chcemy być częścią konfederacji.
-- Szablony głosowań: sojusz z inną grupą, wymagana reputacja, czas trwania referendum, zrzutka, archiwizacja pokoi, wybory skarbnika, customowe
-
-- Dodać pole: ten przepis powinien być stosowany jeśli (czas, warunek)
+- Głosowania cykliczne/stałe nad parametrami systemu (ile podpisów pod wnioskiem, czas trwania dyskusji, próg akceptacji, z kim chcemy być w konfederacji, wysokość zrzutki, archiwizacja pokoi)
 - Podświetlanie guzików kiedy jest trwające referendum
-- Pokazywać kto podpisał wniosek o referendum
-- Zegarek odliczający czas do końca referendum
 - Opis przy dodawaniu nowego przepisu: Co się dzieje; Jaki jest mechanizm; Jak to zmienić; Jakie będą konsekwencje
 - Wersjonowanie Przepisów
 
@@ -117,7 +124,7 @@ Do oddania / na sprzedaż / do wypożyczenia:
 
 # OGŁOSZENIA / BOARD
 
-- Wersjonowanie Ogłoszeń
+- Wersjonowanie Ogłoszeń. Powinna być możliwość głosowania na wersję. Kolejne wersje powinny tworzyć drzewko. Tzn. nowa modyfikacja powinna być zlinkowana do poprzedniej wersji. Głosowanie na wersje powinno umożliwiać podgląd dwóch wersji obok siebie. Podgląd powinien pokazywać różnice w wersjach.
 - Start, Footer i Custom emails powinny mieć swój oddzielny dział. Zamiast po nazwie - te typy Ogłoszeń powinny mieć specjalne znaczniki (inny dla każdego typu)
 - Dodać komentarze pod artykułami (albo czat room)
 - Powiadomienia email przy zmianie treści artykułu (tylko przy okazji innych wiadomości)
@@ -164,6 +171,10 @@ Do oddania / na sprzedaż / do wypożyczenia:
 - Tagi
 - Wiki: assets - załączanie dowolnej ilości plików + galeria + okładka + autor + gatunek + czas wygasania + player audio/wideo + kto obecnie przechowuje (potwierdzenie od nadawcy i odbiorcy)
 
+# KALENDARZ / EVENTS
+
+- Powiadomienie o spotkaniu. Wysyłka SMS'ów bezpośrednio z Wikikracji.
+
 # ROLE I UPRAWNIENIA
 
 - Legislator: opis kompetencji
@@ -208,32 +219,16 @@ Do oddania / na sprzedaż / do wypożyczenia:
 - Automatyczny newsletter. Moduł do zapisywania ważnych wydarzeń i wysyłania zbiorczej informacji raz na tydzień.
 - Okresowy automatyczny export wyników głosowań oraz listy użytkowników + wysyłka na email
 
-# KONFEDERACJA (MULTI-GROUP)
-
-- Mapa ze społecznościami. Zlinkować otwarte grupy.
-- Nie można należeć do dwóch geograficznych grup ale może istnieć więcej niż jedna grupa dla danego obszaru.
-- django-organizations https://django-organizations.readthedocs.io/en/latest/usage.html
-- Zrobić SaaS: https://github.com/tomturner/django-tenants
-- Grupy do skontaktowania się:
-  - Śląski Związek Pszczelarzy (Zbigniew Bińko)
-  - Ruch Autonomii Śląska
-
 # INNE
 
 - Oferuje/potrzebuje do oddzielnej tabelki ← wiele do wielu → Obywatel
 - Firma do oddzielnej tabelki ← wiele do wielu → Obywatel
 - Generowanie userów na podstawie listy mieszkańców/emaili/numerów mieszkań. Kod zapraszający z konta osoby zapraszającej. https://django-registration.readthedocs.io/en/3.1.1/
 - Przy zakładaniu konta dla grupy podaj zakres adresów np. Wrzeciono 57A / 1-30
-- Pre-definiowane głosowania
 - Refactoring - przetłumaczyć zmienne na angielski
-- Przenieść scripts do oddzielnego repo
-- Zastępowanie zmiennych wartościami: `envsubst < config.txt > confidential_config.txt`
 - PWA: https://web.dev/what-are-pwas/ https://beeware.org/
-- Do woli: system reputacji oparty na predykcjach - kto trafniej przewiduje przyszłe wydarzenia zyskuje punkty, przyznanie się do błędu zatrzymuje utratę punktów.
-- Zalogowanie się w systemie oznacza zgodę na warunki. Będąc członkiem grupy masz wpływ na przepisy w takim samym stopniu jak każdy inny obywatel.
+- System reputacji oparty na predykcjach - kto trafniej przewiduje przyszłe wydarzenia zyskuje punkty, przyznanie się do błędu zatrzymuje utratę punktów.
 - Podpowiedzi z możliwymi przepisami i biznesami do zrobienia
-- Przykład sukcesu: https://wiadomosci.gazeta.pl/wiadomosci/7,114881,26810291,legalna-aborcja-w-argentynie-dzialaczki-kosciol-wiedzial.amp
-- Do formularza wstępnego: Czy jesteś zwolennikiem DB? Czy zgadzasz się na przestrzeganie naszych zasad?
 
 ------------------------------------------------------------
 
@@ -270,3 +265,5 @@ Do oddania / na sprzedaż / do wypożyczenia:
 - Chat: guzik powrotu do listy pokoi chowa się gdy klawiatura ekranowa podnosi się na mobile.
 - Start: godzina wydarzenia pokazuje się nieprawidłowo w Start.
 - Chat: filtr tylko nieprzeczytane
+- Możliwość wyłączenia wszystkich powiadomień!
+- Głosowania: W emailu o głosowaniu - dodać tytuł propozycji

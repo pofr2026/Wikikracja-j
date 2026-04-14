@@ -59,8 +59,8 @@ class Command(BaseCommand):
             threads.append(t)
             t.start()
 
-        user_list = Uzytkownik.objects.filter(uid__is_active=True)
-        log.info(f'chat_messages: found {user_list.count()} active users')
+        user_list = Uzytkownik.objects.filter(uid__is_active=True, email_notifications_chat=True)
+        log.info(f'chat_messages: found {user_list.count()} active users with chat notifications enabled')
         for u in user_list:
             room_allowed = Room.objects.filter(allowed=u.uid, archived=False).exclude(muted_by=u.uid)
             log.info(f'chat_messages: user={u.uid} last_broadcast={u.last_broadcast} rooms_allowed={room_allowed.count()}')

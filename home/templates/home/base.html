@@ -200,6 +200,8 @@
   <script>
     window.VAPID_PUBLIC_KEY = "{{ vapid_public_key|default:'' }}";
   </script>
+  {% block extra_css %}{% endblock %}
+  {% bootstrap_messages %}
   {% bootstrap_javascript %}
 </head>
 
@@ -597,6 +599,8 @@
 {% block notifications_script %}
   <script src="{% static 'chat/js/notifications.js' %}" type="module"></script>
 {% endblock notifications_script %}
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

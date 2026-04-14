@@ -1,6 +1,13 @@
 {% extends 'home/base.html' %}
 {% load static %}
 {% load i18n %}
+{% load profile_tags %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'obywatele/css/profile.css' %}">
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'obywatele/js/profile.js' %}"></script>
+{% endblock %}
 {% block content %}
 <div class="container section">
 	<div class="card mb-3">
@@ -65,70 +72,29 @@
 			<div class="table-responsive">
 				<table class="table table-sm table-striped mb-0">
 					<tbody>
+						{% for asset in asset_fields %}
 						<tr>
-							<th scope="row" style="width: 30%;">{% trans "City" %}</th>
-							<td>{{ profile.city|default:"-" }}</td>
+							<th scope="row"{% if forloop.first %} style="width: 30%;"{% endif %}>{{ asset.label }}</th>
+							<td>{{ profile|getattribute:asset.field|default:"-" }}</td>
 						</tr>
-						<tr>
-							<th scope="row">{% trans "Communicator / Phone" %}</th>
-							<td>{{ profile.phone|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Job" %}</th>
-							<td>{{ profile.job|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Responsibilities" %}</th>
-							<td>{{ profile.responsibilities|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Business" %}</th>
-							<td>{{ profile.business|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Hobby" %}</th>
-							<td>{{ profile.hobby|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "To give away" %}</th>
-							<td>{{ profile.to_give_away|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "To borrow" %}</th>
-							<td>{{ profile.to_borrow|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "For sale" %}</th>
-							<td>{{ profile.for_sale|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "I need" %}</th>
-							<td>{{ profile.i_need|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "I want to learn" %}</th>
-							<td>{{ profile.want_to_learn|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Skills" %}</th>
-							<td>{{ profile.skills|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Knowledge" %}</th>
-							<td>{{ profile.knowledge|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Gift" %}</th>
-							<td>{{ profile.gift|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Other" %}</th>
-							<td>{{ profile.other|default:"-" }}</td>
-						</tr>
-						<tr>
-							<th scope="row">{% trans "Why do you want to join?" %}</th>
-							<td>{{ profile.why|default:"-" }}</td>
-						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="card">
+		<div class="card-header">
+			<span class="section-heading">{% trans "Email Notifications" %}</span>
+		</div>
+		<div class="card-body">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle mb-0">
+					<tbody>
+						{% for notif in notifications %}
+						{% notification_row notif.type notif.title notif.description notif.enabled %}
+						{% endfor %}
 					</tbody>
 				</table>
 			</div>

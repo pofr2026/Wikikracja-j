@@ -50,3 +50,134 @@
 .board-post-card--pinned h3 a {
   color: #00ff229d;
 }
+
+/* Post detail styling */
+.post-header {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(2px);
+}
+
+.post-title {
+  color: #ecf0f1 !important;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.5px;
+}
+
+.post-subtitle {
+  color: #bdc3c7 !important;
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin: 0;
+  font-style: italic;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.post-content {
+  color: #ecf0f1;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  padding: 1rem 0;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6 {
+  color: #3498db;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.post-content h1 { font-size: 2rem; }
+.post-content h2 { font-size: 1.75rem; }
+.post-content h3 { font-size: 1.5rem; }
+.post-content h4 { font-size: 1.25rem; }
+.post-content h5 { font-size: 1.1rem; }
+.post-content h6 { font-size: 1rem; }
+
+.post-content p {
+  margin-bottom: 0.5rem;
+  text-align: justify;
+}
+
+.post-content ul,
+.post-content ol {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+.post-content blockquote {
+  border-left: 4px solid #3498db;
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: #95a5a6;
+}
+
+.post-content code {
+  background: rgba(52, 152, 219, 0.2);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #3498db;
+}
+
+.post-content pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 2rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Simple table styling - only cell borders */
+.board-post-card table,
+.board-post-card .table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.board-post-card table td,
+.board-post-card table th,
+.board-post-card .table td,
+.board-post-card .table th {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px;
+}
+
+/* Responsive table for mobile */
+@media (max-width: 768px) {
+  .board-post-card table,
+  .board-post-card .table {
+    font-size: 0.8rem;
+    width: 100%;
+  }
+  
+  .board-post-card table td,
+  .board-post-card table th,
+  .board-post-card .table td,
+  .board-post-card .table th {
+    padding: 4px 2px;
+    word-wrap: break-word;
+    white-space: normal;
+  }
+}

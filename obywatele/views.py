@@ -1,17 +1,12 @@
 # Standard library imports
 import logging
 import time
-from datetime import timedelta
-from random import choice
-from string import ascii_letters, digits
 
 # Third party imports
 from allauth.account.models import EmailAddress
 from allauth.account.signals import email_confirmed, user_signed_up
 from django.conf import settings as s
-from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.messages import error, success
 from django.core.mail import send_mail
@@ -19,9 +14,10 @@ from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.db import DatabaseError
 from django.db.models import Case, Count, IntegerField, Q, Sum, Value, When
 from django.dispatch import receiver
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 from django.utils.translation import gettext_lazy as _
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
@@ -658,11 +654,54 @@ def dodaj(request: HttpRequest):
 def my_profile(request: HttpRequest):
     user = request.user
     profile = request.user.uzytkownik
+    
+    asset_fields = [
+        {'field': 'city', 'label': _('City')},
+        {'field': 'phone', 'label': _('Communicator / Phone')},
+        {'field': 'job', 'label': _('Job')},
+        {'field': 'responsibilities', 'label': _('Responsibilities')},
+        {'field': 'business', 'label': _('Business')},
+        {'field': 'hobby', 'label': _('Hobby')},
+        {'field': 'to_give_away', 'label': _('To give away')},
+        {'field': 'to_borrow', 'label': _('To borrow')},
+        {'field': 'for_sale', 'label': _('For sale')},
+        {'field': 'i_need', 'label': _('I need')},
+        {'field': 'want_to_learn', 'label': _('I want to learn')},
+        {'field': 'skills', 'label': _('Skills')},
+        {'field': 'knowledge', 'label': _('Knowledge')},
+        {'field': 'gift', 'label': _('Gift')},
+        {'field': 'other', 'label': _('Other')},
+        {'field': 'why', 'label': _('Why do you want to join?')},
+    ]
+    
+    notifications = [
+        {
+            'type': 'obywatele',
+            'title': _('Citizenship'),
+            'description': _('New citizens, membership requests'),
+            'enabled': profile.email_notifications_obywatele,
+        },
+        {
+            'type': 'glosowania',
+            'title': _('Voting'),
+            'description': _('Law proposals, voting reminders, results'),
+            'enabled': profile.email_notifications_glosowania,
+        },
+        {
+            'type': 'chat',
+            'title': _('Chat'),
+            'description': _('New messages in chat rooms'),
+            'enabled': profile.email_notifications_chat,
+        },
+    ]
+    
     return render(request, 'obywatele/my_profile.html', {
         'profile': profile,
         'user': user,
         'population': population(),
         'required_reputation': required_reputation(),
+        'asset_fields': asset_fields,
+        'notifications': notifications,
     })
 
 
@@ -674,6 +713,35 @@ def upload_avatar(request: HttpRequest):
         if form.is_valid():
             form.save()
     return redirect('obywatele:my_profile')
+
+
+@require_POST
+def toggle_notification(request: HttpRequest):
+    import json
+
+    NOTIFICATION_FIELDS = {
+        'obywatele': 'email_notifications_obywatele',
+        'glosowania': 'email_notifications_glosowania',
+        'chat': 'email_notifications_chat',
+    }
+
+    try:
+        data = json.loads(request.body)
+        notification_type = request.GET.get('type')
+        enabled = data.get('enabled', False)
+
+        field_name = NOTIFICATION_FIELDS.get(notification_type)
+        if not field_name:
+            return JsonResponse({'success': False, 'error': 'Invalid notification type'})
+
+        profile = request.user.uzytkownik
+        setattr(profile, field_name, enabled)
+        profile.save()
+
+        return JsonResponse({'success': True})
+
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 
 @login_required
@@ -830,28 +898,6 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
         'form_completed': form_completed,
         'total_rate_count': total_rate_count,
     })
-
-
-@login_required
-def change_password(request: HttpRequest):
-    if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Important!
-            success(request, 'Your password was successfully updated!')
-            return redirect('change_password')
-        else:
-            error(request, 'Please correct the error below.')
-    else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'obywatele/change_password.html', {
-        'form': form
-    })
-
-
-def password_generator(size=8, chars=ascii_letters + digits):
-    return ''.join(choice(chars) for i in range(size))
 
 
 @receiver(user_signed_up)

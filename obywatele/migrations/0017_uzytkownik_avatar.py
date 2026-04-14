@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('obywatele', '0015_alter_citizenactivity_activity_type'),
+        ('obywatele', '0016_uzytkownik_email_notifications_chat_and_more'),
     ]
 
     operations = [

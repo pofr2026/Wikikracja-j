@@ -32,11 +32,10 @@
           {% endwith %}
         {% endif %}
       </div>
-      <p class="text-muted small mb-1">{% trans "Created" %}: {{ task.created_at|date:"Y-m-d H:i" }}</p>
       <p class="text-muted small mb-1">{% trans "Author" %}: {{ task.created_by|default:_("Unknown") }}</p>
-      <p class="text-muted small mb-3">
-        {% trans "Owner" %}: {{ task.assigned_to|default:_("Nobody") }} |
-        {% trans "Status" %}: {{ task.get_status_display }}
+      <p class="text-muted small mb-1">{% trans "Owner" %}: {{ task.assigned_to|default:_("None") }}</p>
+      <p class="text-muted small mb-1">{% trans "Status" %}: {{ task.get_status_display }}</p>
+      <p class="text-muted small mb-1">{% trans "Created" %}: {{ task.created_at|date:"Y-m-d H:i" }}</p>
       </p>
 
       <p>{{ task.description|linebreaks }}</p>

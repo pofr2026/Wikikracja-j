@@ -16,6 +16,7 @@ urlpatterns = (
     path('<int:pk>/', v.obywatele_szczegoly, name='obywatele_szczegoly'),
     path('my_profile/', v.my_profile, name='my_profile'),
     path('my_profile/avatar/', v.upload_avatar, name='upload_avatar'),
+    path('toggle_notification/', v.toggle_notification, name='toggle_notification'),
     path('my_assets/', v.my_assets, name='my_assets'),
     path('nowy/', v.dodaj, name='zaproponuj_osobe'),
     path('change_username/', v.change_username, name='change_username'),

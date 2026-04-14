@@ -106,7 +106,7 @@ class Command(BaseCommand):
                             i.data_referendum_stop = i.data_referendum_start + timedelta(days=s.CZAS_TRWANIA_REFERENDUM)
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                            SendEmail(f"{prop_number} {i.id} {approved_for}", f"{prop_number} {i.id} {gathered} {i.data_referendum_start} {to} {i.data_referendum_stop}\n{click}: {details_url}")
+                            SendEmail(f"{prop_number} {i.id} {approved_for}", f"{prop_number} {i.id} '{i.title}' {gathered} {i.data_referendum_start} {to} {i.data_referendum_stop}\n{click}: {details_url}")
                             log.info(f"Proposition {i.id} changed status from PROPOSITION to DISCUSSION.")
                             continue
                     # FROM PROPOSITION TO REJECTED
@@ -115,7 +115,7 @@ class Command(BaseCommand):
                             i.path = str(i.path) + " -> " + _("Not enough signatures")
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                            SendEmail(f"{prop_number} {i.id} {not_gathered}", f"{prop_number} {i.id} {not_gathered} {was_removed}. {feel_free}\n{click}: {details_url}")
+                            SendEmail(f"{prop_number} {i.id} {not_gathered}", f"{prop_number} {i.id} '{i.title}' {not_gathered} {was_removed}. {feel_free}\n{click}: {details_url}")
                             log.info(f"Proposition {i.id} changed status from PROPOSITION to NOT_INTRESTED.")
                             continue
 
@@ -125,14 +125,14 @@ class Command(BaseCommand):
                         i.path = i.path + " -> " + _("Referendum")
                         i.save()
                         details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                        SendEmail(f"{ref_num} {i.id} {starting_now}", f"{time_to_vote} {i.id}\n{ends_at} {i.data_referendum_stop}\n{click}: {details_url}")
+                        SendEmail(f"{ref_num} {i.id} {starting_now}", f"{time_to_vote} {i.id} '{i.title}'\n{ends_at} {i.data_referendum_stop}\n{click}: {details_url}")
                         log.info(f"Proposition {i.id} changed status from DISCUSSION to REFERENDUM.")
                         continue
 
                     # LAST DAY OF REFERENDUM REMINDER
                     if i.status == referendum and i.data_referendum_stop == dzisiaj:
                         details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                        SendEmail(f"{last_day} {i.id}", f"{last_day_reminder}\n{ref_num} {i.id} {ends_at} {i.data_referendum_stop}\n{click}: {details_url}")
+                        SendEmail(f"{last_day} {i.id}", f"{last_day_reminder}\n{ref_num} {i.id} '{i.title}' {ends_at} {i.data_referendum_stop}\n{click}: {details_url}")
                         log.info(f"Last day reminder sent for referendum {i.id}.")
                         continue
 
@@ -151,7 +151,7 @@ class Command(BaseCommand):
                                     log.info(f"Proposition {z} was rejected in {i.id}")
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                            SendEmail(f"{prop_number} {i.id} {in_effect}", f"{prop_number} {i.id} {became}\n{click}: {details_url}")
+                            SendEmail(f"{prop_number} {i.id} {in_effect}", f"{prop_number} {i.id} '{i.title}' {became}\n{click}: {details_url}")
                             log.info("Proposition {i.id} changed status from REFERENDUM to VALID.")
                             continue
                         else:
@@ -159,7 +159,7 @@ class Command(BaseCommand):
                             i.path = i.path + " -> " + _("Rejected")
                             i.save()
                             details_url = f"http://{HOST}/glosowania/details/{i.id}"
-                            SendEmail(f"{prop_number} {i.id} {was_rejected}", f"{prop_number} {i.id} {rejected_in}\n{feel_free}\n{click}: {details_url}")
+                            SendEmail(f"{prop_number} {i.id} {was_rejected}", f"{prop_number} {i.id} '{i.title}' {rejected_in}\n{feel_free}\n{click}: {details_url}")
                             log.info("Proposition {i.id} changed status from REFERENDUM to REJECTED.")
                             continue
 
@@ -172,7 +172,7 @@ class Command(BaseCommand):
             email_footer = _("Why you received this email? Here is explanation: {url}").format(url=INFO_URL)
             email_message = EmailMessage(
                 from_email=str(s.DEFAULT_FROM_EMAIL),
-                bcc=list(User.objects.filter(is_active=True).values_list('email', flat=True)),
+                bcc=list(User.objects.filter(is_active=True, uzytkownik__email_notifications_glosowania=True).values_list('email', flat=True)),
                 subject=f'[{HOST}] {subject}',
                 body=message + "\n\n" + email_footer,
             )

@@ -47,7 +47,7 @@ def dodaj(request: HttpRequest):
             messages.success(request, (message))
 
             log.info(f'EMAIL_DIAG trigger=new_law_proposal source=glosowania.views.dodaj actor_user_id={request.user.id} actor_username={request.user.username} decision_id={form.id} subject={_("New law proposal")}')
-            SendEmail(_('New law proposal'), _('{user} added new law proposal\nYou can read it here: {url}').format(user=request.user.username.capitalize(), url=build_site_url(f'/glosowania/details/{form.id}')))
+            SendEmail(_('New law proposal'), _('{user} added new law proposal: "{title}"\nYou can read it here: {url}').format(user=request.user.username.capitalize(), title=form.title, url=build_site_url(f'/glosowania/details/{form.id}')))
             return redirect('glosowania:proposition')
         else:
             return render(request, 'glosowania/dodaj.html', {
@@ -80,7 +80,7 @@ def edit(request: HttpRequest, pk: int):
             message = _("Saved.")
             messages.success(request, (message))
 
-            SendEmail(_("Proposal no. {} has been modified").format(decision.id), _('{user} modified proposal\nYou can read new version here: {url}').format(user=request.user.username.capitalize(), url=build_site_url(f'/glosowania/details/{decision.id}')))
+            SendEmail(_("Proposal no. {} has been modified").format(decision.id), _('{user} modified proposal: "{title}"\nYou can read new version here: {url}').format(user=request.user.username.capitalize(), title=decision.title, url=build_site_url(f'/glosowania/details/{decision.id}')))
             return redirect('glosowania:proposition')
     else:  # request.method != 'POST':
         form = DecyzjaForm(initial={
@@ -370,7 +370,7 @@ def delete_argument(request: HttpRequest, argument_id: int):
 
 
 def SendEmail(subject: str, message: str):
-    # bcc: all active users
+    # bcc: all active users with voting notifications enabled
     # subject: Custom
     # message: Custom
     translation.activate(s.LANGUAGE_CODE)
@@ -378,7 +378,11 @@ def SendEmail(subject: str, message: str):
     info_url = "https://wikikracja.pl/powiadomienia-email/"
     email_footer = _("Why you received this email? Here is explanation: {url}").format(url=info_url)
 
-    recipients = list(User.objects.filter(is_active=True).values_list('email', flat=True))
+    # Filter users based on voting notification preferences
+    recipients = list(User.objects.filter(
+        is_active=True,
+        uzytkownik__email_notifications_glosowania=True
+    ).values_list('email', flat=True))
     email_message = EmailMessage(
         from_email=str(s.DEFAULT_FROM_EMAIL),
         bcc=recipients,

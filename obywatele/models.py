@@ -64,6 +64,23 @@ class Uzytkownik(models.Model):
 
     # Last broadcast time
     last_broadcast = models.DateTimeField(default=make_aware(datetime(1900, 1, 1)))
+    
+    # Email notification preferences
+    email_notifications_obywatele = models.BooleanField(
+        default=True, 
+        help_text=_('Receive notifications about new citizens and membership requests'),
+        verbose_name=_('Citizenship notifications')
+    )
+    email_notifications_glosowania = models.BooleanField(
+        default=True, 
+        help_text=_('Receive notifications about law proposals and voting'),
+        verbose_name=_('Voting notifications')
+    )
+    email_notifications_chat = models.BooleanField(
+        default=True, 
+        help_text=_('Receive notifications about new chat messages'),
+        verbose_name=_('Chat notifications')
+    )
 
     class Meta:
         verbose_name = _("Citizen")

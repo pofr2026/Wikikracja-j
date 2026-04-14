@@ -20,7 +20,7 @@
 <div class="row d-flex justify-content-center">
   {% if posts_pinned %}
     <div class="col-12 board-section board-section--pinned">
-      <div class="row d-flex justify-content-center">
+      <div class="row d-flex justify-content-start">
         {% for post in posts_pinned %}
           <a href="{% url 'board:view_post' post.pk %}" class="col-md-5 ms-2 board-post-card board-post-card--pinned text-reset text-decoration-none d-block">
             <h3 class="text-decoration-underline">{{ post.title }}</h3>
@@ -40,7 +40,7 @@
 
   {% if posts_not_pinned %}
     <div class="col-12 mb-2 board-section board-section--regular">
-      <div class="row d-flex justify-content-center">
+      <div class="row d-flex justify-content-start">
         {% for post in posts_not_pinned %}
           <a href="{% url 'board:view_post' post.pk %}" class="col-md-5 ms-2 mb-2 board-post-card text-reset text-decoration-none d-block">
             <h3 class="text-decoration-none">{{ post.title }}</h3>

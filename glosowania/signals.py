@@ -16,9 +16,10 @@ log = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=Decyzja)
-def create_chat_room_for_referendum(sender, instance, created, **kwargs):
+def create_or_update_chat_room_for_referendum(sender, instance, created, **kwargs):
     """
-    Create a public chat room for each new project (Decyzja) when it is created.
+    Create a public chat room for each new project (Decyzja) when it is created
+    and update room title when project title changes.
     """
     # Only create room when a new Decyzja is created (status 1 = Proposition)
     if created and instance.status == 1:
@@ -26,40 +27,39 @@ def create_chat_room_for_referendum(sender, instance, created, **kwargs):
         # Use English prefix (not translated) for consistency in room categorization
         room_title = instance.get_chat_room_title()
 
-        # Check if room already exists (e.g. from a previous attempt)
-        existing_room = Room.objects.filter(title__iexact=room_title).first()
-        
-        if existing_room:
-            log.info(f"Chat room '{room_title}' already exists, linking to referendum #{instance.pk}")
-            instance.chat_room = existing_room
+        # Create new chat room
+        try:
+            # Create new public chat room for voting
+            room = Room.objects.create(title=room_title, public=True, archived=False, protected=True)
+
+            # Add all active users to the room
+            active_users = User.objects.filter(is_active=True)
+            room.allowed.set(active_users)
+
+            # Link room to Decyzja instance
+            instance.chat_room = room
             instance.save(update_fields=['chat_room'])
-            return
 
-        if not existing_room:
-            try:
-                # Create new public chat room for voting
-                room = Room.objects.create(title=room_title, public=True, archived=False, protected=True)
+            # Create initial welcome message in the room
+            HOST = get_site_domain()
+            details_url = f"http://{HOST}/glosowania/details/{instance.pk}"
+            welcome_message = _("This chat room has been created for project #{id}.\n"
+                                "View details: {details_url}\n"
+                                "Discuss the proposal, share your thoughts, and ask questions here.").format(id=instance.pk, details_url=details_url)
 
-                # Add all active users to the room
-                active_users = User.objects.filter(is_active=True)
-                room.allowed.set(active_users)
+            Message.objects.create(room=room, text=welcome_message, anonymous=True, sender=None)
 
-                # Link room to Decyzja instance
-                instance.chat_room = room
-                instance.save(update_fields=['chat_room'])
-
-                # Create initial welcome message in the room
-                HOST = get_site_domain()
-                details_url = f"http://{HOST}/glosowania/details/{instance.pk}"
-                welcome_message = _("This chat room has been created for project #{id}.\n"
-                                    "View details: {details_url}\n"
-                                    "Discuss the proposal, share your thoughts, and ask questions here.").format(id=instance.pk, details_url=details_url)
-
-                Message.objects.create(room=room, text=welcome_message, anonymous=True, sender=None)
-
-                log.info(f'Chat room "{room_title}" created for referendum #{instance.pk}')
-            except Exception as e:
-                log.error(f'Failed to create chat room for referendum #{instance.pk}: {str(e)}')
+            log.info(f'Chat room "{room_title}" created for referendum #{instance.pk}')
+        except Exception as e:
+            log.error(f'Failed to create chat room for referendum #{instance.pk}: {str(e)}')
+    else:
+        # Update room title if project title changed
+        if instance.chat_room:
+            new_title = instance.get_chat_room_title()
+            if instance.chat_room.title != new_title:
+                instance.chat_room.title = new_title
+                instance.chat_room.save(update_fields=['title'])
+                log.info(f"Updated chat room title to '{new_title}' for referendum #{instance.pk}")
 
 
 @receiver(pre_delete, sender=Decyzja)

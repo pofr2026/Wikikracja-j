@@ -77,11 +77,7 @@ class Decyzja(models.Model):
     objects = models.Manager()
 
     def get_chat_room_title(self):
-        # Use English prefix (not translated) for consistency in room categorization
-        return "Vote #%(id)s: %(title)s" % {
-            "id": self.pk,
-            "title": self.title[:90]
-        }
+        return self.title[:90]
 
     def get_chat_room(self):
         return self.chat_room

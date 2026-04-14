@@ -287,8 +287,8 @@ class CustomSignupForm(SignupForm):
         return user
 
 
-def SendEmailToAll(subject, message):
-    # bcc: all active users
+def SendEmailToAll(subject, message, notification_type='obywatele'):
+    # bcc: all active users with enabled notifications for this type
     # subject: Custom
     # message: Custom
     translation.activate(s.LANGUAGE_CODE)
@@ -297,7 +297,27 @@ def SendEmailToAll(subject, message):
     info_url = "https://wikikracja.pl/powiadomienia-email/"
     email_footer = _("Why you received this email? Here is explanation: {url}").format(url=info_url)
 
-    recipients = list(User.objects.filter(is_active=True).values_list('email', flat=True))
+    # Filter users based on notification preferences
+    from django.db.models import Q
+    
+    if notification_type == 'obywatele':
+        recipients = list(User.objects.filter(
+            is_active=True,
+            uzytkownik__email_notifications_obywatele=True
+        ).values_list('email', flat=True))
+    elif notification_type == 'glosowania':
+        recipients = list(User.objects.filter(
+            is_active=True,
+            uzytkownik__email_notifications_glosowania=True
+        ).values_list('email', flat=True))
+    elif notification_type == 'chat':
+        recipients = list(User.objects.filter(
+            is_active=True,
+            uzytkownik__email_notifications_chat=True
+        ).values_list('email', flat=True))
+    else:
+        # Default to all active users for unknown types
+        recipients = list(User.objects.filter(is_active=True).values_list('email', flat=True))
     email_message = EmailMessage(
         from_email=str(s.DEFAULT_FROM_EMAIL),
         bcc=recipients,
