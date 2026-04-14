@@ -1,6 +1,7 @@
 # Standard library imports
 import logging
 import time
+from datetime import timedelta
 
 # Third party imports
 from allauth.account.models import EmailAddress
