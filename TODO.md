@@ -11,6 +11,7 @@
 - Wszędzie: Ograniczyć możliwość dodawania treść po to żeby uniknąć manipulacji polegającej na tym, że zły aktor zarzuca grupę dużą ilością głosowań i przemyca w ten sposób niekorzystne dla grupy rozwiązania.
 - Mobile: ? swipe left right żeby przejść do różnych działów
 - Mapa ze społecznościami. Zlinkować otwarte grupy.
+- Pakiet ustaw - powinno dać się zaznaczyć w przepisie, że ten przepis wchodzi w życie razem z innymi przepisami. Może np. dopiero jak wszystkie zbiorą wymagane podpisy.
 
 ## Mam wątpliwości, zapytać grupę
 - Dodaj Wszędzie: jedno zdanie gdzie jesteś i co tu jest

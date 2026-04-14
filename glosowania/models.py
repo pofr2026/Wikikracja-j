@@ -77,7 +77,7 @@ class Decyzja(models.Model):
     objects = models.Manager()
 
     def get_chat_room_title(self):
-        return self.title[:90]
+        return f"{self.pk}. {self.title}"[:90]
 
     def get_chat_room(self):
         return self.chat_room
