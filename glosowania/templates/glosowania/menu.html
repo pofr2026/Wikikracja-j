@@ -4,48 +4,230 @@
 
 {% block content %}
 
-<p>
-	<div class="alert alert-danger text-center p-0">
-		{% trans 'A referendum is not a one-off decision. The referendum is to pass a law that will be in force all the time.' %}
-	</div>
-</p>
+<style>
+/* ===== AGORA NAV ===== */
+.agora-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  row-gap: .5rem;
+}
 
-<div class="container mt-12">
-  <div class="row mb-12">
-    <div>
-		<a {% if request.path_info == '/glosowania/parameters/' %} class="btn btn-sm me-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
-		{% endif %} href="{% url 'glosowania:parameters' %}"><i class="fas fa-question"></i></a>
+/* ── Info button (pierwszy, wyróżniony) ── */
+.agora-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: .45rem;
+  background: var(--accent-muted);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  text-decoration: none !important;
+  font-size: .95rem;
+  font-weight: 700;
+  transition: background .15s, box-shadow .15s;
+  flex-shrink: 0;
+  margin-right: .75rem;
+}
+.agora-info-btn:hover {
+  background: rgba(0,209,178,.22);
+  box-shadow: 0 0 10px rgba(0,209,178,.35);
+  color: var(--accent);
+}
 
-		<a {% if request.path_info == '/glosowania/proposition/' %} class="btn btn-sm me-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
-		{% endif %} href="{% url 'glosowania:proposition' %}">{% trans 'Propositions' %}</a>
+/* ── Strzałki (stepper) ── */
+/*
+  Każda strzałka = wrapper (clip-path arrow) + link wewnątrz.
+  Wrapper tworzy kształt; dla aktywnego – otoczka z drop-shadow.
+  Kolejne elementy nakładają się lewą krawędzią przez negative margin.
+*/
+:root {
+  --arrow-h: 36px;
+  --arrow-tip: 12px;   /* szerokość końcówki strzałki */
+  --arrow-overlap: 1px;
+}
 
-		<a {% if request.path_info == '/glosowania/discussion/' %} class="btn btn-sm me-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
-		{% endif %} href="{% url 'glosowania:discussion' %}">{% trans 'Discussion' %}</a>
+.agora-step-wrap {
+  position: relative;
+  height: var(--arrow-h);
+  /* clip-path: pierwszy element (bez wcięcia z lewej) */
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--arrow-tip)) 0,
+    100% 50%,
+    calc(100% - var(--arrow-tip)) 100%,
+    0 100%
+  );
+  background: rgba(255,255,255,.04);
+  margin-right: calc(-1 * var(--arrow-overlap));
+  transition: filter .15s;
+}
+/* wszystkie poza pierwszym — wcięcie z lewej */
+.agora-step-wrap + .agora-step-wrap {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--arrow-tip)) 0,
+    100% 50%,
+    calc(100% - var(--arrow-tip)) 100%,
+    0 100%,
+    var(--arrow-tip) 50%
+  );
+}
 
-		<a {% if request.path_info == '/glosowania/referendum/' %} class="btn btn-sm me-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
-		{% endif %} href="{% url 'glosowania:referendum' %}">{% trans 'Referendum' %}</a>
+.agora-step-wrap:hover {
+  background: rgba(255,255,255,.08);
+  filter: brightness(1.15);
+  z-index: 2;
+}
+.agora-step-wrap.active {
+  background: rgba(0,209,178,.12);
+  filter: drop-shadow(0 0 6px rgba(0,209,178,.55));
+  z-index: 3;
+}
 
-		<a {% if request.path_info == '/glosowania/approved/' %} class="btn btn-sm me-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
-		{% endif %} href="{% url 'glosowania:approved' %}">{% trans 'Approved' %}</a>
+.agora-step {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  height: 100%;
+  padding: 0 calc(var(--arrow-tip) + .65rem) 0 .85rem;
+  color: var(--text-muted);
+  text-decoration: none !important;
+  font-size: .82rem;
+  white-space: nowrap;
+  transition: color .15s;
+}
+/* pierwszy element: padding-left normalny (bez wcięcia) */
+.agora-step-wrap:first-of-type .agora-step {
+  padding-left: .85rem;
+}
+/* wszystkie poza pierwszym: padding-left powiększony o tip */
+.agora-step-wrap + .agora-step-wrap .agora-step {
+  padding-left: calc(var(--arrow-tip) + .65rem);
+}
 
-		<a {% if request.path_info == '/glosowania/rejected/' %} class="btn btn-sm me-1 mb-1 btn-primary"
-		{% else %} class="btn btn-sm me-1 mb-1 btn-secondary"
-		{% endif %} href="{% url 'glosowania:rejected' %}"><i class="fas fa-trash"></i></a>
+.agora-step:hover { color: var(--text-primary); }
+.agora-step-wrap.active .agora-step { color: var(--accent); font-weight: 600; }
 
+.agora-step-num {
+  font-size: .65rem;
+  font-weight: 700;
+  opacity: .6;
+  flex-shrink: 0;
+}
+.agora-step-wrap.active .agora-step-num { opacity: 1; }
 
-		<a href="{% url 'glosowania:dodaj_nowy' %}"class="btn btn-sm me-1 mb-1 btn-success float-end"><i class="fas fa-plus"></i>{% trans 'Add' %}</a>
-    </div>
+/* ── Separator przed Odrzucone ── */
+.agora-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 .65rem;
+  flex-shrink: 0;
+}
+
+/* ── Odrzucone (poza ścieżką, subtelny) ── */
+.agora-rejected {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .7rem;
+  border-radius: .4rem;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-decoration: none !important;
+  font-size: .78rem;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.agora-rejected:hover { color: #f87171; border-color: rgba(239,68,68,.4); }
+.agora-rejected.active { color: #f87171; border-color: rgba(239,68,68,.5); background: rgba(239,68,68,.08); }
+
+/* ── Dodaj (wyróżniony, ostatni) ── */
+.agora-add-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  background: var(--accent);
+  color: #111 !important;
+  border: none;
+  border-radius: .45rem;
+  padding: .38rem .9rem;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: background .15s, box-shadow .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.agora-add-btn:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 10px rgba(0,209,178,.4);
+}
+</style>
+
+<nav class="agora-nav">
+
+  {# Info ─ wyróżniony, pierwszy #}
+  <a href="{% url 'glosowania:parameters' %}" class="agora-info-btn" title="{% trans 'Jak działają głosowania?' %}">
+    <i class="fas fa-circle-info"></i>
+  </a>
+
+  {# Stepper: 4 etapy ścieżki przepisu #}
+  {% with p=request.path_info %}
+
+  <div class="agora-step-wrap {% if p == '/glosowania/proposition/' %}active{% endif %}">
+    <a href="{% url 'glosowania:proposition' %}" class="agora-step">
+      <span class="agora-step-num">1</span>
+      <span>{% trans 'Propozycje' %}</span>
+    </a>
   </div>
-</div>
 
-<p>
-	{% block glosowania %}
-	{% endblock glosowania %}
-</p>
+  <div class="agora-step-wrap {% if p == '/glosowania/discussion/' %}active{% endif %}">
+    <a href="{% url 'glosowania:discussion' %}" class="agora-step">
+      <span class="agora-step-num">2</span>
+      <span>{% trans 'Dyskusja' %}</span>
+    </a>
+  </div>
+
+  <div class="agora-step-wrap {% if p == '/glosowania/referendum/' %}active{% endif %}">
+    <a href="{% url 'glosowania:referendum' %}" class="agora-step">
+      <span class="agora-step-num">3</span>
+      <span>{% trans 'Referendum' %}</span>
+    </a>
+  </div>
+
+  <div class="agora-step-wrap {% if p == '/glosowania/approved/' %}active{% endif %}">
+    <a href="{% url 'glosowania:approved' %}" class="agora-step">
+      <span class="agora-step-num">4</span>
+      <span>{% trans 'Zatwierdzone' %}</span>
+    </a>
+  </div>
+
+  {# Separator + Odrzucone (poza ścieżką) #}
+  <span class="agora-sep"></span>
+  <a href="{% url 'glosowania:rejected' %}"
+     class="agora-rejected {% if p == '/glosowania/rejected/' %}active{% endif %}">
+    <i class="fas fa-ban fa-fw"></i>
+    <span>{% trans 'Odrzucone' %}</span>
+  </a>
+
+  {% endwith %}
+
+  {# Dodaj — prawy skraj #}
+  <a href="{% url 'glosowania:dodaj_nowy' %}" class="agora-add-btn">
+    <i class="fas fa-plus"></i>
+    <span>{% trans 'Dodaj' %}</span>
+  </a>
+
+</nav>
+
+{% block glosowania %}
+{% endblock glosowania %}
 
 {% endblock content %}

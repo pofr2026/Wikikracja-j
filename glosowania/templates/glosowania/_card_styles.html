@@ -1,0 +1,327 @@
+<style>
+/* ===== VIEW TOGGLE ===== */
+.view-toggle-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: .35rem;
+  margin-bottom: .85rem;
+}
+.view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: .4rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: .82rem;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.view-toggle-btn:hover { color: var(--text-primary); border-color: rgba(255,255,255,.2); }
+.view-toggle-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-muted); }
+
+/* ===== PROPOSALS LIST / GRID ===== */
+.proposals-list {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+.proposals-list.view-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: .75rem;
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .proposals-list.view-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== PROPOSAL CARD ===== */
+.proposal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: .65rem;
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+  position: relative;
+}
+
+/* Cały kafelek — mocny glow na hover */
+.proposal-card:hover {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px rgba(0,209,178,.4),
+    0 0 12px rgba(0,209,178,.35),
+    0 0 32px rgba(0,209,178,.15),
+    0 6px 24px rgba(0,0,0,.4);
+}
+/* Gdy otwarte — stały tealowy border */
+.proposal-card.open {
+  border-color: rgba(0,209,178,.45);
+  box-shadow: 0 0 0 1px rgba(0,209,178,.2), 0 0 12px rgba(0,209,178,.1);
+}
+
+/* ── Header ── */
+.proposal-card-header {
+  padding: .9rem 1.1rem .75rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s;
+}
+/* Hover na header (nie child-elementy) — lekkie tło */
+.proposal-card-header:hover {
+  background: rgba(255,255,255,.025);
+}
+/* Gdy cursor jest nad child-elementem z własnym hover — anuluj tło headera */
+.proposal-card-header:has(.proposal-author-link:hover),
+.proposal-card-header:has(.proposal-details-inline:hover),
+.proposal-card-header:has(.proposal-chat-link:hover) {
+  background: transparent;
+}
+.proposal-card-header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ── Tytuł ── */
+.proposal-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  margin-bottom: .4rem;
+}
+.proposal-card-num {
+  font-size: .72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.proposal-card-title {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+.proposal-card-chevron {
+  color: var(--text-muted);
+  font-size: .75rem;
+  flex-shrink: 0;
+  margin-top: 4px;
+  transition: transform .2s ease;
+}
+.proposal-card.open .proposal-card-chevron {
+  transform: rotate(180deg);
+}
+
+/* ── Badges ── */
+.proposal-card-badges-row {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+  margin-bottom: .55rem;
+}
+.badge-status {
+  display: inline-block;
+  font-size: .68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 2rem;
+  white-space: nowrap;
+}
+.badge-proposition  { background: rgba(59,130,246,.15);  color: #60a5fa; }
+.badge-discussion   { background: rgba(168,85,247,.15);  color: #c084fc; }
+.badge-referendum   { background: rgba(249,115,22,.15);  color: #fb923c; }
+.badge-approved     { background: rgba(0,188,140,.15);   color: #00bc8c; }
+.badge-rejected     { background: rgba(239,68,68,.15);   color: #f87171; }
+
+/* ── Chat link ── */
+.proposal-chat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  color: var(--accent);
+  text-decoration: none !important;
+  font-size: .78rem;
+  font-weight: 500;
+  padding: 2px 7px 2px 5px;
+  border-radius: 2rem;
+  border: 1px solid rgba(0,209,178,.3);
+  background: rgba(0,209,178,.07);
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.proposal-chat-link:hover {
+  background: rgba(0,209,178,.18);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(0,209,178,.3);
+}
+.proposal-chat-link i { font-size: .85rem; }
+.proposal-chat-count {
+  font-size: .65rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 1px 5px;
+  border-radius: 2rem;
+  background: rgba(0,209,178,.25);
+  color: var(--accent);
+  border: 1px solid rgba(0,209,178,.35);
+  margin-left: 1px;
+}
+.proposal-chat-link--pulse {
+  animation: chat-pulse 1.8s ease-in-out infinite;
+}
+@keyframes chat-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .55; }
+}
+
+/* ── Preview tekstu (zwinięty) ── */
+.proposal-preview {
+  font-size: .82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0 0 .55rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.proposal-card.open .proposal-preview { display: none; }
+
+/* ── Meta strip (autor + data + szczegóły) ── */
+.proposal-card-meta {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  font-size: .75rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+/* Autor — klikalny link z własnym hover */
+.proposal-author-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  text-decoration: none !important;
+  border-radius: .35rem;
+  padding: 2px 5px 2px 2px;
+  margin: -2px -5px -2px -2px;
+  transition: background .15s;
+}
+.proposal-author-link:hover {
+  background: rgba(255,255,255,.07);
+}
+.proposal-author-link:hover .proposal-author-name {
+  color: var(--text-primary);
+}
+.proposal-author-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #111;
+  font-size: .6rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.proposal-author-name {
+  color: rgba(232,234,240,.75);
+  font-weight: 500;
+  transition: color .15s;
+}
+
+.proposal-meta-sep { opacity: .35; }
+.proposal-date { color: var(--text-muted); }
+.proposal-signatures { display: inline-flex; align-items: center; gap: .2rem; }
+
+/* Szczegóły inline (zwinięty kafelek, prawy skraj mety) */
+.proposal-details-inline {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--text-muted) !important;
+  text-decoration: none !important;
+  padding: 3px 8px;
+  border-radius: .35rem;
+  border: 1px solid transparent;
+  transition: color .15s, border-color .15s, background .15s;
+  white-space: nowrap;
+}
+.proposal-details-inline:hover {
+  color: var(--accent) !important;
+  border-color: rgba(0,209,178,.35);
+  background: var(--accent-muted);
+}
+
+/* ── Body (rozwinięty) ── */
+.proposal-card-body {
+  border-top: 1px solid var(--border);
+  padding: 0 1.1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+}
+
+/* Szczegóły u góry ciała */
+.proposal-body-topbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: .6rem 0 .25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: .15rem;
+}
+.proposal-details-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--accent) !important;
+  text-decoration: none !important;
+  padding: .3rem .75rem;
+  border: 1px solid rgba(0,209,178,.3);
+  border-radius: .4rem;
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.proposal-details-btn:hover {
+  background: var(--accent-muted);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(0,209,178,.2);
+}
+
+.proposal-section-label {
+  font-size: .72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: .3rem;
+}
+.proposal-section-label i { color: var(--accent); }
+.proposal-section-text {
+  font-size: .875rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* Empty state */
+.proposals-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+  font-size: .9rem;
+}
+</style>
