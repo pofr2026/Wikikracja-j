@@ -5,7 +5,13 @@
 
 {# ── TOOLBAR ── #}
 <div class="proposals-toolbar">
-  <div class="toolbar-sort-group">
+  <a href="{% url 'tasks:add' %}" class="toolbar-add-btn">
+    <i class="fas fa-plus"></i> {% trans 'Add task' %}
+  </a>
+
+  <span class="toolbar-divider"></span>
+
+  <div class="toolbar-sort">
     <span class="toolbar-sort-label">{% trans 'Sort:' %}</span>
 
     {% if current_sort == 'date' %}
@@ -47,18 +53,18 @@
 
   <span class="toolbar-divider"></span>
 
-  <div class="toolbar-view-group">
-    <button class="view-btn" id="btn-list" onclick="setView('list')" title="{% trans 'List' %}">
+  <div class="toolbar-view">
+    <button class="view-toggle-btn" id="btn-list" onclick="setView('list')" title="{% trans 'List' %}">
       <i class="fas fa-list"></i>
     </button>
-    <button class="view-btn" id="btn-grid" onclick="setView('grid')" title="{% trans 'Grid' %}">
-      <i class="fas fa-th"></i>
+    <button class="view-toggle-btn" id="btn-grid" onclick="setView('grid')" title="{% trans 'Grid' %}">
+      <i class="fas fa-grip"></i>
     </button>
   </div>
 </div>
 
 {# ── CONTENT ── #}
-<div class="tasks-list" id="proposals-list">
+<div class="proposals-list" id="proposals-list">
 
   {# ══ MOJE ══ #}
   {% if current_tab == 'mine' %}
@@ -123,5 +129,5 @@
 
 </div>
 
-{% include 'glosowania/_card_script.html' %}
+{% include 'tasks/_card_script.html' %}
 {% endblock tasks %}

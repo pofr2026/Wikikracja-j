@@ -168,5 +168,9 @@
     </div>
   </div>
   {% endif %}
+
+  {% with chat_room=task.chat_room %}
+    {% include 'chat/_embedded_chat.html' %}
+  {% endwith %}
 </div>
 {% endblock %}

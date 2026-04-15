@@ -81,11 +81,12 @@
 .view-toggle-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-muted); }
 
 /* Dodaj */
+:root { --toolbar-add-color: var(--accent); --toolbar-add-shadow: rgba(0,209,178,.35); }
 .toolbar-add-btn {
   display: inline-flex;
   align-items: center;
   gap: .35rem;
-  background: var(--accent);
+  background: var(--toolbar-add-color);
   color: #111 !important;
   border: none;
   border-radius: .45rem;
@@ -98,8 +99,8 @@
   flex-shrink: 0;
 }
 .toolbar-add-btn:hover {
-  background: var(--accent-hover);
-  box-shadow: 0 0 10px rgba(0,209,178,.35);
+  filter: brightness(1.1);
+  box-shadow: 0 0 10px var(--toolbar-add-shadow);
 }
 
 /* ===== PROPOSALS LIST / GRID ===== */
@@ -113,6 +114,9 @@
   grid-template-columns: repeat(2, 1fr);
   gap: .75rem;
   align-items: start;
+}
+.proposals-list.view-grid > .tasks-section-label {
+  grid-column: 1 / -1;
 }
 @media (max-width: 640px) {
   .proposals-list.view-grid { grid-template-columns: 1fr; }
@@ -357,4 +361,164 @@
   color: var(--text-muted);
   font-size: .9rem;
 }
+
+/* ===== STEPPER NAV (globalne — Agora i Tasks) ===== */
+:root {
+  --arrow-h: 36px;
+  --arrow-tip: 12px;
+  --arrow-overlap: 1px;
+  --stepper-color: #00d1b2;           /* domyślnie teal (Agora) */
+  --stepper-color-muted: rgba(0,209,178,.12);
+  --stepper-color-shadow: rgba(0,209,178,.55);
+}
+
+.stepper-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  row-gap: .5rem;
+}
+
+/* Wrapper strzałki */
+.stepper-step-wrap {
+  position: relative;
+  height: var(--arrow-h);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--arrow-tip)) 0,
+    100% 50%,
+    calc(100% - var(--arrow-tip)) 100%,
+    0 100%
+  );
+  background: rgba(255,255,255,.04);
+  margin-right: calc(-1 * var(--arrow-overlap));
+  transition: filter .15s, background .15s;
+}
+/* Wszystkie poza pierwszym — wcięcie z lewej */
+.stepper-step-wrap + .stepper-step-wrap {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--arrow-tip)) 0,
+    100% 50%,
+    calc(100% - var(--arrow-tip)) 100%,
+    0 100%,
+    var(--arrow-tip) 50%
+  );
+}
+.stepper-step-wrap:hover {
+  background: rgba(255,255,255,.08);
+  filter: brightness(1.15);
+  z-index: 2;
+}
+.stepper-step-wrap.active {
+  background: var(--stepper-color-muted);
+  filter: drop-shadow(0 0 6px var(--stepper-color-shadow));
+  z-index: 3;
+}
+
+/* Link wewnątrz wrappera */
+.stepper-step {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  height: 100%;
+  padding: 0 calc(var(--arrow-tip) + .65rem) 0 calc(var(--arrow-tip) + .65rem);
+  color: var(--text-muted);
+  text-decoration: none !important;
+  font-size: .82rem;
+  white-space: nowrap;
+  transition: color .15s;
+}
+.stepper-step-wrap:first-of-type .stepper-step {
+  padding-left: .85rem;
+}
+.stepper-step:hover { color: var(--text-primary); }
+.stepper-step-wrap.active .stepper-step {
+  color: var(--stepper-color);
+  font-weight: 600;
+}
+
+.stepper-step-num {
+  font-size: .65rem;
+  font-weight: 700;
+  opacity: .6;
+  flex-shrink: 0;
+}
+.stepper-step-wrap.active .stepper-step-num { opacity: 1; }
+
+/* Separator */
+.stepper-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 .65rem;
+  flex-shrink: 0;
+}
+
+/* Przycisk "Dodaj" po prawej */
+.stepper-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  height: var(--arrow-h);
+  padding: 0 1rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  border-radius: .45rem;
+  background: var(--stepper-color);
+  color: #111 !important;
+  font-size: .8rem;
+  font-weight: 700;
+  text-decoration: none !important;
+  transition: background .15s, box-shadow .15s;
+}
+.stepper-add-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 10px var(--stepper-color-shadow);
+}
+
+
+/* Przycisk info (ikona ⓘ, Agora) */
+.stepper-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: .45rem;
+  background: var(--stepper-color-muted);
+  border: 1px solid var(--stepper-color);
+  color: var(--stepper-color);
+  text-decoration: none !important;
+  font-size: .95rem;
+  font-weight: 700;
+  transition: background .15s, box-shadow .15s;
+  flex-shrink: 0;
+  margin-right: .75rem;
+}
+.stepper-info-btn:hover {
+  background: var(--stepper-color-muted);
+  box-shadow: 0 0 10px var(--stepper-color-shadow);
+  color: var(--stepper-color);
+  filter: brightness(1.2);
+}
+
+/* Link "Odrzucone" (poza ścieżką, Agora) */
+.stepper-rejected {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .7rem;
+  border-radius: .4rem;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-decoration: none !important;
+  font-size: .78rem;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.stepper-rejected:hover { color: #f87171; border-color: rgba(239,68,68,.4); }
+.stepper-rejected.active { color: #f87171; border-color: rgba(239,68,68,.5); background: rgba(239,68,68,.08); }
 </style>

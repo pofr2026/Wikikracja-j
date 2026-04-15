@@ -5,93 +5,6 @@
 {% include 'glosowania/_card_styles.html' %}
 
 <style>
-/* ── Tasks stepper nav ── */
-:root { --arrow-h: 36px; --arrow-tip: 12px; }
-
-.tasks-nav-row {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  margin-bottom: 1.25rem;
-  overflow-x: auto;
-  padding-bottom: 2px;
-}
-
-.tasks-stepper-btn {
-  display: inline-flex;
-  align-items: center;
-  height: var(--arrow-h);
-  padding: 0 1.35rem 0 1.6rem;
-  font-size: .78rem;
-  font-weight: 600;
-  text-decoration: none !important;
-  color: var(--text-muted);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  white-space: nowrap;
-  transition: color .15s, background .15s, filter .15s;
-  clip-path: polygon(
-    var(--arrow-tip) 0%,
-    calc(100% - var(--arrow-tip)) 0%,
-    100% 50%,
-    calc(100% - var(--arrow-tip)) 100%,
-    var(--arrow-tip) 100%,
-    calc(var(--arrow-tip) * 2) 50%
-  );
-  margin-right: -2px;
-}
-.tasks-stepper-btn:first-child {
-  clip-path: polygon(
-    0% 0%,
-    calc(100% - var(--arrow-tip)) 0%,
-    100% 50%,
-    calc(100% - var(--arrow-tip)) 100%,
-    0% 100%
-  );
-  padding-left: 1rem;
-  border-radius: .35rem 0 0 .35rem;
-}
-.tasks-stepper-btn:hover {
-  color: var(--text-primary);
-  background: rgba(255,255,255,.06);
-}
-.tasks-stepper-btn.active {
-  color: var(--accent);
-  background: var(--accent-muted);
-  filter: drop-shadow(0 0 6px rgba(0,209,178,.35));
-}
-
-.tasks-nav-add {
-  display: inline-flex;
-  align-items: center;
-  gap: .35rem;
-  height: var(--arrow-h);
-  padding: 0 1rem;
-  margin-left: auto;
-  flex-shrink: 0;
-  border-radius: .45rem;
-  background: var(--accent);
-  color: #111 !important;
-  font-size: .8rem;
-  font-weight: 700;
-  text-decoration: none !important;
-  transition: background .15s, box-shadow .15s;
-}
-.tasks-nav-add:hover {
-  background: #00b8a2;
-  box-shadow: 0 0 10px rgba(0,209,178,.3);
-}
-
-/* ── Tasks list container ── */
-.tasks-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: .65rem;
-}
-.tasks-list.grid-view {
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-}
-
 /* ── Empty state ── */
 .tasks-empty {
   display: flex;
@@ -116,7 +29,7 @@
   gap: .35rem;
   margin-top: .35rem;
 }
-.tasks-section-label i { color: var(--accent); }
+.tasks-section-label i { color: #60a5fa; }
 .tasks-section-label:first-child { margin-top: 0; }
 
 /* ── Assignee row inside card body ── */
@@ -183,15 +96,15 @@
   gap: .3rem;
   padding: .28rem .7rem;
   border-radius: .4rem;
-  border: 1px solid rgba(0,209,178,.35);
-  background: rgba(0,209,178,.08);
-  color: var(--accent);
+  border: 1px solid rgba(96,165,250,.35);
+  background: rgba(96,165,250,.08);
+  color: #60a5fa;
   font-size: .78rem;
   font-weight: 500;
   cursor: pointer;
   transition: background .15s, border-color .15s;
 }
-.task-take-btn:hover { background: rgba(0,209,178,.18); border-color: var(--accent); }
+.task-take-btn:hover { background: rgba(96,165,250,.18); border-color: #60a5fa; }
 
 .task-resign-btn {
   display: inline-flex;
@@ -215,29 +128,36 @@
 .badge-beneficial { background: rgba(0,188,140,.15);  color: #00bc8c; }
 </style>
 
-<div class="container my-4">
-  <nav class="tasks-nav-row">
-    <a href="{% url 'tasks:list' %}?tab=mine&sort={{ current_sort }}&order={{ current_order }}"
-       class="tasks-stepper-btn {% if current_tab == 'mine' %}active{% endif %}">
-      {% trans 'Mine' %}
-    </a>
-    <a href="{% url 'tasks:list' %}?tab=awaiting&sort={{ current_sort }}&order={{ current_order }}"
-       class="tasks-stepper-btn {% if current_tab == 'awaiting' %}active{% endif %}">
-      {% trans 'Awaiting pickup' %}
-    </a>
-    <a href="{% url 'tasks:list' %}?tab=active&sort={{ current_sort }}&order={{ current_order }}"
-       class="tasks-stepper-btn {% if current_tab == 'active' %}active{% endif %}">
-      {% trans 'In progress' %}
-    </a>
-    <a href="{% url 'tasks:list' %}?tab=finished&sort={{ current_sort }}&order={{ current_order }}"
-       class="tasks-stepper-btn {% if current_tab == 'finished' %}active{% endif %}">
-      {% trans 'Finished' %}
-    </a>
-    <a href="{% url 'tasks:add' %}" class="tasks-nav-add">
-      <i class="fas fa-plus"></i> {% trans 'Add task' %}
-    </a>
+<nav class="stepper-nav">
+    {% with t=current_tab s=current_sort o=current_order %}
+
+    <div class="stepper-step-wrap {% if t == 'mine' %}active{% endif %}">
+      <a href="{% url 'tasks:list' %}?tab=mine&sort={{ s }}&order={{ o }}" class="stepper-step">
+        {% trans 'Mine' %}
+      </a>
+    </div>
+
+    <div class="stepper-step-wrap {% if t == 'awaiting' %}active{% endif %}">
+      <a href="{% url 'tasks:list' %}?tab=awaiting&sort={{ s }}&order={{ o }}" class="stepper-step">
+        {% trans 'Awaiting pickup' %}
+      </a>
+    </div>
+
+    <div class="stepper-step-wrap {% if t == 'active' %}active{% endif %}">
+      <a href="{% url 'tasks:list' %}?tab=active&sort={{ s }}&order={{ o }}" class="stepper-step">
+        {% trans 'In progress' %}
+      </a>
+    </div>
+
+    <div class="stepper-step-wrap {% if t == 'finished' %}active{% endif %}">
+      <a href="{% url 'tasks:list' %}?tab=finished&sort={{ s }}&order={{ o }}" class="stepper-step">
+        {% trans 'Finished' %}
+      </a>
+    </div>
+
+    {% endwith %}
   </nav>
 
   {% block tasks %}{% endblock %}
-</div>
+
 {% endblock %}

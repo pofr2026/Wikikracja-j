@@ -244,6 +244,24 @@ def delete_one2one_rooms(sender, user, **kwargs):
 
 
 @login_required
+def room_data(request: HttpRequest, room_id: int):
+    """
+    JSON endpoint for embedded chat widget.
+    Returns room metadata and translations needed by chat-embedded.js.
+    """
+    try:
+        room = Room.objects.get(id=room_id, allowed=request.user)
+    except Room.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)
+
+    return JsonResponse({
+        'room_id': room.id,
+        'title': room.title,
+        'translations': get_translations(),
+    })
+
+
+@login_required
 def toggle_notifications(request: HttpRequest):
     """
     Toggle notifications for a room (HTTP fallback for WebSocket handler).

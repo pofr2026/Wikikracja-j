@@ -1,0 +1,45 @@
+<script>
+(function () {
+  var STORAGE_KEY = 'tasks_view';
+
+  /* ── toggle pojedynczego kafelka ── */
+  window.toggleCard = function (pk) {
+    var card = document.getElementById('card-' + pk);
+    var body = document.getElementById('body-' + pk);
+    if (!card || !body) return;
+    var isOpen = card.classList.contains('open');
+    if (isOpen) {
+      card.classList.remove('open');
+      body.style.display = 'none';
+    } else {
+      card.classList.add('open');
+      body.style.display = 'flex';
+    }
+  };
+
+  /* ── przełącznik widoku ── */
+  window.setView = function (mode) {
+    var list    = document.getElementById('proposals-list');
+    var btnList = document.getElementById('btn-list');
+    var btnGrid = document.getElementById('btn-grid');
+    if (!list) return;
+
+    if (mode === 'grid') {
+      list.classList.add('view-grid');
+      btnGrid.classList.add('active');
+      btnList.classList.remove('active');
+    } else {
+      list.classList.remove('view-grid');
+      btnList.classList.add('active');
+      btnGrid.classList.remove('active');
+    }
+    localStorage.setItem(STORAGE_KEY, mode);
+  };
+
+  /* ── przywróć widok z localStorage ── */
+  document.addEventListener('DOMContentLoaded', function () {
+    var saved = localStorage.getItem(STORAGE_KEY) || 'list';
+    setView(saved);
+  });
+})();
+</script>
