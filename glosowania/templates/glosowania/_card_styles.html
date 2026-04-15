@@ -206,59 +206,6 @@
   flex-wrap: wrap;
   margin-bottom: .55rem;
 }
-.badge-status {
-  display: inline-block;
-  font-size: .68rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 2rem;
-  white-space: nowrap;
-}
-.badge-proposition  { background: rgba(59,130,246,.15);  color: #60a5fa; }
-.badge-discussion   { background: rgba(168,85,247,.15);  color: #c084fc; }
-.badge-referendum   { background: rgba(249,115,22,.15);  color: #fb923c; }
-.badge-approved     { background: rgba(0,188,140,.15);   color: #00bc8c; }
-.badge-rejected     { background: rgba(239,68,68,.15);   color: #f87171; }
-
-/* ── Chat link ── */
-.proposal-chat-link {
-  display: inline-flex;
-  align-items: center;
-  gap: .3rem;
-  color: var(--accent);
-  text-decoration: none !important;
-  font-size: .78rem;
-  font-weight: 500;
-  padding: 2px 7px 2px 5px;
-  border-radius: 2rem;
-  border: 1px solid rgba(0,209,178,.3);
-  background: rgba(0,209,178,.07);
-  transition: background .15s, border-color .15s, box-shadow .15s;
-}
-.proposal-chat-link:hover {
-  background: rgba(0,209,178,.18);
-  border-color: var(--accent);
-  box-shadow: 0 0 8px rgba(0,209,178,.3);
-}
-.proposal-chat-link i { font-size: .85rem; }
-.proposal-chat-count {
-  font-size: .65rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 1px 5px;
-  border-radius: 2rem;
-  background: rgba(0,209,178,.25);
-  color: var(--accent);
-  border: 1px solid rgba(0,209,178,.35);
-  margin-left: 1px;
-}
-.proposal-chat-link--pulse {
-  animation: chat-pulse 1.8s ease-in-out infinite;
-}
-@keyframes chat-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .55; }
-}
 
 /* ── Preview tekstu (zwinięty) ── */
 .proposal-preview {
@@ -312,7 +259,9 @@
   font-size: .6rem;
   font-weight: 700;
   flex-shrink: 0;
+  overflow: hidden;
 }
+.proposal-author-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .proposal-author-name {
   color: rgba(232,234,240,.75);
   font-weight: 500;
@@ -352,6 +301,11 @@
   display: flex;
   flex-direction: column;
   gap: .85rem;
+  transition: background .15s;
+}
+.proposal-card-body:hover {
+  background: var(--accent-muted);
+  border-top-color: rgba(0,209,178,.35);
 }
 
 /* Szczegóły u góry ciała */

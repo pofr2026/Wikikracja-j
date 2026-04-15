@@ -5,7 +5,7 @@ import math
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models, transaction
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.db.models.functions import Coalesce
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -17,6 +17,30 @@ from django.views.generic import CreateView, DetailView, TemplateView, UpdateVie
 # Local folder imports
 from .forms import TaskForm, TaskStatusForm
 from .models import Task, TaskEvaluation, TaskVote
+
+def _task_sort_context(request):
+    sort = request.GET.get('sort', 'date')
+    if sort not in ('date', 'score', 'buzz'):
+        sort = 'date'
+    order = request.GET.get('order', 'desc')
+    if order not in ('asc', 'desc'):
+        order = 'desc'
+    tab = request.GET.get('tab', 'mine')
+    if tab not in ('mine', 'awaiting', 'active', 'finished'):
+        tab = 'mine'
+    return sort, order, tab
+
+
+def _apply_task_sort(tasks, sort, order):
+    reverse = (order == 'desc')
+    if sort == 'date':
+        return sorted(tasks, key=lambda t: t.updated_at, reverse=reverse)
+    elif sort == 'score':
+        return sorted(tasks, key=lambda t: t.votes_score or 0, reverse=reverse)
+    elif sort == 'buzz':
+        return sorted(tasks, key=lambda t: getattr(t, 'chat_msg_count', 0) or 0, reverse=reverse)
+    return tasks
+
 
 PRIORITY_LABELS = {
     "critical": gettext_lazy("Critical"),
@@ -64,7 +88,13 @@ class TaskListView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        queryset = Task.objects.with_metrics().order_by("-votes_score", "-updated_at")
+        sort, order, tab = _task_sort_context(self.request)
+
+        queryset = (
+            Task.objects.with_metrics()
+            .annotate(chat_msg_count=Count('chat_room__messages', distinct=True))
+            .order_by("-votes_score", "-updated_at")
+        )
 
         active_tasks = list(queryset.filter(status=Task.Status.ACTIVE))
         _assign_priorities(active_tasks)
@@ -100,7 +130,10 @@ class TaskListView(LoginRequiredMixin, TemplateView):
                 Task.objects.filter(
                     Q(assigned_to=self.request.user) |
                     Q(votes__user=self.request.user, votes__value=1)
-                ).filter(status=Task.Status.ACTIVE).distinct().with_metrics().order_by("-votes_score", "-updated_at")
+                ).filter(status=Task.Status.ACTIVE).distinct()
+                .with_metrics()
+                .annotate(chat_msg_count=Count('chat_room__messages', distinct=True))
+                .order_by("-votes_score", "-updated_at")
             )
             my_vote_map = dict(TaskVote.objects.filter(
                 user=self.request.user,
@@ -114,13 +147,16 @@ class TaskListView(LoginRequiredMixin, TemplateView):
             my_tasks_supporting = [t for t in my_tasks_qs if t.assigned_to_id != user_id]
 
         context.update({
-            "active_tasks": active_with_owner,
-            "awaiting_tasks": awaiting_tasks,
-            "finished_completed": completed_tasks,
-            "finished_rejected": rejected_tasks + rejected_active,
-            "finished_cancelled": cancelled_tasks,
-            "my_tasks_own": my_tasks_own,
-            "my_tasks_supporting": my_tasks_supporting,
+            "active_tasks": _apply_task_sort(active_with_owner, sort, order),
+            "awaiting_tasks": _apply_task_sort(awaiting_tasks, sort, order),
+            "finished_completed": _apply_task_sort(completed_tasks, sort, order),
+            "finished_rejected": _apply_task_sort(rejected_tasks + rejected_active, sort, order),
+            "finished_cancelled": _apply_task_sort(cancelled_tasks, sort, order),
+            "my_tasks_own": _apply_task_sort(my_tasks_own, sort, order),
+            "my_tasks_supporting": _apply_task_sort(my_tasks_supporting, sort, order),
+            "current_tab": tab,
+            "current_sort": sort,
+            "current_order": order,
         })
         return context
 

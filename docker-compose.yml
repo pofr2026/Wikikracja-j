@@ -1,17 +1,6 @@
 services:
   redis:
-    image: redis:8-alpine
+    image: redis:7.2
     restart: unless-stopped
-
-  web:
-    build: .
-    depends_on:
-      - redis
-    restart: unless-stopped
-    env_file:
-      - .env
     ports:
-      - "8000:8000"
-    volumes:
-      - ./data/db:/app/db
-      - ./data/media:/app/media
+      - "6379:6379"

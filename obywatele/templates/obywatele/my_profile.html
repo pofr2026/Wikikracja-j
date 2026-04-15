@@ -86,6 +86,44 @@
 
 	<div class="card">
 		<div class="card-header">
+			<span class="section-heading">{% trans "Language" %}</span>
+		</div>
+		<div class="card-body">
+			<p class="text-muted small mb-3">{% trans "Choose the language of the interface. By default it is detected from your browser settings." %}</p>
+			<div class="d-flex align-items-center gap-2 flex-wrap">
+				<form method="post" action="{% url 'obywatele:set_language' %}">
+					{% csrf_token %}
+					<input type="hidden" name="language" value="pl">
+					<input type="hidden" name="next" value="{{ request.get_full_path }}">
+					<button type="submit"
+					        class="btn btn-sm {% if profile.language == 'pl' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+						🇵🇱 Polski
+					</button>
+				</form>
+				<form method="post" action="{% url 'obywatele:set_language' %}">
+					{% csrf_token %}
+					<input type="hidden" name="language" value="en">
+					<input type="hidden" name="next" value="{{ request.get_full_path }}">
+					<button type="submit"
+					        class="btn btn-sm {% if profile.language == 'en' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+						🇬🇧 English
+					</button>
+				</form>
+				<form method="post" action="{% url 'obywatele:set_language' %}">
+					{% csrf_token %}
+					<input type="hidden" name="language" value="">
+					<input type="hidden" name="next" value="{{ request.get_full_path }}">
+					<button type="submit"
+					        class="btn btn-sm {% if not profile.language %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+						{% trans "Auto (browser)" %}
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="card">
+		<div class="card-header">
 			<span class="section-heading">{% trans "Email Notifications" %}</span>
 		</div>
 		<div class="card-body">

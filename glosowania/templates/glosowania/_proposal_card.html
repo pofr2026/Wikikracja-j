@@ -66,7 +66,13 @@
       <a href="{% url 'obywatele:obywatele_szczegoly' pk=i.author.pk %}"
          class="proposal-author-link" onclick="event.stopPropagation()"
          title="{{ i.author.username }}">
-        <span class="proposal-author-avatar">{{ i.author.username|slice:":2"|upper }}</span>
+        <span class="proposal-author-avatar">
+          {% if i.author.uzytkownik.avatar %}
+            <img src="{{ i.author.uzytkownik.avatar.url }}" alt="">
+          {% else %}
+            {{ i.author.username|slice:":2"|upper }}
+          {% endif %}
+        </span>
         <span class="proposal-author-name">{{ i.author.username }}</span>
       </a>
       {% else %}
@@ -93,8 +99,10 @@
 
   </div>{# /.proposal-card-header #}
 
-  {# ── CIAŁO (zwinięte domyślnie) ── #}
-  <div class="proposal-card-body" id="body-{{ i.pk }}" style="display:none;">
+  {# ── CIAŁO (zwinięte domyślnie) — klikalne → szczegóły ── #}
+  <div class="proposal-card-body" id="body-{{ i.pk }}" style="display:none;cursor:pointer;"
+       onclick="window.location.href='{% url 'glosowania:details' pk=i.pk %}'"
+       role="link">
 
     {# Szczegóły u góry ciała (po rozwinięciu) #}
     <div class="proposal-body-topbar">

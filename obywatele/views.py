@@ -16,7 +16,8 @@ from django.db import DatabaseError
 from django.db.models import Case, Count, IntegerField, Q, Sum, Value, When
 from django.dispatch import receiver
 from django.http import HttpRequest, JsonResponse
-from django.utils import timezone
+from django.utils import timezone, translation
+from django.utils.translation import check_for_language
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext_lazy as _
@@ -943,3 +944,37 @@ def set_onboarding_email_confirmed(sender, request, email_address, **kwargs):
     #     log.info(f"count_citizens command completed successfully")
     # except Exception as e:
     #     log.error(f"Error running count_citizens after email confirmation: {e}", exc_info=True)
+
+
+@login_required
+@require_POST
+def set_user_language(request: HttpRequest):
+    lang = request.POST.get('language', '').strip()
+    next_url = request.POST.get('next', '/')
+
+    profile = request.user.uzytkownik
+    if lang and check_for_language(lang):
+        profile.language = lang
+        profile.save(update_fields=['language'])
+        translation.activate(lang)
+        response = redirect(next_url)
+        response.set_cookie(
+            s.LANGUAGE_COOKIE_NAME,
+            lang,
+            max_age=s.LANGUAGE_COOKIE_AGE,
+            path=s.LANGUAGE_COOKIE_PATH,
+            domain=s.LANGUAGE_COOKIE_DOMAIN,
+            secure=s.LANGUAGE_COOKIE_SECURE,
+            httponly=s.LANGUAGE_COOKIE_HTTPONLY,
+            samesite=s.LANGUAGE_COOKIE_SAMESITE,
+        )
+    elif lang == '':
+        # Reset to auto-detect
+        profile.language = ''
+        profile.save(update_fields=['language'])
+        response = redirect(next_url)
+        response.delete_cookie(s.LANGUAGE_COOKIE_NAME, path=s.LANGUAGE_COOKIE_PATH)
+    else:
+        response = redirect(next_url)
+
+    return response

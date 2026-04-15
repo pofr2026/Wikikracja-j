@@ -39,6 +39,7 @@ urlpatterns: List[URLPattern | URLResolver] = [
     path('board/', include('board.urls', namespace='board')),
     path('events/', include('events.urls', namespace='events')),
     path('tasks/', include('tasks.urls', namespace='tasks')),
+    path('i18n/', include('django.conf.urls.i18n')),
     path("__reload__/", include("django_browser_reload.urls")),
 ]
 

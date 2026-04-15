@@ -62,6 +62,13 @@ class Uzytkownik(models.Model):
         verbose_name=_('Avatar'),
     )
 
+    language = models.CharField(
+        max_length=10,
+        blank=True,
+        default='',
+        verbose_name=_('Language'),
+    )
+
     # Last broadcast time
     last_broadcast = models.DateTimeField(default=make_aware(datetime(1900, 1, 1)))
     

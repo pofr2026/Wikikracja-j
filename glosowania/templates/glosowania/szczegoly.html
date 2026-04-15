@@ -100,7 +100,10 @@
   color: #111;
   font-size: .58rem;
   font-weight: 700;
+  overflow: hidden;
+  flex-shrink: 0;
 }
+.detail-author-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .detail-author-name { color: rgba(232,234,240,.75); font-weight: 500; }
 .detail-author-link:hover .detail-author-name { color: var(--text-primary); }
 
@@ -491,7 +494,13 @@
       <div class="detail-meta">
         {% if id.author %}
           <a href="{% url 'obywatele:obywatele_szczegoly' pk=id.author.pk %}" class="detail-author-link">
-            <span class="detail-author-avatar">{{ id.author.username|slice:":2"|upper }}</span>
+            <span class="detail-author-avatar">
+              {% if id.author.uzytkownik.avatar %}
+                <img src="{{ id.author.uzytkownik.avatar.url }}" alt="">
+              {% else %}
+                {{ id.author.username|slice:":2"|upper }}
+              {% endif %}
+            </span>
             <span class="detail-author-name">{{ id.author.username }}</span>
           </a>
         {% endif %}
