@@ -5,6 +5,9 @@ import threading
 import time
 from datetime import datetime, timedelta
 
+# Third party imports (additional)
+from django.db.models import Count
+
 # Third party imports
 from django.conf import settings as s
 from django.contrib import messages
@@ -421,56 +424,85 @@ def parameters(request: HttpRequest):
     })
 
 
+def _apply_sort(queryset, sort, order='desc'):
+    """Zastosuj sortowanie do querysetu Decyzja."""
+    p = '' if order == 'asc' else '-'
+    if sort == 'podpisy':
+        return queryset.order_by(f'{p}ile_osob_podpisalo', '-data_powstania')
+    elif sort == 'buzz':
+        return queryset.annotate(
+            chat_msg_count=Count('chat_room__messages', distinct=True)
+        ).order_by(f'{p}chat_msg_count', '-data_powstania')
+    else:  # 'date' — domyślne
+        return queryset.order_by(f'{p}data_powstania')
+
+
+def _sort_context(request):
+    sort = request.GET.get('sort', 'date')
+    order = request.GET.get('order', 'desc')
+    if order not in ('asc', 'desc'):
+        order = 'desc'
+    return sort, order
+
+
 @login_required
 def rejected(request: HttpRequest):
-    votings = Decyzja.objects.filter(status=4).order_by('id')
+    sort, order = _sort_context(request)
+    votings = _apply_sort(Decyzja.objects.filter(status=4), sort, order)
     return render(request, 'glosowania/rejected.html', {
-        'votings': votings
+        'votings': votings,
+        'current_sort': sort,
+        'current_order': order,
     })
 
 
 @login_required
 def proposition(request: HttpRequest):
-    votings = Decyzja.objects.filter(status=1).order_by('data_referendum_start')
-
-    # Add chat room pulse class for each voting
+    sort, order = _sort_context(request)
+    votings = _apply_sort(Decyzja.objects.filter(status=1), sort, order)
     for voting in votings:
         voting.chat_room_pulse_class = voting.get_chat_room_pulse_class(request.user)
-
     return render(request, 'glosowania/proposition.html', {
-        'votings': votings
+        'votings': votings,
+        'current_sort': sort,
+        'current_order': order,
     })
 
 
 @login_required
 def discussion(request: HttpRequest):
-    votings = [voting for voting in Decyzja.objects.filter(status=2).order_by('data_referendum_start') if voting.is_author_signed]
-
-    # Add chat room pulse class for each voting
+    sort, order = _sort_context(request)
+    qs = _apply_sort(Decyzja.objects.filter(status=2), sort, order)
+    votings = [v for v in qs if v.is_author_signed]
     for voting in votings:
         voting.chat_room_pulse_class = voting.get_chat_room_pulse_class(request.user)
-
     return render(request, 'glosowania/discussion.html', {
-        'votings': votings
+        'votings': votings,
+        'current_sort': sort,
+        'current_order': order,
     })
 
 
 @login_required
 def referendum(request: HttpRequest):
-    votings = [voting for voting in Decyzja.objects.filter(status=3).order_by('data_referendum_start') if voting.is_author_signed]
-
-    # Add chat room pulse class for each voting
+    sort, order = _sort_context(request)
+    qs = _apply_sort(Decyzja.objects.filter(status=3), sort, order)
+    votings = [v for v in qs if v.is_author_signed]
     for voting in votings:
         voting.chat_room_pulse_class = voting.get_chat_room_pulse_class(request.user)
-
     return render(request, 'glosowania/referendum.html', {
-        'votings': votings
+        'votings': votings,
+        'current_sort': sort,
+        'current_order': order,
     })
 
 
 @login_required
 def approved(request: HttpRequest):
-    votings = Decyzja.objects.filter(status=5).order_by('data_referendum_start')
+    sort, order = _sort_context(request)
+    votings = _apply_sort(Decyzja.objects.filter(status=5), sort, order)
     return render(request, 'glosowania/approved.html', {
-        'votings': votings
+        'votings': votings,
+        'current_sort': sort,
+        'current_order': order,
     })

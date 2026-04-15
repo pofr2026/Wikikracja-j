@@ -147,28 +147,6 @@
 .agora-rejected:hover { color: #f87171; border-color: rgba(239,68,68,.4); }
 .agora-rejected.active { color: #f87171; border-color: rgba(239,68,68,.5); background: rgba(239,68,68,.08); }
 
-/* ── Dodaj (wyróżniony, ostatni) ── */
-.agora-add-btn {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: .35rem;
-  background: var(--accent);
-  color: #111 !important;
-  border: none;
-  border-radius: .45rem;
-  padding: .38rem .9rem;
-  font-size: .82rem;
-  font-weight: 600;
-  text-decoration: none !important;
-  transition: background .15s, box-shadow .15s;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.agora-add-btn:hover {
-  background: var(--accent-hover);
-  box-shadow: 0 0 10px rgba(0,209,178,.4);
-}
 </style>
 
 <nav class="agora-nav">
@@ -219,13 +197,10 @@
 
   {% endwith %}
 
-  {# Dodaj — prawy skraj #}
-  <a href="{% url 'glosowania:dodaj_nowy' %}" class="agora-add-btn">
-    <i class="fas fa-plus"></i>
-    <span>{% trans 'Dodaj' %}</span>
-  </a>
 
 </nav>
+
+{% include 'glosowania/_card_styles.html' %}
 
 {% block glosowania %}
 {% endblock glosowania %}
