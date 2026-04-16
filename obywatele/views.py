@@ -870,13 +870,11 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
         return redirect(request.path)
 
     if rate.rate == 1:
-        r1 = _('positive')
-
-    if rate.rate == -1:
-        r1 = _('negative')
-
-    if rate.rate == 0:
-        r1 = _('neutral')
+        r1 = 'positive'
+    elif rate.rate == -1:
+        r1 = 'negative'
+    else:
+        r1 = 'neutral'
 
     total_rate_count = Rate.objects.filter(kandydat=candidate_profile).count()
 

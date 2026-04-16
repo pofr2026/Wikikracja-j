@@ -298,10 +298,11 @@
   <aside class="sidebar" id="sidebar">
 
     <!-- Logo -->
-    <div class="sidebar-logo">
+    <a href="{% url 'home' %}" class="sidebar-logo" style="text-decoration:none;">
       <span class="logo-title"><i class="fas fa-fw fa-building-columns"></i><span class="logo-label ms-1">{% trans "W Lobby" %}</span></span>
       <span class="logo-sub">{% trans "Obywatelskie" %}</span>
-    </div>
+      <span class="logo-label" style="font-size:.6rem;color:var(--text-muted);font-family:'Courier New',monospace;display:block;margin-top:3px;text-align:right;">Wikikracja v.{{ app_version }}</span>
+    </a>
 
     <!-- Main navigation -->
     <nav class="sidebar-nav">
@@ -578,7 +579,7 @@
       </button>
 
       <!-- Notification bell -->
-      <a href="{% url 'home' %}" class="notif-bell" title="{% trans 'Aktywność' %}">
+      <a href="{% url 'activity' %}" class="notif-bell" title="{% trans 'Aktywność' %}">
         <i class="far fa-bell"></i>
         {% if unread_items %}<span class="notif-dot"></span>{% endif %}
       </a>

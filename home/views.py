@@ -94,6 +94,9 @@ def home(request: HttpRequest):
     upcoming_count = Decyzja.objects.filter(status=2).count()
     signatures_count = Decyzja.objects.filter(status=1).count()
 
+    # Nowe propozycje widget (max 3, zbierające podpisy)
+    new_proposals = Decyzja.objects.filter(status=1).select_related('author').order_by('-data_ostatniej_modyfikacji')[:3]
+
     # My tasks widget (max 3, active — assigned to me or supported by me)
     my_tasks = Task.objects.filter(
         Q(assigned_to=request.user) |
@@ -158,6 +161,9 @@ def home(request: HttpRequest):
         if request.user.is_staff else None
     )
 
+    # Kafelek aktywność — 3 najnowsze pozycje (tylko non-event)
+    last_feed_items = [i for i in feed_items if i['content_type'] != 'event'][:3]
+
     # Onboarding widget
     onboarding = None
     try:
@@ -188,6 +194,8 @@ def home(request: HttpRequest):
         'current_year': current_year,
         'new_citizens': new_citizens,
         'candidates_count': candidates_count,
+        'last_feed_items': last_feed_items,
+        'new_proposals': new_proposals,
     })
 
 
@@ -373,6 +381,40 @@ def generate_feed_items(user):
 
 
 @login_required
+def activity_page(request):
+    all_items = generate_feed_items(request.user)
+
+    # Filter by content_type
+    ct_filter = request.GET.get('type', '')
+    if ct_filter:
+        all_items = [i for i in all_items if i['content_type'] == ct_filter]
+
+    # Sort
+    sort = request.GET.get('sort', 'date')
+    order = request.GET.get('order', 'desc')
+    if sort == 'date':
+        all_items.sort(key=lambda x: x['timestamp'], reverse=(order == 'desc'))
+
+    content_types = [
+        ('', _('Wszystkie')),
+        ('post', _('Ogłoszenia')),
+        ('task', _('Zadania')),
+        ('decision', _('Głosowania')),
+        ('event', _('Kalendarz')),
+        ('citizen', _('Obywatele')),
+        ('book', _('Biblioteka')),
+        ('room_messages', _('Czat')),
+    ]
+
+    return render(request, 'home/activity.html', {
+        'feed_items': all_items,
+        'ct_filter': ct_filter,
+        'sort': sort,
+        'order': order,
+        'content_types': content_types,
+    })
+
+
 @login_required
 @require_POST
 def mark_rules_read(request):

@@ -462,3 +462,6 @@ PUSH_NOTIFICATIONS_SETTINGS = {
 
 # Onboarding: pk of the Board post 'Zasady wspólnoty'
 ONBOARDING_RULES_POST_ID = None  # set to the pk after creating the post
+
+# Application version — bump on each release
+APP_VERSION = '1.0'

@@ -13,6 +13,7 @@ urlpatterns = [
     path('mark-unread/', views.mark_unread, name='mark_unread'),
     path('save-filter-state/', views.save_filter_state, name='save_filter_state'),
     path('onboarding/rules-read/', views.mark_rules_read, name='mark_rules_read'),
+    path('aktywnosc/', views.activity_page, name='activity'),
     path('search/', views.global_search, name='search'),
 
     # not in use at this point. Contact through https://wikikracja.pl/kontakt/

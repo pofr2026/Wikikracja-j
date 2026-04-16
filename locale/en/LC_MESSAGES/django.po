@@ -1170,7 +1170,7 @@ msgstr ""
 #: .\glosowania\templates\glosowania\szczegoly.html:709
 #: .\glosowania\views.py:224 .\home\views.py:529
 msgid "Referendum"
-msgstr ""
+msgstr "Referendum"
 
 #: .\glosowania\management\commands\vote.py:143 .\glosowania\views.py:226
 #: .\home\views.py:531
@@ -1325,19 +1325,19 @@ msgstr ""
 #: .\glosowania\templates\glosowania\menu.html:172
 #: .\glosowania\templates\glosowania\szczegoly.html:708
 msgid "Dyskusja"
-msgstr ""
+msgstr "Discussion"
 
 #: .\glosowania\templates\glosowania\_proposal_card.html:29
 #: .\glosowania\templates\glosowania\menu.html:195
 #: .\glosowania\templates\glosowania\szczegoly.html:710
 msgid "Odrzucone"
-msgstr ""
+msgstr "Rejected"
 
 #: .\glosowania\templates\glosowania\_proposal_card.html:31
 #: .\glosowania\templates\glosowania\menu.html:186
 #: .\glosowania\templates\glosowania\szczegoly.html:711
 msgid "Zatwierdzone"
-msgstr ""
+msgstr "Approved"
 
 #: .\glosowania\templates\glosowania\_proposal_card.html:39
 #: .\glosowania\templates\glosowania\_proposal_card.html:49
@@ -1451,11 +1451,11 @@ msgstr ""
 
 #: .\glosowania\templates\glosowania\menu.html:155
 msgid "Jak działają głosowania?"
-msgstr ""
+msgstr "How does voting work?"
 
 #: .\glosowania\templates\glosowania\menu.html:165
 msgid "Propozycje"
-msgstr ""
+msgstr "Proposals"
 
 #: .\glosowania\templates\glosowania\parameters.html:13
 msgid "Voting parameters"
@@ -1786,110 +1786,110 @@ msgstr ""
 
 #: .\home\templates\home\base.html:273 .\home\templates\home\base.html:556
 msgid "W Lobby"
-msgstr ""
+msgstr "W Lobby"
 
 #: .\home\templates\home\base.html:274
 msgid "Obywatelskie"
-msgstr ""
+msgstr "Civic"
 
 #: .\home\templates\home\base.html:283 .\home\templates\home\base.html:286
 #: .\home\templates\home\base.html:392
 msgid "Pulpit"
-msgstr ""
+msgstr "Dashboard"
 
 #: .\home\templates\home\base.html:295 .\home\templates\home\base.html:298
 msgid "Agora / Demokracja"
-msgstr ""
+msgstr "Agora / Democracy"
 
 #: .\home\templates\home\base.html:304 .\home\templates\home\base.html:307
 msgid "Działanie"
-msgstr ""
+msgstr "Action"
 
 #: .\home\templates\home\base.html:313 .\home\templates\home\base.html:316
 msgid "Baza Wiedzy"
-msgstr ""
+msgstr "Knowledge Base"
 
 #: .\home\templates\home\base.html:322 .\home\templates\home\base.html:325
 #: .\obywatele\templates\obywatele\wspolnota.html:8
 msgid "Wspólnota"
-msgstr ""
+msgstr "Community"
 
 #: .\home\templates\home\base.html:337 .\home\templates\home\base.html:340
 msgid "Ustawienia"
-msgstr ""
+msgstr "Settings"
 
 #: .\home\templates\home\base.html:344 .\home\templates\home\base.html:346
 msgid "Wyloguj"
-msgstr ""
+msgstr "Log out"
 
 #: .\home\templates\home\base.html:361
 msgid "Obywatel"
-msgstr ""
+msgstr "Citizen"
 
 #: .\home\templates\home\base.html:367
 msgid "Zwiń/rozwiń menu"
-msgstr ""
+msgstr "Collapse/expand menu"
 
 #: .\home\templates\home\base.html:369
 msgid "Zwiń"
-msgstr ""
+msgstr "Collapse"
 
 #: .\home\templates\home\base.html:389
 msgid "Lobby Obywatelskie"
-msgstr ""
+msgstr "Civic Lobby"
 
 #: .\home\templates\home\base.html:393 .\home\templates\home\base.html:434
 #: .\home\templates\home\search.html:69
 msgid "Głosowania"
-msgstr ""
+msgstr "Voting"
 
 #: .\home\templates\home\base.html:394 .\home\templates\home\base.html:426
 #: .\home\templates\home\home.html:31 .\home\templates\home\search.html:57
 msgid "Board"
-msgstr ""
+msgstr "Board"
 
 #: .\home\templates\home\base.html:395 .\home\templates\home\base.html:430
 #: .\home\templates\home\search.html:63
 msgid "Zadania"
-msgstr ""
+msgstr "Tasks"
 
 #: .\home\templates\home\base.html:396
 msgid "Kalendarz"
-msgstr ""
+msgstr "Calendar"
 
 #: .\home\templates\home\base.html:397 .\home\templates\home\base.html:442
 #: .\home\templates\home\search.html:81
 msgid "Biblioteka"
-msgstr ""
+msgstr "Library"
 
 #: .\home\templates\home\base.html:398 .\home\templates\home\base.html:446
 #: .\home\templates\home\search.html:87
 msgid "Obywatele"
-msgstr ""
+msgstr "Citizens"
 
 #: .\home\templates\home\base.html:399
 msgid "Księgowość"
-msgstr ""
+msgstr "Bookkeeping"
 
 #: .\home\templates\home\base.html:416
 msgid "Szukaj w kategoriach"
-msgstr ""
+msgstr "Search by category"
 
 #: .\home\templates\home\base.html:420 .\home\templates\home\search.html:100
 msgid "Wszędzie"
-msgstr ""
+msgstr "Everywhere"
 
 #: .\home\templates\home\base.html:438 .\home\templates\home\search.html:75
 msgid "Wydarzenie"
-msgstr ""
+msgstr "Event"
 
 #: .\home\templates\home\base.html:459
 msgid "Szukaj…"
-msgstr ""
+msgstr "Search…"
 
 #: .\home\templates\home\base.html:459 .\home\templates\home\search.html:37
 msgid "Szukaj"
-msgstr ""
+msgstr "Search"
 
 #: .\home\templates\home\base.html:461
 msgid "Filtry wyszukiwania"
@@ -1897,7 +1897,7 @@ msgstr ""
 
 #: .\home\templates\home\base.html:542
 msgid "Aktywność"
-msgstr ""
+msgstr "Activity"
 
 #: .\home\templates\home\base.html:559 .\home\templates\home\home.html:13
 #: .\home\templates\home\login.html:4 .\home\templates\home\login.html:13
@@ -1909,7 +1909,7 @@ msgstr ""
 
 #: .\home\templates\home\base.html:560
 msgid "Zarejestruj się"
-msgstr ""
+msgstr "Sign up"
 
 #: .\home\templates\home\base.html:568
 msgid "Enable notifications to stay updated with new messages and activities"
@@ -2875,7 +2875,7 @@ msgstr ""
 
 #: .\obywatele\templates\obywatele\wspolnota.html:9
 msgid "Przegląd społeczności"
-msgstr ""
+msgstr "Community overview"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:20
 msgid "Liczba członków"
@@ -2883,7 +2883,7 @@ msgstr ""
 
 #: .\obywatele\templates\obywatele\wspolnota.html:23
 msgid "aktywnych obywateli"
-msgstr ""
+msgstr "active citizens"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:33
 msgid "Oczekujący na akceptację"
@@ -2891,19 +2891,19 @@ msgstr ""
 
 #: .\obywatele\templates\obywatele\wspolnota.html:36
 msgid "kandydatów w poczekalni"
-msgstr ""
+msgstr "candidates in waiting room"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:46
 msgid "Umiejętności i zasoby"
-msgstr ""
+msgstr "Skills & resources"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:49
 msgid "umiejętności"
-msgstr ""
+msgstr "skills"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:50
 msgid "wiedzy"
-msgstr ""
+msgstr "knowledge"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:51
 msgid "do oddania"
@@ -2923,11 +2923,11 @@ msgstr ""
 
 #: .\obywatele\templates\obywatele\wspolnota.html:67
 msgid "zalogowanych w ciągu 30 dni"
-msgstr ""
+msgstr "logged in within 30 days"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:81
 msgid "Katalog Obywateli"
-msgstr ""
+msgstr "Citizens directory"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:83
 msgid "Wszyscy obywatele"
@@ -2943,7 +2943,7 @@ msgstr ""
 
 #: .\obywatele\templates\obywatele\wspolnota.html:117
 msgid "Brak danych"
-msgstr ""
+msgstr "No data"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:131
 msgid "Finanse"
@@ -2951,59 +2951,59 @@ msgstr ""
 
 #: .\obywatele\templates\obywatele\wspolnota.html:133
 msgid "Raport"
-msgstr ""
+msgstr "Report"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:138
 msgid "Przychody"
-msgstr ""
+msgstr "Income"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:142
 msgid "Wydatki"
-msgstr ""
+msgstr "Expenses"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:146
 msgid "Saldo"
-msgstr ""
+msgstr "Balance"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:166
 msgid "Poprzedni miesiąc"
-msgstr ""
+msgstr "Previous month"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:169
 msgid "Następny miesiąc"
-msgstr ""
+msgstr "Next month"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:173
 msgid "Pełny kalendarz"
-msgstr ""
+msgstr "Full calendar"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:181
 msgid "Pn"
-msgstr ""
+msgstr "Mon"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:182
 msgid "Wt"
-msgstr ""
+msgstr "Tue"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:183
 msgid "Śr"
-msgstr ""
+msgstr "Wed"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:184
 msgid "Cz"
-msgstr ""
+msgstr "Thu"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:185
 msgid "Pt"
-msgstr ""
+msgstr "Fri"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:186
 msgid "So"
-msgstr ""
+msgstr "Sat"
 
 #: .\obywatele\templates\obywatele\wspolnota.html:187
 msgid "Nd"
-msgstr ""
+msgstr "Sun"
 
 #: .\obywatele\views.py:304
 msgid "Your new email has been saved."
@@ -3656,3 +3656,210 @@ msgstr ""
 #: .\zzz\settings.py:103
 msgid "Polish"
 msgstr ""
+
+#: .\home\templates\home\home.html
+msgid "Cześć"
+msgstr "Hi"
+
+#: .\home\templates\home\home.html
+msgid "oto co nowego w Twojej wspólnocie"
+msgstr "here's what's new in your community"
+
+#: .\home\templates\home\home.html
+msgid "referenda"
+msgstr "referenda"
+
+#: .\home\templates\home\home.html
+msgid "dyskusje"
+msgstr "discussions"
+
+#: .\home\templates\home\home.html
+msgid "propozycje"
+msgstr "proposals"
+
+#: .\home\templates\home\home.html
+msgid "aktywne"
+msgstr "active"
+
+#: .\home\templates\home\home.html
+msgid "nieprzeczytanych"
+msgstr "unread"
+
+#: .\home\templates\home\home.html
+msgid "Aktywne referendum"
+msgstr "Active referendum"
+
+#: .\home\templates\home\home.html
+msgid "Brak aktywności z ostatnich 30 dni"
+msgstr "No activity in the last 30 days"
+
+#: .\home\templates\home\home.html
+msgid "Brak aktywnych głosowań"
+msgstr "No active votes"
+
+#: .\home\templates\home\home.html
+msgid "Brak nadchodzących wydarzeń"
+msgstr "No upcoming events"
+
+#: .\home\templates\home\home.html
+msgid "Brak obywateli"
+msgstr "No citizens"
+
+#: .\home\templates\home\home.html
+msgid "Cała aktywność"
+msgstr "All activity"
+
+#: .\home\templates\home\home.html .\events\templates\events\event_list.html
+msgid "Dodaj wydarzenie"
+msgstr "Add event"
+
+#: .\home\templates\home\home.html
+msgid "Już zagłosowałeś w tym referendum"
+msgstr "You have already voted in this referendum"
+
+#: .\home\templates\home\home.html
+msgid "Kliknij aby zobaczyć szczegóły i zagłosować"
+msgstr "Click to see details and vote"
+
+#: .\home\templates\home\home.html .\tasks\templates\tasks\task_list.html
+msgid "Moje zadania"
+msgstr "My tasks"
+
+#: .\home\templates\home\home.html
+msgid "Najbliższe wydarzenia"
+msgstr "Upcoming events"
+
+#: .\home\templates\home\home.html .\tasks\templates\tasks\task_list.html
+msgid "Nie masz przypisanych zadań"
+msgstr "You have no assigned tasks"
+
+#: .\home\templates\home\home.html
+msgid "Nowi obywatele"
+msgstr "New citizens"
+
+#: .\home\templates\home\home.html
+msgid "Nowe propozycje"
+msgstr "New proposals"
+
+#: .\home\templates\home\home.html
+msgid "Brak nowych propozycji"
+msgstr "No new proposals"
+
+#: .\home\templates\home\home.html
+msgid "Wszystkie propozycje"
+msgstr "All proposals"
+
+#: .\home\templates\home\home.html
+msgid "Oddaj pierwszy głos"
+msgstr "Cast your first vote"
+
+#: .\home\templates\home\home.html
+msgid "Ostatni dzień głosowania"
+msgstr "Last day of voting"
+
+#: .\home\templates\home\home.html
+msgid "Ostatnio dołączył/a"
+msgstr "Recently joined"
+
+#: .\home\templates\home\home.html .\bookkeeping\templates\bookkeeping\transaction_list.html
+msgid "Pełny raport"
+msgstr "Full report"
+
+#: .\home\templates\home\home.html
+msgid "Pierwsze kroki"
+msgstr "First steps"
+
+#: .\home\templates\home\home.html
+msgid "Pozostał 1 dzień"
+msgstr "1 day left"
+
+#: .\home\templates\home\home.html
+msgid "Przeczytaj zasady wspólnoty"
+msgstr "Read the community rules"
+
+#: .\home\templates\home\home.html
+msgid "Przeczytałem"
+msgstr "I've read it"
+
+#: .\home\templates\home\home.html
+msgid "Przejdź do Agory"
+msgstr "Go to Agora"
+
+#: .\home\templates\home\home.html .\tasks\templates\tasks\task_list.html
+msgid "Wszystkie moje zadania"
+msgstr "All my tasks"
+
+#: .\home\templates\home\home.html .\tasks\templates\tasks\task_list.html
+msgid "Zobacz zadania grupy"
+msgstr "View group tasks"
+
+#: .\home\templates\home\home.html
+msgid "Zabierz głos w dyskusji"
+msgstr "Join the discussion"
+
+#: .\home\templates\home\home.html
+msgid "obywateli zagłosowało"
+msgstr "citizens voted"
+
+#: .\home\templates\home\home.html
+msgid "oczekujących"
+msgstr "pending"
+
+#: .\home\templates\home\home.html
+msgid "od"
+msgstr "from"
+
+#: .\home\templates\home\home.html
+msgid "z"
+msgstr "of"
+
+#: .\home\templates\home\activity.html
+msgid "Brak aktywności"
+msgstr "No activity"
+
+#: .\home\templates\home\activity.html
+msgid "Data"
+msgstr "Date"
+
+#: .\home\templates\home\activity.html
+msgid "Wszystkie"
+msgstr "All"
+#: .\obywatele	emplates\obywatele\my_profile.html
+msgid "Wybierz wygląd interfejsu."
+msgstr "Choose the interface appearance."
+
+#: .\obywatele	emplates\obywatele\my_profile.html
+msgid "Jasny"
+msgstr "Light"
+
+#: .\obywatele	emplates\obywatele\my_profile.html
+msgid "Ciemny"
+msgstr "Dark"
+
+#: .\obywatele	emplates\obywatele\wspolnota.html
+msgid "Wszyscy"
+msgstr "All"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Ogłoszenia"
+msgstr "Announcements"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Archiwum"
+msgstr "Archive"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Utwórz"
+msgstr "Create"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Brak ogłoszeń"
+msgstr "No announcements"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Dodaj eBook"
+msgstr "Add eBook"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Biblioteka jest pusta"
+msgstr "Library is empty"

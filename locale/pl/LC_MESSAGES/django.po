@@ -1927,7 +1927,7 @@ msgstr ""
 
 #: .\home\templates\home\base.html:542
 msgid "Aktywność"
-msgstr ""
+msgstr "Aktywność"
 
 #: .\home\templates\home\base.html:559 .\home\templates\home\home.html:13
 #: .\home\templates\home\login.html:4 .\home\templates\home\login.html:13
@@ -3719,3 +3719,162 @@ msgstr "Angielski"
 #: .\zzz\settings.py:103
 msgid "Polish"
 msgstr "Polski"
+
+msgid "Cześć"
+msgstr "Cześć"
+
+msgid "oto co nowego w Twojej wspólnocie"
+msgstr "oto co nowego w Twojej wspólnocie"
+
+msgid "referenda"
+msgstr "referenda"
+
+msgid "dyskusje"
+msgstr "dyskusje"
+
+msgid "propozycje"
+msgstr "propozycje"
+
+msgid "nieprzeczytanych"
+msgstr "nieprzeczytanych"
+
+msgid "Aktywne referendum"
+msgstr "Aktywne referendum"
+
+msgid "Brak aktywności z ostatnich 30 dni"
+msgstr "Brak aktywności z ostatnich 30 dni"
+
+msgid "Brak aktywnych głosowań"
+msgstr "Brak aktywnych głosowań"
+
+msgid "Brak nadchodzących wydarzeń"
+msgstr "Brak nadchodzących wydarzeń"
+
+msgid "Brak obywateli"
+msgstr "Brak obywateli"
+
+msgid "Cała aktywność"
+msgstr "Cała aktywność"
+
+msgid "Dodaj wydarzenie"
+msgstr "Dodaj wydarzenie"
+
+msgid "Już zagłosowałeś w tym referendum"
+msgstr "Już zagłosowałeś w tym referendum"
+
+msgid "Kliknij aby zobaczyć szczegóły i zagłosować"
+msgstr "Kliknij aby zobaczyć szczegóły i zagłosować"
+
+msgid "Moje zadania"
+msgstr "Moje zadania"
+
+msgid "Najbliższe wydarzenia"
+msgstr "Najbliższe wydarzenia"
+
+msgid "Nie masz przypisanych zadań"
+msgstr "Nie masz przypisanych zadań"
+
+msgid "Nowi obywatele"
+msgstr "Nowi obywatele"
+
+msgid "Nowe propozycje"
+msgstr "Nowe propozycje"
+
+msgid "Oddaj pierwszy głos"
+msgstr "Oddaj pierwszy głos"
+
+msgid "Ostatni dzień głosowania"
+msgstr "Ostatni dzień głosowania"
+
+msgid "Ostatnio dołączył/a"
+msgstr "Ostatnio dołączył/a"
+
+msgid "Pełny raport"
+msgstr "Pełny raport"
+
+msgid "Pierwsze kroki"
+msgstr "Pierwsze kroki"
+
+msgid "Pozostał 1 dzień"
+msgstr "Pozostał 1 dzień"
+
+msgid "Przeczytaj zasady wspólnoty"
+msgstr "Przeczytaj zasady wspólnoty"
+
+msgid "Przeczytałem"
+msgstr "Przeczytałem"
+
+msgid "Przejdź do Agory"
+msgstr "Przejdź do Agory"
+
+msgid "Wszystkie moje zadania"
+msgstr "Wszystkie moje zadania"
+
+msgid "Wszystkie propozycje"
+msgstr "Wszystkie propozycje"
+
+msgid "Zabierz głos w dyskusji"
+msgstr "Zabierz głos w dyskusji"
+
+msgid "Zobacz zadania grupy"
+msgstr "Zobacz zadania grupy"
+
+msgid "aktywne"
+msgstr "aktywne"
+
+msgid "podpisy"
+msgstr "podpisy"
+
+msgid "obywateli zagłosowało"
+msgstr "obywateli zagłosowało"
+
+msgid "oczekujących"
+msgstr "oczekujących"
+
+msgid "od"
+msgstr "od"
+
+msgid "z"
+msgstr "z"
+
+msgid "Brak nowych propozycji"
+msgstr "Brak nowych propozycji"
+#: .\obywatele	emplates\obywatele\my_profile.html
+msgid "Wybierz wygląd interfejsu."
+msgstr "Wybierz wygląd interfejsu."
+
+#: .\obywatele	emplates\obywatele\my_profile.html
+msgid "Jasny"
+msgstr "Jasny"
+
+#: .\obywatele	emplates\obywatele\my_profile.html
+msgid "Ciemny"
+msgstr "Ciemny"
+
+#: .\obywatele	emplates\obywatele\wspolnota.html
+msgid "Wszyscy"
+msgstr "Wszyscy"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Ogłoszenia"
+msgstr "Ogłoszenia"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Archiwum"
+msgstr "Archiwum"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Utwórz"
+msgstr "Utwórz"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Brak ogłoszeń"
+msgstr "Brak ogłoszeń"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Dodaj eBook"
+msgstr "Dodaj eBook"
+
+#: .\elibrary	emplates\elibraryook_list.html
+msgid "Biblioteka jest pusta"
+msgstr "Biblioteka jest pusta"

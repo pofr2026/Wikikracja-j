@@ -121,29 +121,66 @@
       {% trans "Cześć" %}, <strong style="color:var(--accent);">{{ user.username }}</strong> — {% trans "oto co nowego w Twojej wspólnocie" %}.
     </p>
   </div>
-  <div class="d-flex gap-2 flex-wrap align-items-center">
-    {% if ongoing_count %}
-    <a href="{% url 'glosowania:approved' %}" class="badge-status badge-referendum" style="text-decoration:none;">
-      <i class="fas fa-landmark me-1"></i>{{ ongoing_count }} {% trans "trwające" %}
-    </a>
-    {% endif %}
-    {% if upcoming_count %}
-    <a href="{% url 'glosowania:approved' %}" class="badge-status badge-discussion" style="text-decoration:none;">
-      <i class="fas fa-comments me-1"></i>{{ upcoming_count }} {% trans "dyskusje" %}
-    </a>
-    {% endif %}
-    {% if unread_items %}
-    <span class="badge-status" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);">
-      <i class="fas fa-bell me-1"></i>{{ unread_items|length }} {% trans "nieprzeczytanych" %}
-    </span>
-    {% endif %}
-  </div>
 </div>
 
+{# ══ Rząd 1: Aktywność (+ opcjonalnie Onboarding) ══════════════════════════ #}
 <div class="row g-3 mb-3">
 
+  {# Aktywność #}
+  <div class="col-12 {% if onboarding %}col-lg-8{% endif %}">
+    <div class="card h-100" style="position:relative;">
+      <div class="card-header d-flex align-items-center justify-content-between gap-2">
+        <span class="section-heading" style="font-size:.85rem;">
+          <i class="fas fa-stream me-1" style="color:var(--accent);opacity:.7;"></i>{% trans "Aktywność" %}
+        </span>
+        {% if unread_items %}
+        <span class="badge-status" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);position:relative;z-index:2;">
+          <i class="fas fa-bell me-1"></i>{{ unread_items|length }} {% trans "nieprzeczytanych" %}
+        </span>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% for item in last_feed_items %}
+        <div class="task-dash-row d-flex align-items-center gap-2 px-3 py-2 border-bottom" style="min-width:0;">
+          <span class="badge-status flex-shrink-0
+            {% if item.content_type == 'decision' %}badge-referendum
+            {% elif item.content_type == 'task' %}badge-discussion
+            {% elif item.content_type == 'event' %}badge-approved
+            {% elif item.content_type == 'citizen' %}badge-rejected
+            {% else %}badge-proposition
+            {% endif %}" style="font-size:.62rem;padding:1px 5px;">
+            {{ item.content_type|content_type_label }}
+          </span>
+          <a href="{{ item.url }}"
+             class="task-dash-link {% if not item.is_read %}fw-semibold{% endif %}"
+             style="font-size:.82rem;color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;position:relative;z-index:2;transition:color .15s;"
+             title="{{ item.title }}">
+            {{ item.title }}
+          </a>
+          <span class="flex-shrink-0" style="font-size:.72rem;color:var(--text-muted);">
+            {{ item.timestamp|date:"d.m H:i" }}
+          </span>
+        </div>
+        {% empty %}
+        <div class="px-3 py-3 text-center" style="font-size:.82rem;color:var(--text-muted);">
+          {% trans "Brak aktywności z ostatnich 30 dni" %}
+        </div>
+        {% endfor %}
+      </div>
+      {% if last_feed_items %}
+      <div class="card-footer px-3 py-2" style="font-size:.78rem;">
+        <a href="{% url 'activity' %}" style="color:var(--accent);position:relative;z-index:2;text-decoration:none;">
+          {% trans "Cała aktywność" %} →
+        </a>
+      </div>
+      {% endif %}
+      <a href="{% url 'activity' %}" class="stretched-link"></a>
+    </div>
+  </div>
+
+  {# Pierwsze kroki (tylko dla nowych) #}
   {% if onboarding %}
-  <div class="col-12 col-lg-3">
+  <div class="col-12 col-lg-4">
     <div class="card h-100">
       <div class="card-body d-flex flex-column gap-2">
         <div class="d-flex align-items-center gap-2 mb-1">
@@ -199,7 +236,47 @@
   </div>
   {% endif %}
 
-  <div class="col-12 {% if onboarding %}col-lg-5{% else %}col-lg-6{% endif %}">
+</div>
+
+{# ══ Rząd 2: Kalendarz + Aktywne referendum + Nowe propozycje ══════════════ #}
+<div class="row g-3 mb-3">
+
+  {# Kalendarz #}
+  <div class="col-12 col-lg-4">
+    <div class="card h-100" style="position:relative;">
+      <div class="card-body d-flex flex-column gap-2">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="fas fa-calendar-days" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Najbliższe wydarzenia" %}</span>
+        </div>
+        {% if upcoming_events %}
+        <ul class="list-unstyled mb-0 d-flex flex-column gap-2" style="flex:1;font-size:.82rem;">
+          {% for ev in upcoming_events %}
+          <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
+            <span class="flex-shrink-0" style="width:.55rem;height:.55rem;border-radius:50%;background:{% if ev.is_public %}#00bc8c{% else %}var(--text-muted){% endif %};opacity:.8;"></span>
+            <span class="flex-shrink-0" style="color:var(--text-muted);white-space:nowrap;">{{ ev.start_date|date:"D d M · H:i" }}</span>
+            <a href="{% url 'events:detail' ev.pk %}"
+               class="task-dash-link"
+               style="color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;position:relative;z-index:2;transition:color .15s;"
+               title="{{ ev.title }}">{{ ev.title }}</a>
+          </li>
+          {% endfor %}
+        </ul>
+        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">{% trans "Pełny kalendarz" %} →</span>
+        <a href="{% url 'events:list' %}" class="stretched-link"></a>
+        {% else %}
+        <div class="d-flex flex-column justify-content-center align-items-center gap-2 flex-grow-1 py-2">
+          <p class="mb-0 text-center" style="font-size:.875rem;color:var(--text-muted);">{% trans "Brak nadchodzących wydarzeń" %}</p>
+          <a href="{% url 'events:create' %}" style="font-size:.82rem;color:var(--accent);position:relative;z-index:2;">{% trans "Dodaj wydarzenie" %} →</a>
+        </div>
+        <a href="{% url 'events:list' %}" class="stretched-link"></a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# Aktywne referendum #}
+  <div class="col-12 col-lg-4">
     {% if active_referendum %}
     <a href="{% url 'glosowania:details' active_referendum.obj.pk %}"
        class="card h-100"
@@ -274,113 +351,150 @@
     {% endif %}
   </div>
 
-  <div class="col-12 {% if onboarding %}col-lg-4{% else %}col-lg-6{% endif %}">
+  {# Nowe propozycje #}
+  <div class="col-12 col-lg-4">
     <div class="card h-100" style="position:relative;">
       <div class="card-body d-flex flex-column gap-2">
-
         <div class="d-flex align-items-center gap-2 mb-1">
-          <i class="fas fa-bolt" style="color:var(--accent);font-size:.85rem;"></i>
-          <span class="section-heading" style="font-size:.85rem;">{% trans "Moje zadania" %}</span>
+          <i class="fas fa-file-signature" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Nowe propozycje" %}</span>
         </div>
-
-        {% if my_tasks %}
+        {% if new_proposals %}
         <ul class="list-unstyled mb-0 d-flex flex-column gap-1" style="flex:1;">
-          {% for task in my_tasks %}
+          {% for prop in new_proposals %}
           <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
-            <span class="badge-status badge-approved flex-shrink-0" style="font-size:.65rem;padding:1px 6px;">
-              {% trans "aktywne" %}
+            <span class="badge-status badge-proposition flex-shrink-0" style="font-size:.62rem;padding:1px 5px;">
+              {% trans "podpisy" %}
             </span>
-            <a href="{% url 'tasks:detail' task.pk %}"
+            <a href="{% url 'glosowania:details' prop.pk %}"
                class="task-dash-link"
                style="font-size:.82rem;color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;position:relative;z-index:2;transition:color .15s;"
-               title="{{ task.title }}">
-              {{ task.title }}
-            </a>
+               title="{{ prop.title }}">{{ prop.title }}</a>
           </li>
           {% endfor %}
         </ul>
-        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">
-          {% trans "Wszystkie moje zadania" %} →
-        </span>
-        <a href="{% url 'tasks:list' %}?tab=mine" class="stretched-link"></a>
+        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">{% trans "Wszystkie propozycje" %} →</span>
+        <a href="{% url 'glosowania:proposition' %}" class="stretched-link"></a>
         {% else %}
         <div class="d-flex flex-column justify-content-center align-items-center gap-2 flex-grow-1 py-2">
-          <p class="mb-0 text-center" style="font-size:.875rem;color:var(--text-muted);">
-            {% trans "Nie masz przypisanych zadań" %}
-          </p>
-          <span style="font-size:.82rem;color:var(--accent);">
-            {% trans "Zobacz zadania grupy" %} →
-          </span>
+          <p class="mb-0 text-center" style="font-size:.875rem;color:var(--text-muted);">{% trans "Brak nowych propozycji" %}</p>
+          <a href="{% url 'glosowania:proposition' %}" style="font-size:.82rem;color:var(--accent);position:relative;z-index:2;">{% trans "Przejdź do Agory" %} →</a>
         </div>
-        <a href="{% url 'tasks:list' %}" class="stretched-link"></a>
+        <a href="{% url 'glosowania:proposition' %}" class="stretched-link"></a>
         {% endif %}
-
       </div>
     </div>
   </div>
 
 </div>
 
-{# ══ Dolny rząd kart ════════════════════════════════════════════════════════ #}
+{# ══ separator: statystyki głosowań ════════════════════════════════════════ #}
+<div class="d-flex gap-2 flex-wrap align-items-center mb-3">
+  {% if ongoing_count %}
+  <a href="{% url 'glosowania:referendum' %}" class="badge-status badge-referendum" style="text-decoration:none;">
+    <i class="fas fa-landmark me-1"></i>{{ ongoing_count }} {% trans "referenda" %}
+  </a>
+  {% endif %}
+  {% if upcoming_count %}
+  <a href="{% url 'glosowania:discussion' %}" class="badge-status badge-discussion" style="text-decoration:none;">
+    <i class="fas fa-comments me-1"></i>{{ upcoming_count }} {% trans "dyskusje" %}
+  </a>
+  {% endif %}
+  {% if signatures_count %}
+  <a href="{% url 'glosowania:proposition' %}" class="badge-status badge-proposition" style="text-decoration:none;">
+    <i class="fas fa-file-signature me-1"></i>{{ signatures_count }} {% trans "propozycje" %}
+  </a>
+  {% endif %}
+</div>
+
+{# ══ Rząd 3: Moje zadania + Nowi obywatele + Finanse ═══════════════════════ #}
 <div class="row g-3 mb-3">
 
-  {# ── Karta 4: Kalendarz ─────────────────────────────────────── #}
+  {# Moje zadania #}
   <div class="col-12 col-lg-4">
     <div class="card h-100" style="position:relative;">
       <div class="card-body d-flex flex-column gap-2">
-
         <div class="d-flex align-items-center gap-2 mb-1">
-          <i class="fas fa-calendar-days" style="color:var(--accent);font-size:.85rem;"></i>
-          <span class="section-heading" style="font-size:.85rem;">{% trans "Najbliższe wydarzenia" %}</span>
+          <i class="fas fa-bolt" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Moje zadania" %}</span>
         </div>
-
-        {% if upcoming_events %}
-        <ul class="list-unstyled mb-0 d-flex flex-column gap-2" style="flex:1;font-size:.82rem;">
-          {% for ev in upcoming_events %}
+        {% if my_tasks %}
+        <ul class="list-unstyled mb-0 d-flex flex-column gap-1" style="flex:1;">
+          {% for task in my_tasks %}
           <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
-            <span class="flex-shrink-0" style="width:.55rem;height:.55rem;border-radius:50%;background:{% if ev.is_public %}#00bc8c{% else %}var(--text-muted){% endif %};opacity:.8;"></span>
-            <span class="flex-shrink-0" style="color:var(--text-muted);white-space:nowrap;">
-              {{ ev.start_date|date:"D d M · H:i" }}
-            </span>
-            <a href="{% url 'events:detail' ev.pk %}"
+            <span class="badge-status badge-approved flex-shrink-0" style="font-size:.65rem;padding:1px 6px;">{% trans "aktywne" %}</span>
+            <a href="{% url 'tasks:detail' task.pk %}"
                class="task-dash-link"
-               style="color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;position:relative;z-index:2;transition:color .15s;"
-               title="{{ ev.title }}">
-              {{ ev.title }}
-            </a>
+               style="font-size:.82rem;color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;position:relative;z-index:2;transition:color .15s;"
+               title="{{ task.title }}">{{ task.title }}</a>
           </li>
           {% endfor %}
         </ul>
-        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">
-          {% trans "Pełny kalendarz" %} →
-        </span>
-        <a href="{% url 'events:list' %}" class="stretched-link"></a>
+        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">{% trans "Wszystkie moje zadania" %} →</span>
+        <a href="{% url 'tasks:list' %}?tab=mine" class="stretched-link"></a>
         {% else %}
         <div class="d-flex flex-column justify-content-center align-items-center gap-2 flex-grow-1 py-2">
-          <p class="mb-0 text-center" style="font-size:.875rem;color:var(--text-muted);">
-            {% trans "Brak nadchodzących wydarzeń" %}
-          </p>
-          <a href="{% url 'events:create' %}" style="font-size:.82rem;color:var(--accent);position:relative;z-index:2;">
-            {% trans "Dodaj wydarzenie" %} →
-          </a>
+          <p class="mb-0 text-center" style="font-size:.875rem;color:var(--text-muted);">{% trans "Nie masz przypisanych zadań" %}</p>
+          <span style="font-size:.82rem;color:var(--accent);">{% trans "Zobacz zadania grupy" %} →</span>
         </div>
-        <a href="{% url 'events:list' %}" class="stretched-link"></a>
+        <a href="{% url 'tasks:list' %}" class="stretched-link"></a>
         {% endif %}
-
       </div>
     </div>
   </div>
 
-  {# ── Karta 5: Finanse ───────────────────────────────────────── #}
+  {# Nowi obywatele #}
+  <div class="col-12 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column gap-2">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="fas fa-users" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Nowi obywatele" %}</span>
+        </div>
+        {% if new_citizens %}
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          {% for cit in new_citizens|slice:":6" %}
+          <a href="{% url 'obywatele:obywatele_szczegoly' pk=cit.pk %}" title="{{ cit.uid.username }}" style="text-decoration:none;flex-shrink:0;">
+            {% if cit.avatar %}
+              <img src="{{ cit.avatar.url }}" alt="{{ cit.uid.username }}" class="rounded-circle" style="width:36px;height:36px;object-fit:cover;">
+            {% else %}
+              <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white" style="width:36px;height:36px;font-size:.75rem;flex-shrink:0;background:{{ cit.uid.username|citizen_color }};">
+                {{ cit.uid.username|slice:":2"|upper }}
+              </div>
+            {% endif %}
+          </a>
+          {% endfor %}
+          {% if new_citizens|length > 6 %}
+          <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:36px;height:36px;font-size:.72rem;background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border);">
+            +{{ new_citizens|length|add:"-6" }}
+          </div>
+          {% endif %}
+        </div>
+        <p class="mb-0 mt-1" style="font-size:.75rem;color:var(--text-muted);">
+          {% trans "Ostatnio dołączył/a" %}: <strong>{{ new_citizens.0.uid.username }}</strong> · {{ new_citizens.0.uid.date_joined|date:"d.m.Y" }}
+        </p>
+        {% else %}
+        <p class="mb-0" style="font-size:.875rem;color:var(--text-muted);">{% trans "Brak obywateli" %}</p>
+        {% endif %}
+        {% if candidates_count %}
+        <div class="mt-auto">
+          <a href="{% url 'obywatele:poczekalnia' %}" class="badge-status" style="background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;">
+            <i class="fas fa-clock me-1"></i>{{ candidates_count }} {% trans "oczekujących" %} →
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# Finanse #}
   <div class="col-12 col-lg-4">
     <div class="card h-100" {% if request.user.is_staff %}style="position:relative;"{% endif %}>
       <div class="card-body d-flex flex-column gap-2">
-
         <div class="d-flex align-items-center gap-2 mb-1">
           <i class="fas fa-wallet" style="color:var(--accent);font-size:.85rem;"></i>
           <span class="section-heading" style="font-size:.85rem;">{% trans "Finanse" %} {{ current_year }}</span>
         </div>
-
         <div class="d-flex flex-column gap-1" style="font-size:.82rem;">
           <div class="d-flex justify-content-between align-items-center">
             <span style="color:var(--text-muted);"><i class="fas fa-arrow-down me-1" style="color:#00bc8c;"></i>{% trans "Przychody" %}</span>
@@ -393,354 +507,18 @@
           <hr class="my-1" style="border-color:var(--border);opacity:.4;">
           <div class="d-flex justify-content-between align-items-center">
             <span style="color:var(--text-muted);">{% trans "Saldo" %}</span>
-            <span style="font-weight:600;color:{% if balance >= 0 %}#00bc8c{% else %}#e74c3c{% endif %};">
-              {{ balance|floatformat:2 }} PLN
-            </span>
+            <span style="font-weight:600;color:{% if balance >= 0 %}#00bc8c{% else %}#e74c3c{% endif %};">{{ balance|floatformat:2 }} PLN</span>
           </div>
         </div>
-
         {% if request.user.is_staff %}
-        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">
-          {% trans "Pełny raport" %} →
-        </span>
+        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">{% trans "Pełny raport" %} →</span>
         <a href="{% url 'bookkeeping:report_list' %}" class="stretched-link"></a>
         {% endif %}
-
-      </div>
-    </div>
-  </div>
-
-  {# ── Karta 6: Nowi obywatele ────────────────────────────────── #}
-  <div class="col-12 col-lg-4">
-    <div class="card h-100">
-      <div class="card-body d-flex flex-column gap-2">
-
-        <div class="d-flex align-items-center gap-2 mb-1">
-          <i class="fas fa-users" style="color:var(--accent);font-size:.85rem;"></i>
-          <span class="section-heading" style="font-size:.85rem;">{% trans "Nowi obywatele" %}</span>
-        </div>
-
-        {% if new_citizens %}
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          {% for cit in new_citizens|slice:":6" %}
-          <a href="{% url 'obywatele:obywatele_szczegoly' pk=cit.pk %}"
-             title="{{ cit.uid.username }}"
-             style="text-decoration:none;flex-shrink:0;">
-            {% if cit.avatar %}
-              <img src="{{ cit.avatar.url }}" alt="{{ cit.uid.username }}"
-                   class="rounded-circle"
-                   style="width:36px;height:36px;object-fit:cover;">
-            {% else %}
-              <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
-                   style="width:36px;height:36px;font-size:.75rem;flex-shrink:0;background:{{ cit.uid.username|citizen_color }};">
-                {{ cit.uid.username|slice:":2"|upper }}
-              </div>
-            {% endif %}
-          </a>
-          {% endfor %}
-          {% if new_citizens|length > 6 %}
-          <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
-               style="width:36px;height:36px;font-size:.72rem;background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border);">
-            +{{ new_citizens|length|add:"-6" }}
-          </div>
-          {% endif %}
-        </div>
-        <p class="mb-0 mt-1" style="font-size:.75rem;color:var(--text-muted);">
-          {% trans "Ostatnio dołączył/a" %}: <strong>{{ new_citizens.0.uid.username }}</strong>
-          · {{ new_citizens.0.uid.date_joined|date:"d.m.Y" }}
-        </p>
-        {% else %}
-        <p class="mb-0" style="font-size:.875rem;color:var(--text-muted);">{% trans "Brak obywateli" %}</p>
-        {% endif %}
-
-        {% if candidates_count %}
-        <div class="mt-auto">
-          <a href="{% url 'obywatele:poczekalnia' %}"
-             class="badge-status"
-             style="background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;">
-            <i class="fas fa-clock me-1"></i>{{ candidates_count }} {% trans "oczekujących" %} →
-          </a>
-        </div>
-        {% endif %}
-
       </div>
     </div>
   </div>
 
 </div>
 
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-  <span class="section-heading" style="font-size:.85rem;">
-    <i class="fas fa-stream me-1" style="color:var(--accent);opacity:.7;"></i>{% trans "Aktywność" %}
-  </span>
-  <div class="d-flex gap-2">
-    <button id="mark-all-read" class="btn btn-sm btn-outline-secondary">
-      <i class="fas fa-check-double me-1"></i>{% trans "Oznacz wszystkie" %}
-    </button>
-    <button id="toggle-unread" class="btn btn-sm btn-outline-secondary" data-filtered="{{ filter_unread|lower }}">
-      <i class="fas fa-eye{% if filter_unread %}-slash{% endif %} me-1"></i>
-      <span id="filter-text">{% if filter_unread %}{% trans "Pokaż wszystkie" %}{% else %}{% trans "Tylko nieprzeczytane" %}{% endif %}</span>
-    </button>
-  </div>
-</div>
-
-<div class="card">
-  <div id="feed-list">
-    {% for item in feed_items %}
-    <div class="feed-item border-bottom {% if not item.is_read %}unread{% endif %}"
-         {% if item.is_first_unread %}id="first-unread"{% endif %}>
-      <div class="p-3">
-        <div class="d-flex justify-content-between align-items-start gap-3">
-
-          <div class="flex-grow-1" style="min-width:0;">
-            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-              <span class="badge-status
-                {% if item.content_type == 'decision' %}badge-referendum
-                {% elif item.content_type == 'task' %}badge-discussion
-                {% elif item.content_type == 'event' %}badge-approved
-                {% elif item.content_type == 'citizen' %}badge-rejected
-                {% else %}badge-proposition
-                {% endif %}">
-                {{ item.content_type|content_type_label }}
-              </span>
-              {% if item.author %}
-              <span style="font-size:.78rem;color:var(--text-muted);">{{ item.author.username }}</span>
-              <span style="color:var(--border);user-select:none;">·</span>
-              {% endif %}
-              <span style="font-size:.75rem;color:var(--text-muted);">{{ item.timestamp|date:"d.m H:i" }}</span>
-            </div>
-
-            <a href="{{ item.url }}"
-               class="d-block {% if not item.is_read %}fw-bold{% endif %}"
-               style="font-size:.9rem;color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              {{ item.title }}
-              {% if item.content_type == 'room_messages' and item.message_count > 1 %}
-                <span class="badge-status badge-discussion ms-1" style="vertical-align:middle;font-size:.65rem;">
-                  {{ item.message_count }}
-                </span>
-              {% endif %}
-            </a>
-
-            {% if item.description and item.content_type != 'event' %}
-            <p class="mb-0 mt-1 description-truncate" style="font-size:.78rem;color:var(--text-muted);">
-              {{ item.description|safe }}
-            </p>
-            {% endif %}
-          </div>
-
-          <div class="d-flex align-items-center gap-1 flex-shrink-0">
-            {% if not item.is_read %}
-            <button class="btn btn-sm btn-outline-secondary mark-read"
-                    data-id="{{ item.content_type }}-{{ item.object_id }}"
-                    title="{% trans 'Oznacz jako przeczytane' %}"
-                    style="padding:.25rem .5rem;">
-              <i class="fas fa-check"></i>
-            </button>
-            {% else %}
-            <button class="btn btn-sm btn-outline-secondary mark-unread"
-                    data-id="{{ item.content_type }}-{{ item.object_id }}"
-                    title="{% trans 'Oznacz jako nieprzeczytane' %}"
-                    style="padding:.25rem .5rem;">
-              <i class="far fa-circle"></i>
-            </button>
-            {% endif %}
-            <a href="{{ item.url }}"
-               class="btn btn-sm btn-outline-primary"
-               style="padding:.25rem .5rem;"
-               title="{% trans 'Przejdź' %}">
-              <i class="fas fa-arrow-right"></i>
-            </a>
-          </div>
-
-        </div>
-      </div>
-    </div>
-    {% empty %}
-    <div class="p-5 text-center">
-      <i class="fas fa-inbox fa-2x d-block mb-2" style="color:var(--text-muted);opacity:.35;"></i>
-      <span style="font-size:.875rem;color:var(--text-muted);">{% trans "Brak aktywności z ostatnich 30 dni" %}</span>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
-{% endif %}
-{% endblock %}
-
-{% block extra_js %}
-{% if user.is_authenticated %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-  /* ── Toggle unread filter ────────────────────────────────── */
-  const toggleButton = document.getElementById('toggle-unread');
-  if (toggleButton) {
-    const backendFiltered = toggleButton.getAttribute('data-filtered') === 'true';
-    const localStorageFiltered = localStorage.getItem('showUnreadOnly');
-
-    if (localStorageFiltered !== null && localStorageFiltered !== backendFiltered.toString()) {
-      saveFilterStateAndReload(localStorageFiltered === 'true');
-      return;
-    }
-    localStorage.setItem('showUnreadOnly', backendFiltered.toString());
-
-    toggleButton.addEventListener('click', function () {
-      const isCurrentlyFiltered = this.getAttribute('data-filtered') === 'true';
-      const newState = !isCurrentlyFiltered;
-      localStorage.setItem('showUnreadOnly', newState.toString());
-      saveFilterStateAndReload(newState);
-    });
-  }
-
-  function saveFilterStateAndReload(isFiltered) {
-    fetch('{% url "save_filter_state" %}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': getCookie('csrftoken'),
-      },
-      body: `show_unread_only=${isFiltered}`
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) window.location.href = window.location.pathname;
-    });
-  }
-
-  /* ── Mark all as read ───────────────────────────────────── */
-  const markAllReadButton = document.getElementById('mark-all-read');
-  if (markAllReadButton) {
-    updateMarkAllReadButton();
-
-    markAllReadButton.addEventListener('click', function () {
-      const unreadItems = document.querySelectorAll('.feed-item.unread');
-      if (!unreadItems.length) return;
-
-      this.disabled = true;
-      this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>{% trans "Przetwarzam…" %}';
-
-      fetch('{% url "mark_all_read" %}', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': getCookie('csrftoken'),
-        }
-      })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) {
-          unreadItems.forEach(item => {
-            item.classList.remove('unread');
-            item.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
-            const readBtn = item.querySelector('.mark-read');
-            if (readBtn) {
-              const dataId = readBtn.getAttribute('data-id');
-              const newBtn = buildMarkUnreadBtn(dataId);
-              readBtn.parentNode.replaceChild(newBtn, readBtn);
-            }
-          });
-        }
-      })
-      .finally(() => {
-        this.disabled = false;
-        this.innerHTML = '<i class="fas fa-check-double me-1"></i>{% trans "Oznacz wszystkie" %}';
-        updateMarkAllReadButton();
-      });
-    });
-  }
-
-  function updateMarkAllReadButton() {
-    if (!markAllReadButton) return;
-    const hasUnread = document.querySelectorAll('.feed-item.unread').length > 0;
-    markAllReadButton.disabled = !hasUnread;
-  }
-
-  /* ── Mark single item as read ───────────────────────────── */
-  document.querySelectorAll('.mark-read').forEach(btn => btn.addEventListener('click', handleMarkRead));
-
-  function handleMarkRead(e) {
-    const feedItem = e.currentTarget.closest('.feed-item');
-    const dataId   = e.currentTarget.getAttribute('data-id');
-    const [contentType, objectId] = dataId.split('-');
-
-    fetch('{% url "mark_as_read" %}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': getCookie('csrftoken'),
-      },
-      body: `content_type=${contentType}&object_id=${objectId}`
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        feedItem.classList.remove('unread');
-        feedItem.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
-        const newBtn = buildMarkUnreadBtn(dataId);
-        e.currentTarget.parentNode.replaceChild(newBtn, e.currentTarget);
-        updateMarkAllReadButton();
-      }
-    });
-  }
-
-  /* ── Mark single item as unread ─────────────────────────── */
-  document.querySelectorAll('.mark-unread').forEach(btn => btn.addEventListener('click', handleMarkUnread));
-
-  function handleMarkUnread(e) {
-    const feedItem = e.currentTarget.closest('.feed-item');
-    const dataId   = e.currentTarget.getAttribute('data-id');
-    const [contentType, objectId] = dataId.split('-');
-
-    fetch('{% url "mark_unread" %}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': getCookie('csrftoken'),
-      },
-      body: `content_type=${contentType}&object_id=${objectId}`
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        feedItem.classList.add('unread');
-        feedItem.querySelector('a').classList.add('fw-bold');
-        const newBtn = buildMarkReadBtn(dataId);
-        e.currentTarget.parentNode.replaceChild(newBtn, e.currentTarget);
-        updateMarkAllReadButton();
-      }
-    });
-  }
-
-  /* ── Button builders ────────────────────────────────────── */
-  function buildMarkReadBtn(dataId) {
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-outline-secondary mark-read';
-    btn.setAttribute('data-id', dataId);
-    btn.setAttribute('title', '{% trans "Oznacz jako przeczytane" %}');
-    btn.style.cssText = 'padding:.25rem .5rem;';
-    btn.innerHTML = '<i class="fas fa-check"></i>';
-    btn.addEventListener('click', handleMarkRead);
-    return btn;
-  }
-
-  function buildMarkUnreadBtn(dataId) {
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-outline-secondary mark-unread';
-    btn.setAttribute('data-id', dataId);
-    btn.setAttribute('title', '{% trans "Oznacz jako nieprzeczytane" %}');
-    btn.style.cssText = 'padding:.25rem .5rem;';
-    btn.innerHTML = '<i class="far fa-circle"></i>';
-    btn.addEventListener('click', handleMarkUnread);
-    return btn;
-  }
-
-  /* ── CSRF helper ─────────────────────────────────────────── */
-  function getCookie(name) {
-    const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-    return v ? decodeURIComponent(v[2]) : null;
-  }
-
-});
-</script>
 {% endif %}
 {% endblock %}

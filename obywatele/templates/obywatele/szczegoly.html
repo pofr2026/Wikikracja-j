@@ -92,13 +92,13 @@
         <form action="#" method="post" class="mt-3">
           {% csrf_token %}
           <div class="d-grid gap-2 d-md-flex">
-            <button class="btn {% if rate == 'pozytywny' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="accept">
+            <button class="btn {% if rate == 'positive' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="accept">
               {% trans 'I accept this person' %}
             </button>
-            <button class="btn {% if rate == 'obojętny' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="reset">
+            <button class="btn {% if rate == 'neutral' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="reset">
               {% trans 'Indifferent' %}
             </button>
-            <button class="btn {% if rate == 'negatywny' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="reject">
+            <button class="btn {% if rate == 'negative' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="reject">
               {% trans 'I do not accept' %}
             </button>
           </div>
