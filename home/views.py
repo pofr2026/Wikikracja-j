@@ -13,7 +13,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.staticfiles import finders
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -25,7 +25,7 @@ from django.views.decorators.http import require_POST
 from board.models import Post
 from chat.models import Room, Message
 from elibrary.models import Book
-from glosowania.models import Decyzja, Argument as DecyzjaArgument
+from glosowania.models import Decyzja, Argument as DecyzjaArgument, KtoJuzGlosowal
 from obywatele.models import Uzytkownik, CitizenActivity
 from tasks.models import Task
 from events.models import Event
@@ -92,7 +92,46 @@ def home(request: HttpRequest):
     ongoing_count = Decyzja.objects.filter(status=3).count()
     upcoming_count = Decyzja.objects.filter(status=2).count()
     signatures_count = Decyzja.objects.filter(status=1).count()
-    
+
+    # My tasks widget (max 3, active — assigned to me or supported by me)
+    my_tasks = Task.objects.filter(
+        Q(assigned_to=request.user) |
+        Q(votes__user=request.user, votes__value=1)
+    ).filter(status=Task.Status.ACTIVE).distinct().order_by('updated_at')[:3]
+
+    # Active referendum widget
+    active_referendum = None
+    referendum_obj = Decyzja.objects.filter(status=3).select_related('author').order_by('-data_referendum_start').first()
+    if referendum_obj and referendum_obj.data_referendum_start and referendum_obj.data_referendum_stop:
+        today = timezone.now().date()
+        days_remaining = max(0, (referendum_obj.data_referendum_stop - today).days)
+        total_days = max(1, (referendum_obj.data_referendum_stop - referendum_obj.data_referendum_start).days)
+        time_pct = min(100, round(days_remaining / total_days * 100))
+        voters_count = referendum_obj.za + referendum_obj.przeciw
+        total_citizens = User.objects.filter(is_active=True).count()
+        turnout_pct = round(voters_count / total_citizens * 100) if total_citizens > 0 else 0
+        if time_pct > 50:
+            bar_color = 'success'
+        elif time_pct >= 20:
+            bar_color = 'warning'
+        else:
+            bar_color = 'danger'
+        user_voted = KtoJuzGlosowal.objects.filter(
+            projekt=referendum_obj,
+            ktory_uzytkownik_juz_zaglosowal=request.user,
+        ).exists()
+        active_referendum = {
+            'obj': referendum_obj,
+            'voters_count': voters_count,
+            'total_citizens': total_citizens,
+            'turnout_pct': turnout_pct,
+            'days_remaining': days_remaining,
+            'total_days': total_days,
+            'time_pct': time_pct,
+            'bar_color': bar_color,
+            'user_voted': user_voted,
+        }
+
     return render(request, 'home/home.html', {
         'feed_items': feed_items,
         'first_unread': first_unread,
@@ -101,6 +140,8 @@ def home(request: HttpRequest):
         'ongoing_count': ongoing_count,
         'upcoming_count': upcoming_count,
         'signatures_count': signatures_count,
+        'active_referendum': active_referendum,
+        'my_tasks': my_tasks,
     })
 
 

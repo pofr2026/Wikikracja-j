@@ -4,9 +4,11 @@
 {% load filters %}
 
 <!DOCTYPE html>
-<html lang="{{ request.LANGUAGE_CODE }}">
+<html lang="{{ request.LANGUAGE_CODE }}" data-theme="dark">
 <head>
 	<meta charset="utf-8">
+	<!-- Anti-FOUC: restore theme before CSS loads -->
+	<script>(function(){var t=localStorage.getItem('app-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 	<title>{{ request.site.name }}</title>
 	<meta name="description" content="{{ site_description|default:'' }}">
@@ -25,19 +27,50 @@
 	<link rel="stylesheet" type="text/css" href="{% static 'home/css/app.css' %}">
 
 	<style>
-	/* ===== SIDEBAR LAYOUT ===== */
+	/* ===== DESIGN TOKENS ===== */
+	/* Layout (theme-independent) */
 	:root {
 	  --sidebar-width: 240px;
 	  --topbar-height: 60px;
+	  --sidebar-collapsed-width: 52px;
+	}
+	/* Dark theme (default) */
+	:root, [data-theme="dark"] {
 	  --bg-base: #161b2e;
 	  --bg-sidebar: #1c2035;
 	  --bg-card: #1e2340;
 	  --accent: #00d1b2;
 	  --accent-hover: #00b09b;
 	  --accent-muted: rgba(0,209,178,.12);
+	  --color-accent: #00d1b2;
 	  --text-primary: #e8eaf0;
 	  --text-muted: rgba(232,234,240,.55);
 	  --border: rgba(255,255,255,.08);
+	  --btn-glass-bg: rgba(255,255,255,.06);
+	  --btn-glass-border: rgba(255,255,255,.12);
+	  --btn-glass-color: rgba(255,255,255,.65);
+	  --btn-glass-hover-bg: rgba(255,255,255,.11);
+	  --btn-glass-hover-border: rgba(255,255,255,.2);
+	  --btn-glass-hover-color: rgba(255,255,255,.9);
+	}
+	/* Light theme */
+	[data-theme="light"] {
+	  --bg-base: #f0f2f5;
+	  --bg-sidebar: #ffffff;
+	  --bg-card: #ffffff;
+	  --accent: #059984;
+	  --accent-hover: #047a6a;
+	  --accent-muted: rgba(5,153,132,.1);
+	  --color-accent: #059984;
+	  --text-primary: #1e2030;
+	  --text-muted: rgba(30,32,48,.5);
+	  --border: rgba(0,0,0,.1);
+	  --btn-glass-bg: rgba(0,0,0,.04);
+	  --btn-glass-border: rgba(0,0,0,.14);
+	  --btn-glass-color: rgba(0,0,0,.6);
+	  --btn-glass-hover-bg: rgba(0,0,0,.08);
+	  --btn-glass-hover-border: rgba(0,0,0,.22);
+	  --btn-glass-hover-color: rgba(0,0,0,.85);
 	}
 	html, body { background: var(--bg-base) !important; color: var(--text-primary) !important; margin: 0; }
 	/* layout */
@@ -171,9 +204,6 @@
 	  .topbar .btn-cta span { display: none; }
 	}
 	/* ===== SIDEBAR COLLAPSE ===== */
-	:root {
-	  --sidebar-collapsed-width: 52px;
-	}
 	.sidebar {
 	  transition: width .2s ease;
 	  overflow: hidden;
@@ -257,7 +287,6 @@
     window.VAPID_PUBLIC_KEY = "{{ vapid_public_key|default:'' }}";
   </script>
   {% block extra_css %}{% endblock %}
-  {% bootstrap_messages %}
   {% bootstrap_javascript %}
 </head>
 
@@ -350,7 +379,10 @@
     </div>
 
     <!-- User card -->
-    <div class="sidebar-user">
+    <a href="{% url 'obywatele:obywatele_szczegoly' pk=user.pk %}" class="sidebar-user"
+       style="text-decoration:none;transition:background .15s;"
+       onmouseover="this.style.background='var(--accent-muted)'"
+       onmouseout="this.style.background=''">
       {% if user.uzytkownik.avatar %}
       <img class="user-avatar" src="{{ user.uzytkownik.avatar.url }}" alt="avatar" style="object-fit:cover;">
       {% else %}
@@ -360,7 +392,7 @@
         <span class="user-name">{{ user.username }}</span>
         <span class="user-role">{% trans "Obywatel" %}</span>
       </div>
-    </div>
+    </a>
 
     <!-- Collapse toggle -->
     <button class="sidebar-toggle-btn d-none d-md-flex" id="sidebar-collapse-btn"
@@ -538,6 +570,13 @@
       })();
       </script>
 
+      <!-- Theme toggle -->
+      <button id="theme-toggle-btn" class="notif-bell"
+              title="{% trans 'Toggle light / dark mode' %}"
+              style="background:none;border:none;cursor:pointer;">
+        <i id="theme-toggle-icon" class="fas fa-circle-half-stroke"></i>
+      </button>
+
       <!-- Notification bell -->
       <a href="{% url 'home' %}" class="notif-bell" title="{% trans 'Aktywność' %}">
         <i class="far fa-bell"></i>
@@ -646,6 +685,30 @@
     applyState(!isCollapsed);
     localStorage.setItem(STORAGE_KEY, String(!isCollapsed));
   });
+})();
+</script>
+
+<!-- Theme toggle logic -->
+<script>
+(function() {
+  var STORAGE_KEY = 'app-theme';
+  var html = document.documentElement;
+  var btn  = document.getElementById('theme-toggle-btn');
+
+  function applyTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+  }
+
+  window.applyTheme = applyTheme;
+
+  applyTheme(localStorage.getItem(STORAGE_KEY) || 'dark');
+
+  if (btn) {
+    btn.addEventListener('click', function() {
+      applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  }
 })();
 </script>
 

@@ -3,7 +3,7 @@
 {% load i18n %}
 
 {% block citizens %}
-<div class="container section">
+<div>
   <div class="mb-3">
     {% if active %}
       {% if next %}
@@ -41,7 +41,7 @@
       {% endif %}
       <h5 class="mb-0">{{ b.uid.first_name|default:b.uid }} {{ b.uid.last_name }}</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="font-size:.875rem;">
       <div class="row">
         <div class="col-md-6 mb-2">
           <strong>{% trans 'Login' %}:</strong> {{ b.uid }}
@@ -107,13 +107,32 @@
     </div>
   {% endif %}
 
+  {% if active %}
+  <div class="card mb-3">
+    <div class="card-header">
+      <span class="section-heading">{% trans 'Activity' %}</span>
+    </div>
+    <div class="card-body d-flex flex-wrap gap-2">
+      <a href="{% url 'obywatele:citizen_czaty' pk=b.uid.pk %}" class="btn btn-outline-secondary btn-sm">
+        {% trans "Chats" %}
+      </a>
+      <a href="{% url 'obywatele:citizen_zadania' pk=b.uid.pk %}" class="btn btn-outline-secondary btn-sm">
+        {% trans "Tasks" %}
+      </a>
+      <a href="{% url 'obywatele:citizen_aktywnosc' pk=b.uid.pk %}" class="btn btn-outline-secondary btn-sm">
+        {% trans "Activity" %}
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
   <div class="card">
     <div class="card-header">
       <span class="section-heading">{% trans 'Profile Details' %}</span>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-sm table-striped mb-0">
+        <table class="table table-sm table-striped mb-0" style="font-size:.875rem;">
           <tbody>
             <tr>
               <th scope="row" style="width: 30%;">{% trans "Communicator / Phone" %}</th>

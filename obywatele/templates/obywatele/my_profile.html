@@ -10,79 +10,6 @@
 {% endblock %}
 {% block content %}
 <div class="container section">
-	<div class="card mb-3">
-		<div class="card-header">
-			<h5 class="mb-0">{% trans "This is your profile" %} {{ user|default:"-" }}</h5>
-		</div>
-		<div class="card-body">
-			<div class="row">
-				<div class="col-12 mb-3 d-flex align-items-center gap-3">
-					{% if profile.avatar %}
-						<img src="{{ profile.avatar.url }}" alt="{% trans 'Avatar' %}" class="rounded-circle" style="width:80px;height:80px;object-fit:cover;">
-					{% else %}
-						<div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white" style="width:80px;height:80px;font-size:1.8rem;background:var(--color-accent);">
-							{{ user.username|slice:":2"|upper }}
-						</div>
-					{% endif %}
-					<form method="post" enctype="multipart/form-data" action="{% url 'obywatele:upload_avatar' %}">
-						{% csrf_token %}
-						<label class="btn btn-primary btn-sm mb-0">
-							{% trans "Change avatar" %}
-							<input type="file" name="avatar" accept="image/*" class="d-none" onchange="this.form.submit()">
-						</label>
-					</form>
-				</div>
-				<div class="col-md-6 mb-2">
-					<strong>{% trans "Your email" %}:</strong> {{ user.email|default:"-" }}
-				</div>
-				<div class="col-md-6 mb-2">
-					<strong>{% trans "First name" %}:</strong> {{ user.first_name|default:"-" }}
-				</div>
-				<div class="col-md-6 mb-2">
-					<strong>{% trans "Last name" %}:</strong> {{ user.last_name|default:"-" }}
-				</div>
-				<div class="col-md-6 mb-2">
-					<strong>{% trans "Your reputation" %}:</strong> {{ profile.reputation }} ({% trans "required reputation" %}: {{ required_reputation }})
-				</div>
-				<div class="col-md-6 mb-2">
-					<strong>{% trans "You've been introduced by" %}:</strong> {{ profile.polecajacy|default:"-" }}
-				</div>
-				<div class="col-md-6 mb-2">
-					<strong>{% trans "You've joined" %}:</strong> {{ profile.data_przyjecia|date:"Y-m-d"|default:"-" }}
-				</div>
-			</div>
-			<div class="mt-3">
-				{% comment %} Changing username may have some unintended consequences in chat {% endcomment %}
-				<a class="btn btn-primary btn-sm me-2 mb-1" href="{% url 'haslo'%}">{% trans 'Change password' %}</a>
-				<a class="btn btn-primary btn-sm me-2 mb-1" href="{% url 'change_email'%}">{% trans 'Change email' %}</a>
-				<a class="btn btn-primary btn-sm me-2 mb-1" href="{% url 'obywatele:change_username'%}">{% trans 'Change username' %}</a>
-			</div>
-		</div>
-	</div>
-
-	<div class="card">
-		<div class="card-header d-flex justify-content-between align-items-center">
-			<span class="section-heading">{% trans "Your assets" %}</span>
-			<a class="btn btn-primary btn-sm" href="{% url 'obywatele:my_assets' %}">{% trans 'Edit my assets' %}</a>
-		</div>
-		<div class="card-body">
-			<div class="alert alert-info mb-3">
-				{% trans "You don't have to fill all of them but the more information you'll give - the better we will be able to fullfill our needs. Also we will know each other better." %}
-			</div>
-			<div class="table-responsive">
-				<table class="table table-sm table-striped mb-0">
-					<tbody>
-						{% for asset in asset_fields %}
-						<tr>
-							<th scope="row"{% if forloop.first %} style="width: 30%;"{% endif %}>{{ asset.label }}</th>
-							<td>{{ profile|getattribute:asset.field|default:"-" }}</td>
-						</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
 
 	<div class="card">
 		<div class="card-header">
@@ -121,6 +48,49 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="card">
+		<div class="card-header">
+			<span class="section-heading">{% trans "My activity" %}</span>
+		</div>
+		<div class="card-body d-flex flex-wrap gap-2">
+			<a href="{% url 'obywatele:citizen_czaty' pk=user.pk %}" class="btn btn-outline-primary btn-sm">
+				{% trans "My chats" %}
+			</a>
+			<a href="{% url 'obywatele:citizen_zadania' pk=user.pk %}" class="btn btn-outline-primary btn-sm">
+				{% trans "My tasks" %}
+			</a>
+			<a href="{% url 'obywatele:citizen_aktywnosc' pk=user.pk %}" class="btn btn-outline-primary btn-sm">
+				{% trans "My activity" %}
+			</a>
+		</div>
+	</div>
+
+	<div class="card">
+		<div class="card-header">
+			<span class="section-heading">{% trans "Design" %}</span>
+		</div>
+		<div class="card-body">
+			<p class="text-muted small mb-3">{% trans "Wybierz wygląd interfejsu." %}</p>
+			<div class="d-flex align-items-center gap-2 flex-wrap">
+				<button type="button" id="theme-btn-light" class="btn btn-sm btn-outline-secondary"
+				        onclick="window.applyTheme('light'); updateThemeBtns('light');">
+					<i class="fas fa-sun me-1"></i>{% trans "Jasny" %}
+				</button>
+				<button type="button" id="theme-btn-dark" class="btn btn-sm btn-outline-secondary"
+				        onclick="window.applyTheme('dark'); updateThemeBtns('dark');">
+					<i class="fas fa-moon me-1"></i>{% trans "Ciemny" %}
+				</button>
+			</div>
+		</div>
+	</div>
+	<script>
+	function updateThemeBtns(active) {
+		document.getElementById('theme-btn-light').className = 'btn btn-sm ' + (active === 'light' ? 'btn-primary' : 'btn-outline-secondary');
+		document.getElementById('theme-btn-dark').className  = 'btn btn-sm ' + (active === 'dark'  ? 'btn-primary' : 'btn-outline-secondary');
+	}
+	updateThemeBtns(localStorage.getItem('app-theme') || 'dark');
+	</script>
 
 	<div class="card">
 		<div class="card-header">

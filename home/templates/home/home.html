@@ -1,509 +1,549 @@
 {% extends "home/base.html" %}
-{% block title %}Strona Start{% endblock %}
+{% block title %}Pulpit{% endblock %}
 {% load i18n %}
 {% load feed_filters %}
+
+{% block extra_css %}
+<style>
+.task-dash-row {
+  border-radius: .35rem;
+  border: 1px solid transparent;
+  padding: 3px 6px;
+  margin: 0 -6px;
+  transition: background .15s, border-color .15s;
+}
+.task-dash-row:hover {
+  background: var(--accent-muted);
+  border-color: rgba(0,209,178,.35);
+}
+.task-dash-row:hover .task-dash-link {
+  color: var(--accent) !important;
+}
+</style>
+{% endblock %}
 
 {% block content %}
 
 {% if not user.is_authenticated %}
-	<div class="container">
-		<p>{{ start.text|safe }}</p>
-		<div class="row rounded">
-			<div class="col-md-3">
-				<a href="{% url 'login' %}" class="btn btn-primary m-2 btn-sm d-flex justify-content-around">{% trans 'Login' %}</a>
-			</div>
-			<div class="col-md-3">
-				<a href="{% url 'account_signup' %}" class="btn btn-primary m-2 btn-sm d-flex justify-content-around">{% trans 'Sign Up' %}</a>
-			</div>
-			<div class="col-md-3">
-				<a href="{% url 'password_reset' %}" class="btn btn-primary m-2 btn-sm d-flex justify-content-around">{% trans 'Reset password' %}</a>
-			</div>
-			<div class="col-md-3">
-				<a href="https://wikikracja.pl/kontakt/" target="_blank" class="btn btn-primary m-2 btn-sm d-flex justify-content-around">{% trans 'Message developer' %}</a>
-			</div>
-		</div>
+<div class="section">
+  <p>{{ start.text|safe }}</p>
+  <div class="row g-2 mb-4">
+    <div class="col-auto">
+      <a href="{% url 'login' %}" class="btn btn-primary btn-sm">{% trans 'Login' %}</a>
+    </div>
+    <div class="col-auto">
+      <a href="{% url 'account_signup' %}" class="btn btn-primary btn-sm">{% trans 'Sign Up' %}</a>
+    </div>
+    <div class="col-auto">
+      <a href="{% url 'password_reset' %}" class="btn btn-outline-secondary btn-sm">{% trans 'Reset password' %}</a>
+    </div>
+    <div class="col-auto">
+      <a href="https://wikikracja.pl/kontakt/" target="_blank" class="btn btn-outline-secondary btn-sm">{% trans 'Message developer' %}</a>
+    </div>
+  </div>
 
-		<h4 class="mt-4 mb-3 text-white">{% trans "Platform modules" %}</h4>
-		<div class="row g-3">
-			<div class="col-sm-6 col-lg-3">
-				<div class="card h-100 border-primary bg-primary bg-opacity-10">
-					<div class="card-body">
-						<h5 class="card-title text-white"><i class="fas fa-chalkboard me-2"></i>{% trans "Board" %}</h5>
-						<p class="card-text text-white-50 small">{% trans "Community bulletin board — post announcements, share information and discuss topics with other members." %}</p>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-6 col-lg-3">
-				<div class="card h-100 border-success bg-success bg-opacity-10">
-					<div class="card-body">
-						<h5 class="card-title text-white"><i class="fas fa-calendar-days me-2"></i>{% trans "Calendar" %}</h5>
-						<p class="card-text text-white-50 small">{% trans "Upcoming community events — one-off and recurring. Stay informed about meetings, deadlines and activities." %}</p>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-6 col-lg-3">
-				<div class="card h-100 border-warning bg-warning bg-opacity-10">
-					<div class="card-body">
-						<h5 class="card-title text-white"><i class="fas fa-list-check me-2"></i>{% trans "Tasks" %}</h5>
-						<p class="card-text text-white-50 small">{% trans "Task management — create, assign and track tasks within the community. See who is responsible for what." %}</p>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-6 col-lg-3">
-				<div class="card h-100 border-info bg-info bg-opacity-10">
-					<div class="card-body">
-						<h5 class="card-title text-white"><i class="fas fa-users me-2"></i>{% trans "Citizens" %}</h5>
-						<p class="card-text text-white-50 small">{% trans "Member directory — browse citizen profiles, check roles and track community activity." %}</p>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-6 col-lg-3">
-				<div class="card h-100 border-danger bg-danger bg-opacity-10">
-					<div class="card-body">
-						<h5 class="card-title text-white"><i class="fas fa-vote-yea me-2"></i>{% trans "Voting" %}</h5>
-						<p class="card-text text-white-50 small">{% trans "Democratic decision-making — submit proposals, collect signatures, vote on ongoing referendums and track results." %}</p>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-6 col-lg-3">
-				<div class="card h-100 border-secondary bg-secondary bg-opacity-10">
-					<div class="card-body">
-						<h5 class="card-title text-white"><i class="fas fa-coins me-2"></i>{% trans "Bookkeeping" %}</h5>
-						<p class="card-text text-white-50 small">{% trans "Community finances — record income and expenses, maintain transparency over shared funds and budgets." %}</p>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-6 col-lg-3">
-				<div class="card h-100 border-primary bg-primary bg-opacity-10">
-					<div class="card-body">
-						<h5 class="card-title text-white"><i class="fas fa-book me-2"></i>{% trans "Library" %}</h5>
-						<p class="card-text text-white-50 small">{% trans "Digital library — upload, browse and download documents, books and resources shared by the community." %}</p>
-					</div>
-				</div>
-			</div>
-			<div class="col-sm-6 col-lg-3">
-				<div class="card h-100 border-success bg-success bg-opacity-10">
-					<div class="card-body">
-						<h5 class="card-title text-white"><i class="fas fa-comments me-2"></i>{% trans "Chat" %}</h5>
-						<p class="card-text text-white-50 small">{% trans "Real-time messaging — communicate in topic-based chat rooms linked to referendums and community groups." %}</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <h4 class="section-heading mb-3">{% trans "Platform modules" %}</h4>
+  <div class="row g-3">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-1" style="color:var(--accent);"><i class="fas fa-chalkboard me-2"></i>{% trans "Board" %}</h6>
+          <p class="mb-0 small">{% trans "Community bulletin board — post announcements, share information and discuss topics with other members." %}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-1" style="color:var(--accent);"><i class="fas fa-calendar-days me-2"></i>{% trans "Calendar" %}</h6>
+          <p class="mb-0 small">{% trans "Upcoming community events — one-off and recurring. Stay informed about meetings, deadlines and activities." %}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-1" style="color:var(--accent);"><i class="fas fa-list-check me-2"></i>{% trans "Tasks" %}</h6>
+          <p class="mb-0 small">{% trans "Task management — create, assign and track tasks within the community. See who is responsible for what." %}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-1" style="color:var(--accent);"><i class="fas fa-users me-2"></i>{% trans "Citizens" %}</h6>
+          <p class="mb-0 small">{% trans "Member directory — browse citizen profiles, check roles and track community activity." %}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-1" style="color:var(--accent);"><i class="fas fa-vote-yea me-2"></i>{% trans "Voting" %}</h6>
+          <p class="mb-0 small">{% trans "Democratic decision-making — submit proposals, collect signatures, vote on ongoing referendums and track results." %}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-1" style="color:var(--accent);"><i class="fas fa-coins me-2"></i>{% trans "Bookkeeping" %}</h6>
+          <p class="mb-0 small">{% trans "Community finances — record income and expenses, maintain transparency over shared funds and budgets." %}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-1" style="color:var(--accent);"><i class="fas fa-book me-2"></i>{% trans "Library" %}</h6>
+          <p class="mb-0 small">{% trans "Digital library — upload, browse and download documents, books and resources shared by the community." %}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="mb-1" style="color:var(--accent);"><i class="fas fa-comments me-2"></i>{% trans "Chat" %}</h6>
+          <p class="mb-0 small">{% trans "Real-time messaging — communicate in topic-based chat rooms linked to referendums and community groups." %}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endif %}
 
 {% if user.is_authenticated %}
-<div class="container">
-	<!-- Welcome Header -->
-	<div class="row mb-4">
-		<div class="col-lg-10 mx-auto">
-			<div class="card border-primary bg-primary bg-opacity-10">
-				<div class="card-body p-4">
-					<div class="d-flex justify-content-between align-items-center flex-wrap">
-						<div class="mb-2 mb-md-0">
-							<h2 class="mb-1 text-white">
-								<i class="fas fa-home me-2"></i>{% trans 'Welcome back' %}, {{ user.username }}!
-							</h2>
-							<p class="mb-0 text-white-50">{% trans "Here's what's happening in your community" %}</p>
-						</div>
-						<div class="text-end">
-							{% if unread_items %}
-								<span class="badge bg-info btn-sm">
-									<i class="fas fa-bell me-2"></i>{{ unread_items|length }} {% trans 'unread' %}
-								</span>
-							{% endif %}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
 
-	<!-- Filter Controls -->
-	<div class="row mb-3">
-		<div class="col-lg-10 mx-auto">
-			<div class="card border-warning bg-warning bg-opacity-10">
-				<div class="card-body">
-					<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-						<span class="text-white">
-							<i class="fas fa-filter me-2"></i>{% trans 'Filter options' %}
-						</span>
-						<div class="d-flex gap-2">
-							<button id="mark-all-read" class="btn btn-success btn-sm">
-								<i class="fas fa-check-double me-2"></i>{% trans 'Mark all as read' %}
-							</button>
-							<button id="toggle-unread" class="btn btn-primary btn-sm" data-filtered="{{ filter_unread|lower }}">
-								<i class="fas fa-eye me-2"></i>
-								<span id="filter-text">{% if filter_unread %}{% trans 'Show all' %}{% else %}{% trans 'Unread only' %}{% endif %}</span>
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	
-	<!-- Main Feed -->
-	<div class="row">
-		<div class="col-lg-10 mx-auto">
-			<div class="card">
-				<div class="card-header bg-gradient">
-					<h4 class="mb-0 text-white">
-						<i class="fas fa-stream me-2"></i>{% trans 'Activity Feed' %}
-					</h4>
-				</div>
-				<div class="card-body p-0">
-					{% for item in feed_items %}
-						<div class="feed-item border-bottom {% if not item.is_read %}unread{% endif %}" 
-							 {% if item.is_first_unread %}id="first-unread"{% endif %}>
-							<div class="p-3">
-								<div class="d-flex justify-content-between align-items-center mb-2">
-									<span class="badge text-bg-{{ item.content_type|content_type_color }}">
-										{{ item.content_type|content_type_label }}
-									</span>
-									
-									<div class="d-flex align-items-center">
-										{% if item.author %}
-											<strong>{{ item.author.username }}</strong>
-										{% else %}
-											<strong>System</strong>
-										{% endif %}
-										<small class="text-muted ms-2">{{ item.timestamp|date:"Y-m-d H:i" }}</small>
-										
-										{% if not item.is_read %}
-											<button class="btn btn-sm btn-secondary mark-read ms-3" 
-													data-id="{{ item.content_type }}-{{ item.object_id }}" 
-													title="{% trans 'Mark as read' %}">
-												<i class="fas fa-check"></i>
-											</button>
-										{% else %}
-											<button class="btn btn-sm btn-secondary mark-unread ms-3" 
-													data-id="{{ item.content_type }}-{{ item.object_id }}" 
-													title="{% trans 'Mark unread' %}">
-												<i class="fas fa-plus"></i>
-											</button>
-										{% endif %}
-									</div>
-								</div>
-								
-								<h6 class="mb-2">
-									<a href="{{ item.url }}" class="text-decoration-none {% if not item.is_read %}fw-bold{% endif %}">
-										{{ item.title }}
-										{% if item.content_type == 'room_messages' and item.message_count > 1 %}
-											<span class="badge text-bg-secondary ms-1">{{ item.message_count }} {% trans 'messages' %}</span>
-										{% endif %}
-									</a>
-								</h6>
-								
-								{% if item.description and item.content_type != 'event' %}
-									<p class="text-muted small mb-3">{{ item.description|safe|linebreaksbr }}</p>
-								{% endif %}
-								
-								{% if item.content_type != 'event' %}
-									<div class="d-flex justify-content-between">
-										<a href="{{ item.url }}" class="btn btn-sm btn-primary">
-											{% trans 'View' %}
-										</a>
-									</div>
-								{% endif %}
-							</div>
-						</div>
-					{% empty %}
-						<div class="p-4 text-center text-muted">
-							{% trans 'No recent activity' %}
-						</div>
-					{% endfor %}
-				</div>
-			</div>
-			</div>
-		</div>
-	</div>
+<div class="section d-flex align-items-start justify-content-between gap-3 flex-wrap">
+  <div>
+    <h1 class="section-heading mb-1" style="font-size:1.25rem;">{% trans "Pulpit" %}</h1>
+    <p class="mb-0" style="font-size:.875rem;color:var(--text-muted);">
+      {% trans "Cześć" %}, <strong style="color:var(--accent);">{{ user.username }}</strong> — {% trans "oto co nowego w Twojej wspólnocie" %}.
+    </p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap align-items-center">
+    {% if ongoing_count %}
+    <a href="{% url 'glosowania:approved' %}" class="badge-status badge-referendum" style="text-decoration:none;">
+      <i class="fas fa-landmark me-1"></i>{{ ongoing_count }} {% trans "trwające" %}
+    </a>
+    {% endif %}
+    {% if upcoming_count %}
+    <a href="{% url 'glosowania:approved' %}" class="badge-status badge-discussion" style="text-decoration:none;">
+      <i class="fas fa-comments me-1"></i>{{ upcoming_count }} {% trans "dyskusje" %}
+    </a>
+    {% endif %}
+    {% if unread_items %}
+    <span class="badge-status" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);">
+      <i class="fas fa-bell me-1"></i>{{ unread_items|length }} {% trans "nieprzeczytanych" %}
+    </span>
+    {% endif %}
+  </div>
 </div>
 
+<div class="row g-3 mb-3">
 
+  <div class="col-12 col-lg-5">
+    {% if active_referendum %}
+    <a href="{% url 'glosowania:details' active_referendum.obj.pk %}"
+       class="card h-100"
+       style="text-decoration:none;cursor:pointer;display:block;">
+      <div class="card-body d-flex flex-column gap-2">
+
+        <div>
+          <span class="badge-status badge-referendum d-inline-block mb-2">
+            <i class="fas fa-landmark me-1"></i>{% trans "Aktywne referendum" %}
+          </span>
+          <h5 class="mb-0" style="color:var(--text-primary);font-size:1rem;line-height:1.35;">
+            {{ active_referendum.obj.title }}
+          </h5>
+        </div>
+
+        <p class="mb-0" style="font-size:.78rem;color:var(--text-muted);">
+          {% if active_referendum.obj.author %}<i class="fas fa-user me-1"></i>{{ active_referendum.obj.author.username }}{% endif %}
+          {% if active_referendum.obj.data_referendum_start %} · {% trans "od" %} {{ active_referendum.obj.data_referendum_start|date:"d.m.Y" }}{% endif %}
+        </p>
+
+        <p class="mb-0" style="font-size:.82rem;color:var(--text-muted);">
+          <i class="fas fa-users me-1"></i>
+          {{ active_referendum.voters_count }} {% trans "z" %} {{ active_referendum.total_citizens }} {% trans "obywateli zagłosowało" %} ({{ active_referendum.turnout_pct }}%)
+        </p>
+
+        <p class="mb-0" style="font-size:.82rem;color:var(--text-muted);">
+          <i class="fas fa-clock me-1"></i>
+          {% if active_referendum.days_remaining == 0 %}
+            {% trans "Ostatni dzień głosowania" %}
+          {% elif active_referendum.days_remaining == 1 %}
+            {% trans "Pozostał 1 dzień" %}
+          {% else %}
+            {% blocktrans with n=active_referendum.days_remaining %}Pozostały {{ n }} dni{% endblocktrans %}
+          {% endif %}
+        </p>
+
+        <div class="progress" style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;">
+          <div class="progress-bar bg-{{ active_referendum.bar_color }}"
+               role="progressbar"
+               style="width:{{ active_referendum.time_pct }}%;border-radius:3px;"
+               aria-valuenow="{{ active_referendum.time_pct }}"
+               aria-valuemin="0" aria-valuemax="100">
+          </div>
+        </div>
+
+        {% if active_referendum.user_voted %}
+        <p class="mb-0 mt-auto" style="font-size:.75rem;color:#00bc8c;">
+          <i class="fas fa-check-circle me-1"></i>{% trans "Już zagłosowałeś w tym referendum" %}
+        </p>
+        {% else %}
+        <p class="mb-0 mt-auto" style="font-size:.75rem;color:var(--accent);opacity:.8;">
+          {% trans "Kliknij aby zobaczyć szczegóły i zagłosować" %} →
+        </p>
+        {% endif %}
+
+      </div>
+    </a>
+    {% else %}
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column justify-content-center align-items-center gap-2 py-4">
+        <span class="badge-status badge-referendum">
+          <i class="fas fa-landmark me-1"></i>{% trans "Aktywne referendum" %}
+        </span>
+        <p class="mb-0 text-center" style="font-size:.875rem;color:var(--text-muted);">
+          {% trans "Brak aktywnych głosowań" %}
+        </p>
+        <a href="{% url 'glosowania:approved' %}" style="font-size:.82rem;">
+          {% trans "Przejdź do Agory" %} →
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-12 col-lg-3">
+    <div class="card h-100" style="position:relative;">
+      <div class="card-body d-flex flex-column gap-2">
+
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="fas fa-bolt" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Moje zadania" %}</span>
+        </div>
+
+        {% if my_tasks %}
+        <ul class="list-unstyled mb-0 d-flex flex-column gap-1" style="flex:1;">
+          {% for task in my_tasks %}
+          <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
+            <span class="badge-status badge-approved flex-shrink-0" style="font-size:.65rem;padding:1px 6px;">
+              {% trans "aktywne" %}
+            </span>
+            <a href="{% url 'tasks:detail' task.pk %}"
+               class="task-dash-link"
+               style="font-size:.82rem;color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;position:relative;z-index:2;transition:color .15s;"
+               title="{{ task.title }}">
+              {{ task.title }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">
+          {% trans "Wszystkie moje zadania" %} →
+        </span>
+        <a href="{% url 'tasks:list' %}?tab=mine" class="stretched-link"></a>
+        {% else %}
+        <div class="d-flex flex-column justify-content-center align-items-center gap-2 flex-grow-1 py-2">
+          <p class="mb-0 text-center" style="font-size:.875rem;color:var(--text-muted);">
+            {% trans "Nie masz przypisanych zadań" %}
+          </p>
+          <span style="font-size:.82rem;color:var(--accent);">
+            {% trans "Zobacz zadania grupy" %} →
+          </span>
+        </div>
+        <a href="{% url 'tasks:list' %}" class="stretched-link"></a>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <span style="color:var(--text-muted);font-size:.85rem;">TBD</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <span class="section-heading" style="font-size:.85rem;">
+    <i class="fas fa-stream me-1" style="color:var(--accent);opacity:.7;"></i>{% trans "Aktywność" %}
+  </span>
+  <div class="d-flex gap-2">
+    <button id="mark-all-read" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-check-double me-1"></i>{% trans "Oznacz wszystkie" %}
+    </button>
+    <button id="toggle-unread" class="btn btn-sm btn-outline-secondary" data-filtered="{{ filter_unread|lower }}">
+      <i class="fas fa-eye{% if filter_unread %}-slash{% endif %} me-1"></i>
+      <span id="filter-text">{% if filter_unread %}{% trans "Pokaż wszystkie" %}{% else %}{% trans "Tylko nieprzeczytane" %}{% endif %}</span>
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <div id="feed-list">
+    {% for item in feed_items %}
+    <div class="feed-item border-bottom {% if not item.is_read %}unread{% endif %}"
+         {% if item.is_first_unread %}id="first-unread"{% endif %}>
+      <div class="p-3">
+        <div class="d-flex justify-content-between align-items-start gap-3">
+
+          <div class="flex-grow-1" style="min-width:0;">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+              <span class="badge-status
+                {% if item.content_type == 'decision' %}badge-referendum
+                {% elif item.content_type == 'task' %}badge-discussion
+                {% elif item.content_type == 'event' %}badge-approved
+                {% elif item.content_type == 'citizen' %}badge-rejected
+                {% else %}badge-proposition
+                {% endif %}">
+                {{ item.content_type|content_type_label }}
+              </span>
+              {% if item.author %}
+              <span style="font-size:.78rem;color:var(--text-muted);">{{ item.author.username }}</span>
+              <span style="color:var(--border);user-select:none;">·</span>
+              {% endif %}
+              <span style="font-size:.75rem;color:var(--text-muted);">{{ item.timestamp|date:"d.m H:i" }}</span>
+            </div>
+
+            <a href="{{ item.url }}"
+               class="d-block {% if not item.is_read %}fw-bold{% endif %}"
+               style="font-size:.9rem;color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              {{ item.title }}
+              {% if item.content_type == 'room_messages' and item.message_count > 1 %}
+                <span class="badge-status badge-discussion ms-1" style="vertical-align:middle;font-size:.65rem;">
+                  {{ item.message_count }}
+                </span>
+              {% endif %}
+            </a>
+
+            {% if item.description and item.content_type != 'event' %}
+            <p class="mb-0 mt-1 description-truncate" style="font-size:.78rem;color:var(--text-muted);">
+              {{ item.description|safe }}
+            </p>
+            {% endif %}
+          </div>
+
+          <div class="d-flex align-items-center gap-1 flex-shrink-0">
+            {% if not item.is_read %}
+            <button class="btn btn-sm btn-outline-secondary mark-read"
+                    data-id="{{ item.content_type }}-{{ item.object_id }}"
+                    title="{% trans 'Oznacz jako przeczytane' %}"
+                    style="padding:.25rem .5rem;">
+              <i class="fas fa-check"></i>
+            </button>
+            {% else %}
+            <button class="btn btn-sm btn-outline-secondary mark-unread"
+                    data-id="{{ item.content_type }}-{{ item.object_id }}"
+                    title="{% trans 'Oznacz jako nieprzeczytane' %}"
+                    style="padding:.25rem .5rem;">
+              <i class="far fa-circle"></i>
+            </button>
+            {% endif %}
+            <a href="{{ item.url }}"
+               class="btn btn-sm btn-outline-primary"
+               style="padding:.25rem .5rem;"
+               title="{% trans 'Przejdź' %}">
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="p-5 text-center">
+      <i class="fas fa-inbox fa-2x d-block mb-2" style="color:var(--text-muted);opacity:.35;"></i>
+      <span style="font-size:.875rem;color:var(--text-muted);">{% trans "Brak aktywności z ostatnich 30 dni" %}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if user.is_authenticated %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-	// Handle toggle unread filter button
-	const toggleButton = document.getElementById('toggle-unread');
-	if (toggleButton) {
-		// Get initial state from backend (data-filtered attribute set by Django template)
-		const backendFiltered = toggleButton.getAttribute('data-filtered') === 'true';
-		const localStorageFiltered = localStorage.getItem('showUnreadOnly');
-		
-		// If localStorage has a value but backend doesn't match, sync backend to localStorage
-		if (localStorageFiltered !== null && localStorageFiltered !== backendFiltered.toString()) {
-			const shouldFilter = localStorageFiltered === 'true';
-			// Sync session with localStorage and reload
-			saveFilterStateAndReload(shouldFilter);
-			return; // Exit early, page will reload
-		}
-		
-		// Otherwise, sync localStorage with backend state
-		localStorage.setItem('showUnreadOnly', backendFiltered.toString());
-		
-		toggleButton.addEventListener('click', function() {
-			const isCurrentlyFiltered = this.getAttribute('data-filtered') === 'true';
-			const newFilteredState = !isCurrentlyFiltered;
-			
-			// Save to localStorage
-			localStorage.setItem('showUnreadOnly', newFilteredState.toString());
-			
-			// Save to session and reload
-			saveFilterStateAndReload(newFilteredState);
-		});
-	}
-	
-	// Function to save filter state to session and reload page
-	function saveFilterStateAndReload(isFiltered) {
-		fetch('{% url "save_filter_state" %}', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'X-CSRFToken': getCookie('csrftoken'),
-			},
-			body: `show_unread_only=${isFiltered.toString()}`
-		})
-		.then(response => response.json())
-		.then(data => {
-			if (data.success) {
-				// Reload page to apply filter (session is now updated)
-				window.location.href = window.location.pathname;
-			} else {
-				console.error('Failed to save filter state:', data.error);
-			}
-		})
-		.catch(error => {
-			console.error('Error saving filter state:', error);
-		});
-	}
-	
-	// Mark all as read functionality
-	const markAllReadButton = document.getElementById('mark-all-read');
-	if (markAllReadButton) {
-		// Check initial state
-		updateMarkAllReadButton();
-		
-		markAllReadButton.addEventListener('click', function() {
-			const unreadItems = document.querySelectorAll('.feed-item.unread');
-			if (unreadItems.length === 0) {
-				return; // No unread items to mark
-			}
-			
-			// Disable button during processing
-			this.disabled = true;
-			this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>{% trans "Processing..." %}';
-			
-			// Single request to mark all as read
-			fetch('{% url "mark_all_read" %}', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-					'X-CSRFToken': getCookie('csrftoken'),
-				}
-			})
-			.then(response => response.json())
-			.then(data => {
-				if (data.success) {
-					// Update UI - remove unread styling from all items
-					unreadItems.forEach(item => {
-						item.classList.remove('unread');
-						item.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
-						
-						// Replace mark-read buttons with mark-unread buttons
-						const readButton = item.querySelector('.mark-read');
-						if (readButton) {
-							const dataId = readButton.getAttribute('data-id');
-							const newButton = document.createElement('button');
-							newButton.className = 'btn btn-sm btn-secondary mark-unread';
-							newButton.setAttribute('data-id', dataId);
-							newButton.setAttribute('title', '{% trans "Mark unread" %}');
-							newButton.innerHTML = '<i class="fas fa-plus"></i>';
-							newButton.addEventListener('click', handleMarkUnread);
-							readButton.parentNode.replaceChild(newButton, readButton);
-						}
-					});
-					
-					// Update unread count badge
-					const unreadBadge = document.querySelector('.badge.bg-danger');
-					if (unreadBadge) {
-						unreadBadge.style.display = 'none';
-					}
-					
-					console.log(`Marked ${data.marked_count} items as read`);
-				} else {
-					console.error('Failed to mark all as read:', data.error);
-				}
-			})
-			.catch(error => {
-				console.error('Error marking all as read:', error);
-			})
-			.finally(() => {
-				// Re-enable button and update state
-				this.disabled = false;
-				this.innerHTML = '<i class="fas fa-check-double me-2"></i>{% trans "Mark all as read" %}';
-				updateMarkAllReadButton();
-			});
-		});
-	}
-	
-	function updateMarkAllReadButton() {
-		if (!markAllReadButton) return;
-		
-		const unreadItems = document.querySelectorAll('.feed-item.unread');
-		if (unreadItems.length === 0) {
-			// Disable button if no unread items
-			markAllReadButton.disabled = true;
-			markAllReadButton.setAttribute('title', '{% trans "No unread items" %}');
-			markAllReadButton.classList.add('btn-secondary');
-			markAllReadButton.classList.remove('btn-success');
-		} else {
-			// Enable button if there are unread items
-			markAllReadButton.disabled = false;
-			markAllReadButton.setAttribute('title', '{% trans "Mark all items as read" %}');
-			markAllReadButton.classList.remove('btn-secondary');
-			markAllReadButton.classList.add('btn-success');
-		}
-	}
-	
-	// Mark as read functionality
-	document.querySelectorAll('.mark-read').forEach(button => {
-		button.addEventListener('click', function() {
-			const feedItem = this.closest('.feed-item');
-			const dataId = this.getAttribute('data-id');
-			const [contentType, objectId] = dataId.split('-');
-			
-			// Make AJAX call to mark as read
-			fetch('{% url "mark_as_read" %}', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-					'X-CSRFToken': getCookie('csrftoken'),
-				},
-				body: `content_type=${contentType}&object_id=${objectId}`
-			})
-			.then(response => response.json())
-			.then(data => {
-				if (data.success) {
-					// Update UI to show as read
-					feedItem.classList.remove('unread');
-					feedItem.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
-					
-					// Replace "Mark as read" icon with "Mark unread" icon
-					const newButton = document.createElement('button');
-					newButton.className = 'btn btn-sm btn-secondary mark-unread';
-					newButton.setAttribute('data-id', dataId);
-					newButton.setAttribute('title', '{% trans "Mark unread" %}');
-					newButton.innerHTML = '<i class="fas fa-plus"></i>';
-					newButton.addEventListener('click', handleMarkUnread);
-					
-					this.parentNode.replaceChild(newButton, this);
-					
-					// Update mark all read button state
-					updateMarkAllReadButton();
-				} else {
-					console.error('Failed to mark as read:', data.error);
-				}
-			})
-			.catch(error => {
-				console.error('Error:', error);
-			});
-		});
-	});
-	
-	// Mark as unread functionality
-	document.querySelectorAll('.mark-unread').forEach(button => {
-		button.addEventListener('click', handleMarkUnread);
-	});
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ── Toggle unread filter ────────────────────────────────── */
+  const toggleButton = document.getElementById('toggle-unread');
+  if (toggleButton) {
+    const backendFiltered = toggleButton.getAttribute('data-filtered') === 'true';
+    const localStorageFiltered = localStorage.getItem('showUnreadOnly');
+
+    if (localStorageFiltered !== null && localStorageFiltered !== backendFiltered.toString()) {
+      saveFilterStateAndReload(localStorageFiltered === 'true');
+      return;
+    }
+    localStorage.setItem('showUnreadOnly', backendFiltered.toString());
+
+    toggleButton.addEventListener('click', function () {
+      const isCurrentlyFiltered = this.getAttribute('data-filtered') === 'true';
+      const newState = !isCurrentlyFiltered;
+      localStorage.setItem('showUnreadOnly', newState.toString());
+      saveFilterStateAndReload(newState);
+    });
+  }
+
+  function saveFilterStateAndReload(isFiltered) {
+    fetch('{% url "save_filter_state" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: `show_unread_only=${isFiltered}`
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) window.location.href = window.location.pathname;
+    });
+  }
+
+  /* ── Mark all as read ───────────────────────────────────── */
+  const markAllReadButton = document.getElementById('mark-all-read');
+  if (markAllReadButton) {
+    updateMarkAllReadButton();
+
+    markAllReadButton.addEventListener('click', function () {
+      const unreadItems = document.querySelectorAll('.feed-item.unread');
+      if (!unreadItems.length) return;
+
+      this.disabled = true;
+      this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>{% trans "Przetwarzam…" %}';
+
+      fetch('{% url "mark_all_read" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': getCookie('csrftoken'),
+        }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          unreadItems.forEach(item => {
+            item.classList.remove('unread');
+            item.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
+            const readBtn = item.querySelector('.mark-read');
+            if (readBtn) {
+              const dataId = readBtn.getAttribute('data-id');
+              const newBtn = buildMarkUnreadBtn(dataId);
+              readBtn.parentNode.replaceChild(newBtn, readBtn);
+            }
+          });
+        }
+      })
+      .finally(() => {
+        this.disabled = false;
+        this.innerHTML = '<i class="fas fa-check-double me-1"></i>{% trans "Oznacz wszystkie" %}';
+        updateMarkAllReadButton();
+      });
+    });
+  }
+
+  function updateMarkAllReadButton() {
+    if (!markAllReadButton) return;
+    const hasUnread = document.querySelectorAll('.feed-item.unread').length > 0;
+    markAllReadButton.disabled = !hasUnread;
+  }
+
+  /* ── Mark single item as read ───────────────────────────── */
+  document.querySelectorAll('.mark-read').forEach(btn => btn.addEventListener('click', handleMarkRead));
+
+  function handleMarkRead(e) {
+    const feedItem = e.currentTarget.closest('.feed-item');
+    const dataId   = e.currentTarget.getAttribute('data-id');
+    const [contentType, objectId] = dataId.split('-');
+
+    fetch('{% url "mark_as_read" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: `content_type=${contentType}&object_id=${objectId}`
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        feedItem.classList.remove('unread');
+        feedItem.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
+        const newBtn = buildMarkUnreadBtn(dataId);
+        e.currentTarget.parentNode.replaceChild(newBtn, e.currentTarget);
+        updateMarkAllReadButton();
+      }
+    });
+  }
+
+  /* ── Mark single item as unread ─────────────────────────── */
+  document.querySelectorAll('.mark-unread').forEach(btn => btn.addEventListener('click', handleMarkUnread));
+
+  function handleMarkUnread(e) {
+    const feedItem = e.currentTarget.closest('.feed-item');
+    const dataId   = e.currentTarget.getAttribute('data-id');
+    const [contentType, objectId] = dataId.split('-');
+
+    fetch('{% url "mark_unread" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: `content_type=${contentType}&object_id=${objectId}`
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        feedItem.classList.add('unread');
+        feedItem.querySelector('a').classList.add('fw-bold');
+        const newBtn = buildMarkReadBtn(dataId);
+        e.currentTarget.parentNode.replaceChild(newBtn, e.currentTarget);
+        updateMarkAllReadButton();
+      }
+    });
+  }
+
+  /* ── Button builders ────────────────────────────────────── */
+  function buildMarkReadBtn(dataId) {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm btn-outline-secondary mark-read';
+    btn.setAttribute('data-id', dataId);
+    btn.setAttribute('title', '{% trans "Oznacz jako przeczytane" %}');
+    btn.style.cssText = 'padding:.25rem .5rem;';
+    btn.innerHTML = '<i class="fas fa-check"></i>';
+    btn.addEventListener('click', handleMarkRead);
+    return btn;
+  }
+
+  function buildMarkUnreadBtn(dataId) {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-sm btn-outline-secondary mark-unread';
+    btn.setAttribute('data-id', dataId);
+    btn.setAttribute('title', '{% trans "Oznacz jako nieprzeczytane" %}');
+    btn.style.cssText = 'padding:.25rem .5rem;';
+    btn.innerHTML = '<i class="far fa-circle"></i>';
+    btn.addEventListener('click', handleMarkUnread);
+    return btn;
+  }
+
+  /* ── CSRF helper ─────────────────────────────────────────── */
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    return v ? decodeURIComponent(v[2]) : null;
+  }
+
 });
-
-function handleMarkUnread(event) {
-	const feedItem = event.target.closest('.feed-item');
-	const dataId = event.target.closest('button').getAttribute('data-id');
-	const [contentType, objectId] = dataId.split('-');
-	
-	// Make AJAX call to mark as unread
-	fetch('{% url "mark_unread" %}', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-			'X-CSRFToken': getCookie('csrftoken'),
-		},
-		body: `content_type=${contentType}&object_id=${objectId}`
-	})
-	.then(response => response.json())
-	.then(data => {
-		if (data.success) {
-			// Update UI to show as unread
-			feedItem.classList.add('unread');
-			feedItem.querySelector('a').classList.add('fw-bold');
-			
-			// Replace "Mark unread" icon with "Mark as read" icon
-			const newButton = document.createElement('button');
-			newButton.className = 'btn btn-sm btn-secondary mark-read';
-			newButton.setAttribute('data-id', dataId);
-			newButton.setAttribute('title', '{% trans "Mark as read" %}');
-			newButton.innerHTML = '<i class="fas fa-check"></i>';
-			newButton.addEventListener('click', function() {
-				// Re-add mark as read functionality
-				const feedItem = this.closest('.feed-item');
-				const dataId = this.getAttribute('data-id');
-				const [contentType, objectId] = dataId.split('-');
-				
-				fetch('{% url "mark_as_read" %}', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/x-www-form-urlencoded',
-						'X-CSRFToken': getCookie('csrftoken'),
-					},
-					body: `content_type=${contentType}&object_id=${objectId}`
-				})
-				.then(response => response.json())
-				.then(data => {
-					if (data.success) {
-						feedItem.classList.remove('unread');
-						feedItem.querySelectorAll('.fw-bold').forEach(el => el.classList.remove('fw-bold'));
-						
-						const newUnreadButton = document.createElement('button');
-						newUnreadButton.className = 'btn btn-sm btn-outline-secondary mark-unread';
-						newUnreadButton.setAttribute('data-id', dataId);
-						newUnreadButton.setAttribute('title', '{% trans "Mark unread" %}');
-						newUnreadButton.innerHTML = '<i class="fas fa-plus"></i>';
-						newUnreadButton.addEventListener('click', handleMarkUnread);
-						
-						this.parentNode.replaceChild(newUnreadButton, this);
-					}
-				});
-			});
-			
-			event.target.closest('button').parentNode.replaceChild(newButton, event.target.closest('button'));
-			
-			// Update mark all read button state
-			updateMarkAllReadButton();
-		} else {
-			console.error('Failed to mark as unread:', data.error);
-		}
-	})
-	.catch(error => {
-		console.error('Error:', error);
-	});
-}
-
-// Helper function to get CSRF token
-function getCookie(name) {
-	let cookieValue = null;
-	if (document.cookie && document.cookie !== '') {
-		const cookies = document.cookie.split(';');
-		for (let i = 0; i < cookies.length; i++) {
-			const cookie = cookies[i].trim();
-			if (cookie.substring(0, name.length + 1) === (name + '=')) {
-				cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-				break;
-			}
-		}
-	}
-	return cookieValue;
-}
 </script>
 {% endif %}
 {% endblock %}

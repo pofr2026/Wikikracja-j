@@ -1,0 +1,45 @@
+{% extends 'obywatele/menu.html' %}
+{% load i18n %}
+
+{% block citizens %}
+<div class="container section">
+  <div class="mb-3">
+    <a href="{% url 'obywatele:obywatele_szczegoly' pk=target_user.pk %}" class="btn btn-sm btn-outline-secondary">
+      ← {{ target_user.username }}
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="section-heading">
+        {% if is_own %}
+          {% trans "My chats" %}
+        {% else %}
+          {% blocktrans with name=target_user.username %}Chats of {{ name }}{% endblocktrans %}
+        {% endif %}
+      </span>
+    </div>
+    <div class="card-body p-0">
+      {% if rooms %}
+        <ul class="list-group list-group-flush">
+          {% for room, room_name in rooms %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <a href="{% url 'chat:chat' %}#room_id={{ room.id }}">{{ room_name }}</a>
+              <span class="d-flex gap-2 align-items-center">
+                {% if room.protected %}
+                  <span class="badge text-bg-secondary">{% trans "protected" %}</span>
+                {% endif %}
+                {% if room.last_activity %}
+                  <small class="text-muted">{{ room.last_activity|date:"Y-m-d" }}</small>
+                {% endif %}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted p-3 mb-0">{% trans "No chats found." %}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock citizens %}

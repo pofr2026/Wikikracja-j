@@ -34,10 +34,7 @@ body {
 
 /* Card styles handled by Darkly theme */
 
-.list-group-item {
-  background: var(--bs-dark);
-  border-color: var(--bs-gray-700);
-}
+/* list-group-item colors handled by Agora design system below */
 
 .table thead th {
   text-transform: uppercase;
@@ -80,38 +77,37 @@ tr.user-row:hover .copy-btn {
   white-space: nowrap;
 }
 
-/* Nav tab buttons — glassmorphism style */
+/* Nav tab buttons — glassmorphism style (uses design tokens) */
 .btn.btn-secondary {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.65);
+  background: var(--btn-glass-bg);
+  border: 1px solid var(--btn-glass-border);
+  color: var(--btn-glass-color);
   backdrop-filter: blur(4px);
   transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .btn.btn-secondary:hover,
 .btn.btn-secondary:focus {
-  background: rgba(255, 255, 255, 0.11);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--btn-glass-hover-bg);
+  border-color: var(--btn-glass-hover-border);
+  color: var(--btn-glass-hover-color);
   box-shadow: none;
 }
 
 .btn.btn-primary {
-  background: rgba(0, 188, 140, 0.15);
-  border: 1px solid rgba(0, 188, 140, 0.35);
-  color: #00bc8c;
+  background: var(--accent-muted);
+  border: 1px solid var(--accent);
+  color: var(--accent);
   backdrop-filter: blur(4px);
   transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-  box-shadow: 0 0 8px rgba(0, 188, 140, 0.25);
 }
 
 .btn.btn-primary:hover,
 .btn.btn-primary:focus {
-  background: rgba(0, 188, 140, 0.22);
-  border-color: rgba(0, 188, 140, 0.55);
-  color: #00e6ac;
-  box-shadow: 0 0 14px rgba(0, 188, 140, 0.4);
+  background: var(--accent-muted);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 14px var(--accent-muted);
 }
 
 /* Button styles handled by Bootstrap */
@@ -135,11 +131,7 @@ td a {
 
 /* Overwrite bootstrap - borders */
 .list-group-item+.list-group-item {
-  border-top-width: 2;
-}
-
-.list-group-item {
-  color: #00bc8c !important;
+  border-top-width: 1px;
 }
 
 /* For Board and TinyMCE. Makes pictures responsive */
@@ -192,17 +184,8 @@ img {
 }
 
 @keyframes text-flash {
-
-  0%,
-  100% {
-    opacity: 1;
-    color: #0d6efd;
-  }
-
-  50% {
-    opacity: 0.3;
-    color: #0d6efd;
-  }
+  0%, 100% { opacity: 1;   color: var(--accent); }
+  50%       { opacity: 0.3; color: var(--accent); }
 }
 
 /* Task actions layout */
@@ -538,3 +521,125 @@ hr { border-color: var(--border) !important; opacity: 1 !important; }
   color: var(--text-muted) !important;
   opacity: .4;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES  [data-theme="light"]
+   CSS variables handle most things; this block fixes elements
+   that use hardcoded dark-only colours.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Agora section overrides: replace hardcoded rgba(0,209,178,…) with accent tokens */
+[data-theme="light"] .btn-outline-primary,
+[data-theme="light"] .btn-info {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+[data-theme="light"] .btn-outline-primary:hover,
+[data-theme="light"] .btn-info:hover {
+  background: var(--accent-muted) !important;
+  box-shadow: none !important;
+}
+[data-theme="light"] .btn-outline-secondary,
+[data-theme="light"] .btn-outline-light {
+  border-color: var(--border) !important;
+  color: var(--text-muted) !important;
+}
+[data-theme="light"] .btn-outline-secondary:hover {
+  background: rgba(0,0,0,.06) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(0,0,0,.2) !important;
+}
+
+/* Cards hover: replace hardcoded rgba(0,209,178,…) */
+[data-theme="light"] .card:hover {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent-muted), 0 4px 20px rgba(0,0,0,.1) !important;
+}
+[data-theme="light"] .card-header {
+  background: rgba(0,0,0,.02) !important;
+}
+
+/* Feed items */
+[data-theme="light"] .feed-item:hover {
+  background-color: rgba(0,0,0,.04);
+}
+[data-theme="light"] .feed-item.unread {
+  background-color: rgba(0,0,0,.03);
+  border-left: 4px solid var(--accent);
+}
+[data-theme="light"] .feed-item.unread::before {
+  background: var(--accent);
+}
+
+/* Links */
+[data-theme="light"] td a { color: var(--text-primary); }
+
+/* Table striped */
+[data-theme="light"] .table {
+  --bs-table-striped-bg: rgba(0,0,0,.025);
+  --bs-table-hover-bg: rgba(0,153,132,.05);
+}
+
+/* List group hover */
+[data-theme="light"] .list-group-item:hover {
+  background: rgba(0,0,0,.03) !important;
+}
+[data-theme="light"] .list-group-item.active {
+  background: var(--accent-muted) !important;
+}
+
+/* Proposal card */
+[data-theme="light"] .proposal-card-header:hover {
+  background: rgba(0,0,0,.025);
+}
+[data-theme="light"] .proposal-card-body:hover {
+  background: var(--accent-muted);
+}
+[data-theme="light"] .proposal-author-link:hover {
+  background: rgba(0,0,0,.05);
+}
+[data-theme="light"] .sort-btn.active,
+[data-theme="light"] .view-toggle-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-muted);
+}
+
+/* Alerts: replace hardcoded colors with lighter variants */
+[data-theme="light"] .alert-info    { background: rgba(52,152,219,.07)  !important; color: #1a6e9e !important; border-color: rgba(52,152,219,.2) !important; }
+[data-theme="light"] .alert-success { background: rgba(0,153,132,.07)   !important; color: #065f50 !important; border-color: rgba(0,153,132,.2)  !important; }
+[data-theme="light"] .alert-warning { background: rgba(243,156,18,.07)  !important; color: #8a5d00 !important; border-color: rgba(243,156,18,.2) !important; }
+[data-theme="light"] .alert-danger  { background: rgba(239,68,68,.07)   !important; color: #991b1b !important; border-color: rgba(239,68,68,.2)  !important; }
+
+/* Badges in light mode: darken colors for readable contrast on white */
+[data-theme="light"] .badge.bg-danger   { color: #991b1b !important; }
+[data-theme="light"] .badge.bg-warning  { color: #78420a !important; }
+[data-theme="light"] .badge.bg-success  { color: #065f50 !important; }
+[data-theme="light"] .badge.bg-info     { color: #1a5c8a !important; }
+[data-theme="light"] .badge.bg-primary  { color: #1d4ed8 !important; }
+
+/* Pulse animation: use accent color */
+[data-theme="light"] .chat-room-pulse { color: var(--accent) !important; }
+
+/* Stepper nav */
+[data-theme="light"] .stepper-step-wrap {
+  background: rgba(0,0,0,.04);
+}
+[data-theme="light"] .stepper-step-wrap:hover {
+  background: rgba(0,0,0,.08);
+  filter: none;
+}
+[data-theme="light"] .stepper-step { color: var(--text-muted); }
+[data-theme="light"] .stepper-step:hover { color: var(--text-primary); }
+
+/* Nav tabs */
+[data-theme="light"] .nav-tabs { border-bottom-color: var(--border) !important; }
+[data-theme="light"] .nav-tabs .nav-link { color: var(--text-muted) !important; }
+[data-theme="light"] .nav-tabs .nav-link.active { color: var(--accent) !important; border-bottom-color: var(--accent) !important; }
+
+/* Modal close */
+[data-theme="light"] .btn-close { filter: none; }
+[data-theme="light"] .btn-close:hover { filter: none; opacity: .8; }
+
+/* Section margin: re-expose for .section */
+.section { margin-top: 1rem; margin-bottom: 1rem; }

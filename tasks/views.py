@@ -169,7 +169,14 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        return super().form_valid(form)
+        form.instance.assigned_to = self.request.user
+        response = super().form_valid(form)
+        TaskVote.objects.get_or_create(
+            task=self.object,
+            user=self.request.user,
+            defaults={"value": TaskVote.Value.UP},
+        )
+        return response
 
 
 @require_POST

@@ -978,3 +978,129 @@ def set_user_language(request: HttpRequest):
         response = redirect(next_url)
 
     return response
+
+
+@login_required
+def citizen_czaty(request: HttpRequest, pk: int):
+    from chat.models import Room
+    target_user = get_object_or_404(User, pk=pk)
+    qs = Room.objects.filter(allowed=target_user).order_by('-last_activity')
+    if request.user.pk != pk:
+        qs = qs.filter(public=True)
+    rooms = [(room, room.displayed_name(request.user)) for room in qs]
+    return render(request, 'obywatele/citizen_czaty.html', {
+        'target_user': target_user,
+        'rooms': rooms,
+        'is_own': request.user.pk == pk,
+    })
+
+
+@login_required
+def citizen_zadania(request: HttpRequest, pk: int):
+    from tasks.models import Task
+    target_user = get_object_or_404(User, pk=pk)
+    tasks = (
+        Task.objects
+        .filter(Q(created_by=target_user) | Q(assigned_to=target_user))
+        .distinct()
+        .order_by('-created_at')
+    )
+    return render(request, 'obywatele/citizen_zadania.html', {
+        'target_user': target_user,
+        'tasks': tasks,
+        'is_own': request.user.pk == pk,
+    })
+
+
+@login_required
+def citizen_aktywnosc(request: HttpRequest, pk: int):
+    import datetime
+    from django.urls import reverse
+    from tasks.models import Task, TaskVote, TaskEvaluation
+    from glosowania.models import Argument, ZebranePodpisy, KtoJuzGlosowal
+
+    target_user = get_object_or_404(User, pk=pk)
+    target_profile = get_object_or_404(Uzytkownik, uid=target_user)
+    items = []
+
+    for t in Task.objects.filter(created_by=target_user).order_by('-created_at'):
+        items.append({
+            'type': 'task_created',
+            'title': t.title,
+            'ts': t.created_at,
+            'label': _('Created task'),
+            'url': reverse('tasks:detail', kwargs={'pk': t.pk}),
+        })
+
+    for t in Task.objects.filter(assigned_to=target_user).order_by('-updated_at'):
+        items.append({
+            'type': 'task_assigned',
+            'title': t.title,
+            'ts': t.updated_at,
+            'label': _('Assigned task'),
+            'url': reverse('tasks:detail', kwargs={'pk': t.pk}),
+        })
+
+    for tv in TaskVote.objects.filter(user=target_user).select_related('task').order_by('-updated_at'):
+        items.append({
+            'type': 'task_vote',
+            'title': tv.task.title,
+            'ts': tv.updated_at,
+            'label': _('Voted on task'),
+            'url': reverse('tasks:detail', kwargs={'pk': tv.task_id}),
+        })
+
+    for te in TaskEvaluation.objects.filter(user=target_user).select_related('task').order_by('-updated_at'):
+        items.append({
+            'type': 'task_eval',
+            'title': te.task.title,
+            'ts': te.updated_at,
+            'label': _('Evaluated task'),
+            'url': reverse('tasks:detail', kwargs={'pk': te.task_id}),
+        })
+
+    for arg in Argument.objects.filter(author=target_user).select_related('decyzja').order_by('-created_at'):
+        items.append({
+            'type': 'argument',
+            'title': arg.decyzja.title,
+            'ts': arg.created_at,
+            'label': _('Added argument'),
+            'url': reverse('glosowania:details', kwargs={'pk': arg.decyzja_id}),
+        })
+
+    for zp in ZebranePodpisy.objects.filter(podpis_uzytkownika=target_user).select_related('projekt'):
+        if zp.projekt:
+            items.append({
+                'type': 'signature',
+                'title': zp.projekt.title,
+                'ts': None,
+                'label': _('Signed proposal'),
+                'url': reverse('glosowania:details', kwargs={'pk': zp.projekt_id}),
+            })
+
+    for kg in KtoJuzGlosowal.objects.filter(ktory_uzytkownik_juz_zaglosowal=target_user).select_related('projekt'):
+        items.append({
+            'type': 'voted',
+            'title': kg.projekt.title,
+            'ts': None,
+            'label': _('Voted in referendum'),
+            'url': reverse('glosowania:details', kwargs={'pk': kg.projekt_id}),
+        })
+
+    for ca in CitizenActivity.objects.filter(uzytkownik=target_profile).order_by('-timestamp'):
+        items.append({
+            'type': 'citizen',
+            'title': ca.get_activity_type_display(),
+            'ts': ca.timestamp,
+            'label': _('Citizenship event'),
+            'url': None,
+        })
+
+    epoch = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+    items.sort(key=lambda x: x['ts'] or epoch, reverse=True)
+
+    return render(request, 'obywatele/citizen_aktywnosc.html', {
+        'target_user': target_user,
+        'items': items,
+        'is_own': request.user.pk == pk,
+    })

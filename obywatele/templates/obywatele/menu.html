@@ -6,6 +6,11 @@
 {% include 'glosowania/_card_styles.html' %}
 
 <nav class="stepper-nav">
+  <a href="{% url 'obywatele:parameters' %}"
+     class="stepper-info-btn {% if request.resolver_match.url_name == 'parameters' %}active{% endif %}"
+     title="{% trans 'Parametry' %}">
+    <i class="fas fa-circle-info"></i>
+  </a>
   <div class="stepper-step-wrap {% if request.resolver_match.url_name == 'obywatele' %}active{% endif %}">
     <a href="{% url 'obywatele:obywatele' %}" class="stepper-step">{% trans "Citizens" %}</a>
   </div>
@@ -15,14 +20,8 @@
   <div class="stepper-step-wrap {% if request.resolver_match.url_name == 'assets' %}active{% endif %}">
     <a href="{% url 'obywatele:assets' %}" class="stepper-step">{% trans "Assets" %}</a>
   </div>
-  <span class="stepper-sep"></span>
-  <a href="{% url 'obywatele:parameters' %}"
-     class="stepper-rejected {% if request.resolver_match.url_name == 'parameters' %}active{% endif %}">
-    <i class="fas fa-circle-info fa-fw"></i>
-  </a>
   <a href="{% url 'obywatele:zaproponuj_osobe' %}"
-     class="toolbar-add-btn ms-auto"
-     style="margin-left:auto;">
+     class="toolbar-add-btn ms-auto">
     <i class="fas fa-plus"></i> {% trans "Invite" %}
   </a>
 </nav>

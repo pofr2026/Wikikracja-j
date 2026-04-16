@@ -238,7 +238,7 @@ Do oddania / na sprzedaż / do wypożyczenia:
 	- zadania w których bierze udział
 	- wypowiedzi/argumenty etc...
 - versja strony wraz z listą zmian z każdą wersją
-
+- wszystkie strony mają korzystać z tych samych styli *(Design system / style guide)*
 
 ------------------------------------------------------------
 
