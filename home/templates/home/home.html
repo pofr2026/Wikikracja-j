@@ -142,7 +142,64 @@
 
 <div class="row g-3 mb-3">
 
-  <div class="col-12 col-lg-5">
+  {% if onboarding %}
+  <div class="col-12 col-lg-3">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column gap-2">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="fas fa-rocket" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Pierwsze kroki" %}</span>
+        </div>
+        <ul class="list-unstyled mb-0 d-flex flex-column gap-2" style="font-size:.82rem;">
+
+          <li class="d-flex align-items-start gap-2">
+            {% if onboarding.step1_read %}
+              <i class="fas fa-check-circle mt-1 flex-shrink-0" style="color:#00bc8c;"></i>
+              <span style="color:var(--text-muted);">{% trans "Przeczytaj zasady wspólnoty" %}</span>
+            {% else %}
+              <i class="fas fa-circle mt-1 flex-shrink-0" style="color:var(--text-muted);opacity:.4;"></i>
+              <div>
+                {% if rules_post_pk %}
+                  <a href="{% url 'board:view_post' rules_post_pk %}" style="color:var(--accent);">{% trans "Przeczytaj zasady wspólnoty" %}</a>
+                  <form action="{% url 'mark_rules_read' %}" method="post" class="d-inline ms-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary" style="font-size:.72rem;padding:1px 7px;">{% trans "Przeczytałem" %}</button>
+                  </form>
+                {% else %}
+                  <span style="color:var(--text-muted);">{% trans "Przeczytaj zasady wspólnoty" %}</span>
+                {% endif %}
+              </div>
+            {% endif %}
+          </li>
+
+          <li class="d-flex align-items-start gap-2">
+            {% if onboarding.step2_discussed %}
+              <i class="fas fa-check-circle mt-1 flex-shrink-0" style="color:#00bc8c;"></i>
+              <span style="color:var(--text-muted);">{% trans "Zabierz głos w dyskusji" %}</span>
+            {% else %}
+              <i class="fas fa-circle mt-1 flex-shrink-0" style="color:var(--text-muted);opacity:.4;"></i>
+              <a href="{% url 'glosowania:discussion' %}" style="color:var(--accent);">{% trans "Zabierz głos w dyskusji" %}</a>
+            {% endif %}
+          </li>
+
+          <li class="d-flex align-items-start gap-2">
+            {% if onboarding.step3_voted %}
+              <i class="fas fa-check-circle mt-1 flex-shrink-0" style="color:#00bc8c;"></i>
+              <span style="color:var(--text-muted);">{% trans "Oddaj pierwszy głos" %}</span>
+            {% else %}
+              <i class="fas fa-circle mt-1 flex-shrink-0" style="color:var(--text-muted);opacity:.4;"></i>
+              <a href="{% url 'glosowania:referendum' %}" style="color:var(--accent);">{% trans "Oddaj pierwszy głos" %}</a>
+            {% endif %}
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="col-12 {% if onboarding %}col-lg-5{% else %}col-lg-6{% endif %}">
     {% if active_referendum %}
     <a href="{% url 'glosowania:details' active_referendum.obj.pk %}"
        class="card h-100"
@@ -217,7 +274,7 @@
     {% endif %}
   </div>
 
-  <div class="col-12 col-lg-3">
+  <div class="col-12 {% if onboarding %}col-lg-4{% else %}col-lg-6{% endif %}">
     <div class="card h-100" style="position:relative;">
       <div class="card-body d-flex flex-column gap-2">
 
@@ -262,10 +319,150 @@
     </div>
   </div>
 
+</div>
+
+{# ══ Dolny rząd kart ════════════════════════════════════════════════════════ #}
+<div class="row g-3 mb-3">
+
+  {# ── Karta 4: Kalendarz ─────────────────────────────────────── #}
+  <div class="col-12 col-lg-4">
+    <div class="card h-100" style="position:relative;">
+      <div class="card-body d-flex flex-column gap-2">
+
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="fas fa-calendar-days" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Najbliższe wydarzenia" %}</span>
+        </div>
+
+        {% if upcoming_events %}
+        <ul class="list-unstyled mb-0 d-flex flex-column gap-2" style="flex:1;font-size:.82rem;">
+          {% for ev in upcoming_events %}
+          <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
+            <span class="flex-shrink-0" style="width:.55rem;height:.55rem;border-radius:50%;background:{% if ev.is_public %}#00bc8c{% else %}var(--text-muted){% endif %};opacity:.8;"></span>
+            <span class="flex-shrink-0" style="color:var(--text-muted);white-space:nowrap;">
+              {{ ev.start_date|date:"D d M · H:i" }}
+            </span>
+            <a href="{% url 'events:detail' ev.pk %}"
+               class="task-dash-link"
+               style="color:var(--text-primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1;position:relative;z-index:2;transition:color .15s;"
+               title="{{ ev.title }}">
+              {{ ev.title }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">
+          {% trans "Pełny kalendarz" %} →
+        </span>
+        <a href="{% url 'events:list' %}" class="stretched-link"></a>
+        {% else %}
+        <div class="d-flex flex-column justify-content-center align-items-center gap-2 flex-grow-1 py-2">
+          <p class="mb-0 text-center" style="font-size:.875rem;color:var(--text-muted);">
+            {% trans "Brak nadchodzących wydarzeń" %}
+          </p>
+          <a href="{% url 'events:create' %}" style="font-size:.82rem;color:var(--accent);position:relative;z-index:2;">
+            {% trans "Dodaj wydarzenie" %} →
+          </a>
+        </div>
+        <a href="{% url 'events:list' %}" class="stretched-link"></a>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  {# ── Karta 5: Finanse ───────────────────────────────────────── #}
+  <div class="col-12 col-lg-4">
+    <div class="card h-100" {% if request.user.is_staff %}style="position:relative;"{% endif %}>
+      <div class="card-body d-flex flex-column gap-2">
+
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="fas fa-wallet" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Finanse" %} {{ current_year }}</span>
+        </div>
+
+        <div class="d-flex flex-column gap-1" style="font-size:.82rem;">
+          <div class="d-flex justify-content-between align-items-center">
+            <span style="color:var(--text-muted);"><i class="fas fa-arrow-down me-1" style="color:#00bc8c;"></i>{% trans "Przychody" %}</span>
+            <span style="color:#00bc8c;font-weight:500;">{{ income|floatformat:2 }} PLN</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span style="color:var(--text-muted);"><i class="fas fa-arrow-up me-1" style="color:#e74c3c;"></i>{% trans "Wydatki" %}</span>
+            <span style="color:#e74c3c;font-weight:500;">{{ expenses|floatformat:2 }} PLN</span>
+          </div>
+          <hr class="my-1" style="border-color:var(--border);opacity:.4;">
+          <div class="d-flex justify-content-between align-items-center">
+            <span style="color:var(--text-muted);">{% trans "Saldo" %}</span>
+            <span style="font-weight:600;color:{% if balance >= 0 %}#00bc8c{% else %}#e74c3c{% endif %};">
+              {{ balance|floatformat:2 }} PLN
+            </span>
+          </div>
+        </div>
+
+        {% if request.user.is_staff %}
+        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">
+          {% trans "Pełny raport" %} →
+        </span>
+        <a href="{% url 'bookkeeping:report_list' %}" class="stretched-link"></a>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  {# ── Karta 6: Nowi obywatele ────────────────────────────────── #}
   <div class="col-12 col-lg-4">
     <div class="card h-100">
-      <div class="card-body d-flex align-items-center justify-content-center">
-        <span style="color:var(--text-muted);font-size:.85rem;">TBD</span>
+      <div class="card-body d-flex flex-column gap-2">
+
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <i class="fas fa-users" style="color:var(--accent);font-size:.85rem;"></i>
+          <span class="section-heading" style="font-size:.85rem;">{% trans "Nowi obywatele" %}</span>
+        </div>
+
+        {% if new_citizens %}
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          {% for cit in new_citizens|slice:":6" %}
+          <a href="{% url 'obywatele:obywatele_szczegoly' pk=cit.pk %}"
+             title="{{ cit.uid.username }}"
+             style="text-decoration:none;flex-shrink:0;">
+            {% if cit.avatar %}
+              <img src="{{ cit.avatar.url }}" alt="{{ cit.uid.username }}"
+                   class="rounded-circle"
+                   style="width:36px;height:36px;object-fit:cover;">
+            {% else %}
+              <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white"
+                   style="width:36px;height:36px;font-size:.75rem;flex-shrink:0;background:{{ cit.uid.username|citizen_color }};">
+                {{ cit.uid.username|slice:":2"|upper }}
+              </div>
+            {% endif %}
+          </a>
+          {% endfor %}
+          {% if new_citizens|length > 6 %}
+          <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+               style="width:36px;height:36px;font-size:.72rem;background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border);">
+            +{{ new_citizens|length|add:"-6" }}
+          </div>
+          {% endif %}
+        </div>
+        <p class="mb-0 mt-1" style="font-size:.75rem;color:var(--text-muted);">
+          {% trans "Ostatnio dołączył/a" %}: <strong>{{ new_citizens.0.uid.username }}</strong>
+          · {{ new_citizens.0.uid.date_joined|date:"d.m.Y" }}
+        </p>
+        {% else %}
+        <p class="mb-0" style="font-size:.875rem;color:var(--text-muted);">{% trans "Brak obywateli" %}</p>
+        {% endif %}
+
+        {% if candidates_count %}
+        <div class="mt-auto">
+          <a href="{% url 'obywatele:poczekalnia' %}"
+             class="badge-status"
+             style="background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);text-decoration:none;">
+            <i class="fas fa-clock me-1"></i>{{ candidates_count }} {% trans "oczekujących" %} →
+          </a>
+        </div>
+        {% endif %}
+
       </div>
     </div>
   </div>

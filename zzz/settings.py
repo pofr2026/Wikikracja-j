@@ -459,3 +459,6 @@ PUSH_NOTIFICATIONS_SETTINGS = {
         'sub': f"mailto:{getenv('VAPID_ADMIN_EMAIL', 'admin@example.com')}"
     }
 }
+
+# Onboarding: pk of the Board post 'Zasady wspólnoty'
+ONBOARDING_RULES_POST_ID = None  # set to the pk after creating the post

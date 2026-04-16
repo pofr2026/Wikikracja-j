@@ -62,3 +62,14 @@ class ReadStatus(models.Model):
     
     def __str__(self):
         return f"{self.user.username} read {self.content_type} #{self.object_id}"
+
+
+class OnboardingProgress(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='onboarding')
+    step1_read = models.BooleanField(default=False)
+    step2_discussed = models.BooleanField(default=False)
+    step3_voted = models.BooleanField(default=False)
+
+    @property
+    def completed(self):
+        return self.step1_read and self.step2_discussed and self.step3_voted

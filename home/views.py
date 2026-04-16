@@ -13,7 +13,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.staticfiles import finders
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -26,13 +26,14 @@ from board.models import Post
 from chat.models import Room, Message
 from elibrary.models import Book
 from glosowania.models import Decyzja, Argument as DecyzjaArgument, KtoJuzGlosowal
+from bookkeeping.models import Transaction
 from obywatele.models import Uzytkownik, CitizenActivity
 from tasks.models import Task
 from events.models import Event
 
 # Local folder imports
 from .forms import RememberLoginForm
-from .models import FeedItem, ReadStatus
+from .models import FeedItem, OnboardingProgress, ReadStatus
 
 log = logging.getLogger(__name__)
 
@@ -132,6 +133,42 @@ def home(request: HttpRequest):
             'user_voted': user_voted,
         }
 
+    # Karta 4 — Kalendarz: 3 najbliższe aktywne eventy
+    today_dt = timezone.now()
+    upcoming_events = list(
+        Event.objects.filter(start_date__gte=today_dt, is_active=True)
+        .order_by('start_date')[:3]
+    )
+
+    # Karta 5 — Finanse: przychody/wydatki za bieżący rok
+    current_year = today_dt.year
+    finance_qs = Transaction.objects.filter(payment_received_date__year=current_year)
+    income = finance_qs.filter(type='I').aggregate(total=Sum('amount'))['total'] or 0
+    expenses = finance_qs.filter(type='O').aggregate(total=Sum('amount'))['total'] or 0
+    balance = income - expenses
+
+    # Karta 6 — Nowi obywatele: 6 ostatnio dołączonych aktywnych
+    new_citizens = list(
+        Uzytkownik.objects.filter(uid__is_active=True)
+        .select_related('uid')
+        .order_by('-uid__date_joined')[:7]
+    )
+    candidates_count = (
+        Uzytkownik.objects.filter(uid__is_active=False).count()
+        if request.user.is_staff else None
+    )
+
+    # Onboarding widget
+    onboarding = None
+    try:
+        op = OnboardingProgress.objects.get(user=request.user)
+        if not op.completed:
+            onboarding = op
+    except OnboardingProgress.DoesNotExist:
+        onboarding = OnboardingProgress()  # unsaved, all False defaults
+
+    rules_post_pk = getattr(settings, 'ONBOARDING_RULES_POST_ID', None)
+
     return render(request, 'home/home.html', {
         'feed_items': feed_items,
         'first_unread': first_unread,
@@ -142,6 +179,15 @@ def home(request: HttpRequest):
         'signatures_count': signatures_count,
         'active_referendum': active_referendum,
         'my_tasks': my_tasks,
+        'onboarding': onboarding,
+        'rules_post_pk': rules_post_pk,
+        'upcoming_events': upcoming_events,
+        'income': income,
+        'expenses': expenses,
+        'balance': balance,
+        'current_year': current_year,
+        'new_citizens': new_citizens,
+        'candidates_count': candidates_count,
     })
 
 
@@ -327,6 +373,15 @@ def generate_feed_items(user):
 
 
 @login_required
+@login_required
+@require_POST
+def mark_rules_read(request):
+    obj, _ = OnboardingProgress.objects.get_or_create(user=request.user)
+    obj.step1_read = True
+    obj.save(update_fields=['step1_read'])
+    return redirect(request.POST.get('next', '/'))
+
+
 @require_POST
 def mark_as_read(request):
     """Mark a feed item as read"""

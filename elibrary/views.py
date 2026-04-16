@@ -10,6 +10,7 @@ from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from PIL import Image
 
 # First party imports
+from board.models import Post
 from elibrary.forms import UpdateBookForm
 from elibrary.models import Book
 
@@ -41,10 +42,15 @@ def add(request: HttpRequest):
 
 
 class BookList(LoginRequiredMixin, ListView):
-    # template_name = 'elibrary/elibrary.html'
-
     def get_queryset(self):
         return Book.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['announcements'] = Post.objects.filter(
+            is_important=True, is_archived=False
+        ).order_by('-updated')[:5]
+        return context
 
 
 class BookDeleteView(LoginRequiredMixin, DeleteView):
