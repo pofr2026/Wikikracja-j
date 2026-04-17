@@ -5,8 +5,15 @@
   data-room-type="{% if room.public %}public{% else %}private{% endif %}"
   data-room-id="{{ room.id }}"
   data-room-archived="{{ room.archived }}">
+  {% if room.archived %}
+    <i class="fas fa-lock nav-status nav-status--locked" aria-hidden="true"></i>
+  {% elif room|is_seen_by:user == "false" %}
+    <span class="nav-status nav-status--unread" aria-label="{% trans 'Unread' %}"></span>
+  {% else %}
+    <span class="nav-status nav-status--read" aria-hidden="true"></span>
+  {% endif %}
   <div class="room-name flex-grow-1">
-    {{ room|name_for:user }}
+    {% if override_label %}{{ override_label }}{% else %}{{ room|name_for:user }}{% endif %}
   </div>
 
   <div class="room-controls">

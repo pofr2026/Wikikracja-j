@@ -244,11 +244,12 @@ export function parseParms(str) {
  * @returns {string} - Translated string or original if translation not found
  */
 export function _(s) {
-    let translation = TRANSLATIONS[s];
+    // typeof never throws for undeclared vars — safe in modules without TRANSLATIONS defined
+    const T = typeof TRANSLATIONS !== 'undefined' ? TRANSLATIONS : {};
+    const translation = T[s];
     if (translation !== undefined) {
         return translation;
     }
-    console.warn("translation for '" + s + "' was not passed to JS. Take a look at chat.views.get_translations");
     return s;
 }
 

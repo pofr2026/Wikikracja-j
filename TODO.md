@@ -237,8 +237,10 @@ Do oddania / na sprzedaż / do wypożyczenia:
 	- wszystkie wpisy w czacie
 	- zadania w których bierze udział
 	- wypowiedzi/argumenty etc...
+  -{napisać wiadomość bezpośrednio}
 - versja strony wraz z listą zmian z każdą wersją
 - wszystkie strony mają korzystać z tych samych styli *(Design system / style guide)*
+- system update, tak żeby można było zrobić update strony jednym przyciskiem (ściąga repo z githuba i instaluje)
 
 ------------------------------------------------------------
 

@@ -77,10 +77,11 @@
 	.layout-wrapper { display: flex !important; min-height: 100vh; }
 	/* sidebar */
 	.sidebar {
-	  width: var(--sidebar-width); background: var(--bg-sidebar);
+	  width: max-content; background: var(--bg-sidebar);
 	  display: flex !important; flex-direction: column;
-	  position: fixed; top: 0; left: 0; height: 100vh;
+	  position: sticky; top: 0; left: 0; height: 100vh; align-self: flex-start;
 	  z-index: 100; border-right: 1px solid var(--border); overflow: hidden;
+	  flex-shrink: 0;
 	}
 	.sidebar-logo { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 	.sidebar-version-link { font-size:.6rem; color:var(--text-muted); font-family:'Courier New',monospace; display:inline-block; margin-top:3px; text-align:right; text-decoration:none !important; border:1px solid transparent; border-radius:.35rem; padding:.15rem .4rem; transition:color .15s, border-color .15s; float:right; }
@@ -114,7 +115,7 @@
 	.sidebar-user .user-name { font-size: .8rem; color: var(--text-primary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 	.sidebar-user .user-role { font-size: .68rem; color: var(--text-muted); display: block; }
 	/* main area */
-	.main-area { margin-left: var(--sidebar-width); flex: 1; display: flex !important; flex-direction: column; min-height: 100vh; min-width: 0; }
+	.main-area { margin-left: 0; flex: 1; display: flex !important; flex-direction: column; min-height: 100vh; min-width: 0; }
 	/* topbar */
 	.topbar {
 	  height: var(--topbar-height); background: var(--bg-sidebar);
@@ -199,7 +200,7 @@
 	a:hover { opacity: .85; }
 	/* responsive */
 	@media (max-width: 768px) {
-	  .sidebar { transform: translateX(-100%); transition: transform .25s ease; }
+	  .sidebar { position: fixed; width: var(--sidebar-width); transform: translateX(-100%); transition: transform .25s ease; }
 	  .sidebar.sidebar-open { transform: translateX(0); }
 	  .main-area { margin-left: 0; }
 	  .topbar .search-box { width: 130px; }
@@ -269,11 +270,12 @@
 	  display: none !important;
 	}
 	.main-area {
-	  transition: margin-left .2s ease;
+	  transition: none;
 	}
 	.main-area.sidebar-collapsed {
-	  margin-left: var(--sidebar-collapsed-width);
+	  margin-left: 0;
 	}
+	.sidebar.collapsed .sidebar-version-link { display: none !important; }
 	</style>
 
   <!-- Main app script with config data -->

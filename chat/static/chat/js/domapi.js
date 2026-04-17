@@ -25,7 +25,8 @@ export default class DomApi {
     }
 
     createRoomDiv(room_id, title, is_public, notifs_enabled) {
-        const html = Room({ room_id, title, is_public, notifs_enabled });
+        const messageMaxLength = window.SITE_SETTINGS?.messageMaxLength ?? 500;
+        const html = Room({ room_id, title, is_public, notifs_enabled, messageMaxLength });
         const container = $('.chat-root-messages');
         // Preserve the folded room header when clearing container
         const foldedHeader = $('#folded-room-header');
@@ -44,13 +45,17 @@ export default class DomApi {
         return room ? $('.messages', room) : null;
     }
 
-    addMessage(room_id, message_id, username, message, upvotes, downvotes, vote, own, edited, attachments, original_ts, latest_ts) {
+    addMessage(room_id, message_id, username, message, upvotes, downvotes, vote, own, edited, attachments, original_ts, latest_ts, reply_to = null, reactions = null, your_reactions = null, read_by = null) {
         const html = Message({
             room_id, message_id, username,
             message: this.formatMessage(message),
             upvotes, downvotes, vote, own, edited, attachments,
             original_ts, latest_ts: formatTime(latest_ts),
             type: this.getRoomType(room_id),
+            reply_to,
+            reactions: reactions ?? { bulb: 0, question: 0 },
+            your_reactions: your_reactions ?? [],
+            read_by: read_by ?? [],
         });
 
         this.getMessagesDiv()?.insertAdjacentHTML('beforeend', html);
@@ -68,6 +73,29 @@ export default class DomApi {
         message.classList.add('msg-highlight');
         setTimeout(() => message.classList.remove('msg-highlight'), 5000);
         return true;
+    }
+
+    updateVoteBar(message_id, upvotes, downvotes) {
+        const msgDiv = this.getMessageDiv(message_id);
+        if (!msgDiv) return;
+        const total = upvotes + downvotes;
+        const barWrap = $('.vote-bar-wrap', msgDiv);
+        const barFill = $('.vote-bar-fill', msgDiv);
+        const barLabel = $('.vote-bar-label', msgDiv);
+        if (total >= 3) {
+            const pct = Math.round((upvotes / total) * 100);
+            const cls = pct >= 60 ? 'vote-bar--positive' : (pct >= 40 ? 'vote-bar--neutral' : 'vote-bar--negative');
+            if (barFill) {
+                barFill.style.width = `${pct}%`;
+                barFill.className = `vote-bar-fill ${cls}`;
+            }
+            if (barLabel) barLabel.textContent = `${pct}% popiera`;
+            if (barWrap) barWrap.style.display = '';
+            if (barLabel) barLabel.style.display = '';
+        } else {
+            if (barWrap) barWrap.style.display = 'none';
+            if (barLabel) barLabel.style.display = 'none';
+        }
     }
 
     getMessageUpvotesCountDiv(message_id) {
@@ -130,13 +158,20 @@ export default class DomApi {
 
     getMessageText(message_id) {
         const msgDiv = this.getMessageDiv(message_id);
-        return msgDiv ? $(".msg-text", msgDiv)?.textContent ?? '' : '';
+        if (!msgDiv) return '';
+        const msgText = $(".msg-text", msgDiv);
+        if (!msgText) return '';
+        // Return innerHTML to preserve rich text formatting
+        return msgText.innerHTML ?? '';
     }
 
     formatMessage(raw_message) {
-        let escaped = escapeHtml(raw_message);
-        const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)/g;
-        return escaped.replace(URL_REGEX, (match) => `<a href='${match}' target="_blank">${match}</a>`);
+        const ALLOWED_TAGS = ['b', 'i', 'u', 'br'];
+        const clean = (typeof DOMPurify !== 'undefined')
+            ? DOMPurify.sanitize(raw_message, { ALLOWED_TAGS, ALLOWED_ATTR: [] })
+            : escapeHtml(raw_message);
+        const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/g;
+        return clean.replace(URL_REGEX, (match) => `<a href='${match}' target="_blank">${match}</a>`);
     }
 
     getPreviewDiv() {
@@ -148,7 +183,16 @@ export default class DomApi {
     }
 
     seenChat(room_id) {
-        this.getRoomLinkDiv(room_id)?.classList.remove("room-not-seen");
+        const roomLink = this.getRoomLinkDiv(room_id);
+        roomLink?.classList.remove("room-not-seen");
+        // Swap unread dot → read circle
+        const unreadDot = roomLink?.querySelector('.nav-status--unread');
+        if (unreadDot) {
+            unreadDot.classList.remove('nav-status--unread');
+            unreadDot.classList.add('nav-status--read');
+            unreadDot.removeAttribute('aria-label');
+            unreadDot.setAttribute('aria-hidden', 'true');
+        }
         this.setRoomSeenIconState(room_id, true);
         if ($$('.room-not-seen').length === 0) {
             removeNotification();
@@ -175,7 +219,37 @@ export default class DomApi {
     }
 
     getEnteredText() {
-        return this.getMessageInput()?.value ?? '';
+        const el = this.getMessageInput();
+        if (!el) return '';
+        if (el.isContentEditable) {
+            const ALLOWED_TAGS = ['b', 'i', 'u', 'br'];
+            // Walk the DOM and serialize to HTML, converting block elements to <br>
+            // so that newlines entered by the user are preserved.
+            const BLOCK = new Set(['DIV', 'P', 'SECTION', 'ARTICLE', 'BLOCKQUOTE', 'LI']);
+            function serialize(node, isFirst) {
+                if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+                if (node.nodeType !== Node.ELEMENT_NODE) return '';
+                const tag = node.tagName.toUpperCase();
+                if (tag === 'BR') return '<br>';
+                const inner = Array.from(node.childNodes).map((c, i) => serialize(c, i === 0)).join('');
+                if (BLOCK.has(tag)) return (isFirst ? '' : '<br>') + inner;
+                if (tag === 'B') return `<b>${inner}</b>`;
+                if (tag === 'I') return `<i>${inner}</i>`;
+                if (tag === 'U') return `<u>${inner}</u>`;
+                return inner;
+            }
+            const html = Array.from(el.childNodes).map((c, i) => serialize(c, i === 0)).join('');
+            return (typeof DOMPurify !== 'undefined')
+                ? DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR: [] })
+                : html.replace(/<(?!\/?(?:b|i|u|br)\b)[^>]*>/gi, '');
+        }
+        return el.value ?? '';
+    }
+
+    getVisibleTextLength() {
+        const el = this.getMessageInput();
+        if (!el) return 0;
+        return el.isContentEditable ? (el.textContent || '').length : (el.value || '').length;
     }
 
     getAnonymousValue() {
@@ -208,11 +282,25 @@ export default class DomApi {
         if (input) {
             input.dataset.editMessage = message_id;
             input.dataset.originalMessageText = text;
-            input.value = text;
-            input.style.backgroundColor = '#4a4a00';
+            if (input.isContentEditable) {
+                input.textContent = text;
+            } else {
+                input.value = text;
+            }
+            input.style.borderColor = 'var(--color-warning)';
         }
         this.loadEditingAttachments(message_id, this.getMessageAttachments(message_id));
-        setCaretPosition(this.getMessageInput(), text.length);
+        if (input?.isContentEditable) {
+            input.focus();
+            const range = document.createRange();
+            range.selectNodeContents(input);
+            range.collapse(false);
+            window.getSelection()?.removeAllRanges();
+            window.getSelection()?.addRange(range);
+        } else {
+            setCaretPosition(this.getMessageInput(), text.length);
+        }
+        input?.dispatchEvent(new Event('input'));
     }
 
     stopEditing() {
@@ -222,8 +310,13 @@ export default class DomApi {
             delete input.dataset.editMessage;
             delete input.dataset.removedAttachments;
             delete input.dataset.originalMessageText;
-            input.value = "";
-            input.style.backgroundColor = '#303030';
+            if (input.isContentEditable) {
+                input.innerHTML = '';
+            } else {
+                input.value = '';
+            }
+            input.style.borderColor = '';
+            input.dispatchEvent(new Event('input'));
         }
         this.clearFiles();
     }
@@ -363,8 +456,6 @@ export default class DomApi {
     clearRoomData() {
         const messagesDiv = this.getMessagesDiv();
         if (messagesDiv) messagesDiv.innerHTML = '';
-        const input = this.getMessageInput();
-        if (input) input.value = "";
         this.clearFiles();
         this.stopEditing();
         messagesDiv?.insertAdjacentHTML('beforeend', "<p class='empty-chat-message'>" + _("Loading...") + "</p>");
@@ -429,6 +520,19 @@ export default class DomApi {
 
     getOriginalMessageText(message_id) {
         return this.getMessageInput()?.dataset.originalMessageText ?? '';
+    }
+
+    /**
+     * Update the sticky breadcrumb above the message list.
+     * @param {Array<{label: string, active?: boolean}>} parts
+     */
+    updateBreadcrumb(parts) {
+        const bc = $('#chat-breadcrumb');
+        if (!bc) return;
+        bc.innerHTML = parts.map((p, i) =>
+            `<span class="bc-seg${p.active ? ' bc-seg--active' : ''}">${p.label}</span>` +
+            (i < parts.length - 1 ? '<span class="bc-sep" aria-hidden="true"> › </span>' : '')
+        ).join('');
     }
 
     /**

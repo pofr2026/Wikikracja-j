@@ -237,6 +237,15 @@ def wspolnota(request: HttpRequest):
         .order_by('-uzytkownik__data_przyjecia')[:5]
     )
 
+    # --- recent chat messages ---
+    from chat.models import Message
+    recent_chat_messages = (
+        Message.objects
+        .filter(room__public=True, room__allowed=request.user)
+        .select_related('sender', 'sender__uzytkownik', 'room')
+        .order_by('-time')[:4]
+    )
+
     # --- finances ---
     this_year = timezone.now().year
     income = Transaction.objects.filter(
@@ -281,6 +290,7 @@ def wspolnota(request: HttpRequest):
         'borrow_count': borrow_count,
         'for_sale_count': for_sale_count,
         'recent_members': recent_members,
+        'recent_chat_messages': recent_chat_messages,
         'income': income,
         'expense': expense,
         'balance': income - expense,

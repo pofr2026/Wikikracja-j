@@ -5,12 +5,12 @@ import os
 from datetime import datetime
 
 # Third party imports
+import bleach
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Count, Prefetch, Q
-from django.utils.html import escape
 from push_notifications.models import APNSDevice, GCMDevice, WebPushDevice
 
 # First party imports
@@ -19,8 +19,12 @@ from zzz.utils import get_site_domain
 # Local folder imports
 from .exceptions import ClientError
 from .group_messages import format_chat_message
-from .models import Message, MessageAttachment, MessageHistory, MessageHistoryEntry, MessageVote, Room
+from .models import Message, MessageAttachment, MessageHistory, MessageHistoryEntry, MessageReaction, MessageReadBy, MessageVote, Room
 from .utils import HandledMessage, Handlers, OnlineUserRegistry, RoomRegistry, helper_method
+
+# HTML sanitizer config for rich text (ZMIANA 6)
+ALLOWED_HTML_TAGS = ['b', 'i', 'u', 'br']
+ALLOWED_HTML_ATTRS = {}
 
 log = logging.getLogger(__name__)
 
@@ -267,14 +271,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         })
 
     @handlers.register("send")
-    async def send_message_to_room(self, proxy: HandledMessage, room_id, message, is_anonymous, attachments):
+    async def send_message_to_room(self, proxy: HandledMessage, room_id, message, is_anonymous, attachments, reply_to_id=None):
         """
-        Called by receive_json when someone
-        sends a message to a room.
+        Called by receive_json when someone sends a message to a room.
+        Opcjonalny parametr reply_to_id obsługuje cytowanie (ZMIANA 2).
         """
         # VALIDATION START
 
-        # Check if room is registry cache (make erros in dev coz of restarts, why not using present fun?)
         if int(room_id) not in self.rooms.items():
             raise ClientError("ROOM_ACCESS_DENIED")
 
@@ -286,26 +289,29 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 if not os.path.exists(f"{settings.BASE_DIR}/media/uploads/{filename}"):
                     raise ClientError("FILE_NOT_FOUND")
 
-        if not message.lstrip() and not attachments:
+        # Sanitize HTML (ZMIANA 6 — rich text)
+        message_clean = bleach.clean(message, tags=ALLOWED_HTML_TAGS, attributes=ALLOWED_HTML_ATTRS, strip=True)
+
+        if not message_clean.strip().replace('<br>', '').replace('<br/>', '') and not attachments:
             raise ClientError("EMPTY_MESSAGE")
 
         sender = self.scope["user"]
         room = await self.get_room_or_error(room_id, sender)
 
-        # impossible to send anonymous messages in private chat
         if not room.public and is_anonymous:
             raise ClientError("ANONYMOUS_IN_PRIVATE")
 
         # VALIDATION END
 
-        # Save message to DB
-        user = await self.get_user_by_name(sender.username)  # ???
+        user = await self.get_user_by_name(sender.username)
         room = await self.get_room(room_id)
 
-        # escape HTML - this is second excaping, no need for that
-        # message = escape(message)
+        msg = Message(sender=user, text=message_clean, room=room, anonymous=is_anonymous)
 
-        msg = Message(sender=user, text=message, room=room, anonymous=is_anonymous)  # time is added in a models.py
+        # ZMIANA 2 — zapisz reply_to
+        if reply_to_id:
+            msg.reply_to_id = int(reply_to_id)
+
         message_id = await self.save_message(msg)
         msg.id = message_id
 
@@ -314,12 +320,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Add upvote by author (default behaviour)
         upvotes, downvotes = await self.add_vote("upvote", message_id)
 
+        # Pobierz dane cytowanej wiadomości (ZMIANA 2)
+        reply_to_data = None
+        if reply_to_id:
+            reply_to_data = await self.get_reply_to_data(int(reply_to_id))
+
         # ...and send to the group info about it
         proxy.group_send(room.group_name, format_chat_message(
             room_id=room_id,
             user_id=sender.id,
             anonymous=is_anonymous,
-            message=message,
+            message=message_clean,
             message_id=message_id,
             upvotes=upvotes,
             downvotes=downvotes,
@@ -328,6 +339,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             date=msg.time,
             latest_date=msg.time,
             attachments=attachments,
+            reply_to=reply_to_data,
         ))
 
         # Make rooms appear unseen for online room members, send push for offline
@@ -477,6 +489,49 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             }
         })
 
+    @handlers.register("message-react")
+    async def handle_message_react(self, proxy: HandledMessage, reaction: str, message_id: int):
+        """
+        ZMIANA 4B — toggle emoji-reakcji (💡 ❓).
+        Broadcast update_reactions do całego pokoju.
+        """
+        valid_reactions = dict(MessageReaction.REACTION_CHOICES)
+        if reaction not in valid_reactions:
+            raise ClientError("INVALID_REACTION")
+
+        added = await self.toggle_reaction(reaction, message_id)
+        counts = await self.get_reaction_counts(message_id)
+        room = await self.get_room_by_message(message_id)
+
+        proxy.group_send(room.group_name, {
+            "type": "chat.reaction",
+            "update_reactions": {
+                "message_id": message_id,
+                "reaction": reaction,
+                "counts": counts,
+                "user_id": self.scope['user'].id,
+                "added": added,
+            }
+        })
+
+    @handlers.register("message-mark-read")
+    async def handle_mark_read(self, proxy: HandledMessage, message_id: int):
+        """
+        ZMIANA 4C — oznacz wiadomość jako przeczytaną przez bieżącego użytkownika.
+        Broadcast messages_read do pokoju.
+        """
+        await self.mark_message_read(message_id)
+        read_by = await self.get_read_by_data(message_id)
+        room = await self.get_room_by_message(message_id)
+
+        proxy.group_send(room.group_name, {
+            "type": "chat.read",
+            "messages_read": {
+                "message_id": message_id,
+                "read_by": read_by,
+            }
+        })
+
     @handlers.register("edit-message")
     async def handle_edit_message(self, proxy: HandledMessage, message_id: int, new_message: str = None, attachments: dict = None, removed_attachments: list = None):
         message = await self.get_message(message_id)
@@ -489,8 +544,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if new_message is None:
             new_message = message.text
         else:
-            # escape HTML only if new message was provided
-            new_message = escape(new_message)
+            # Sanitize HTML (ZMIANA 6 — rich text)
+            new_message = bleach.clean(new_message, tags=ALLOWED_HTML_TAGS, attributes=ALLOWED_HTML_ATTRS, strip=True)
 
         # verify that all new attachments are valid
         if attachments:
@@ -772,7 +827,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             "own": self.scope['user'] == user
         }
 
-    def format_chat_message_data_batch(self, event, users_dict, user_votes_dict):
+    def format_chat_message_data_batch(self, event, users_dict, user_votes_dict, user_reactions_dict=None):
         """
         Optimized version of format_chat_message_data that uses pre-fetched data
         from get_recent_messages_batch() instead of making individual DB queries.
@@ -781,25 +836,21 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         sender_id = event["user_id"]
         message_id = event['message_id']
 
-        # Use pre-fetched user data instead of DB query
         user = users_dict.get(sender_id)
-
-        # Use pre-fetched vote data instead of DB query
         vote_value = user_votes_dict.get(message_id)
+        your_reactions = (user_reactions_dict or {}).get(message_id, [])
 
-        event_copy = {
-            **event
-        }
-        del event_copy["user_id"]  # delete user id to not give away author of anonymous message
+        event_copy = {**event}
+        del event_copy["user_id"]
         del event_copy["type"]
 
         return {
-            **event_copy,  # copy event
-            # Override some of fields based on receiver
+            **event_copy,
             'username': 'Anonymous User' if event["anonymous"] else user.username if user else None,
             "new": event["new"] if self.scope['user'] != user else False,
             "your_vote": vote_value if vote_value else None,
-            "own": self.scope['user'] == user
+            "own": self.scope['user'] == user,
+            "your_reactions": your_reactions,
         }
 
     ###########################################################
@@ -832,6 +883,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         edit = event['edit_message']
         await self.send_json({
             "edit_message": edit
+        })
+
+    async def chat_reaction(self, event):
+        """ZMIANA 4B — broadcast aktualizacji reakcji emoji."""
+        update = {**event['update_reactions']}
+        who_triggered = update['user_id']
+        # Informuj klienta czy to on zareagował
+        update['your_reaction'] = update['reaction'] if who_triggered == self.scope['user'].id else None
+        await self.send_json({
+            "update_reactions": update
+        })
+
+    async def chat_read(self, event):
+        """ZMIANA 4C — broadcast informacji o przeczytaniu wiadomości."""
+        await self.send_json({
+            "messages_read": event['messages_read']
         })
 
     ###########################
@@ -1136,3 +1203,112 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
         user = self.scope['user']
         return list(Room.objects.filter(allowed=user).exclude(muted_by=user))
+
+    # ── ZMIANA 2 — cytowanie ────────────────────────────────────────
+
+    @database_sync_to_async
+    def get_reply_to_data(self, message_id: int):
+        """Pobiera dane cytowanej wiadomości do wyświetlenia w mini-pill."""
+        try:
+            msg = Message.objects.select_related('sender').get(pk=message_id)
+            username = 'Anonymous User' if msg.anonymous else (msg.sender.username if msg.sender else 'Unknown')
+            # Snippet 120 znaków z treści (tekst widzialny, bez HTML)
+            import re
+            plain = re.sub(r'<[^>]+>', '', msg.text)
+            snippet = plain[:120]
+            return {
+                'id': msg.id,
+                'username': username,
+                'text_snippet': snippet,
+                # Kolor autora (hash username → hue dla border-left)
+                'author_color': _username_to_color(username),
+            }
+        except Message.DoesNotExist:
+            return None
+
+    # ── ZMIANA 4B — emoji-reakcje ────────────────────────────────────
+
+    @database_sync_to_async
+    def toggle_reaction(self, reaction: str, message_id: int) -> bool:
+        """Toggle reakcji dla bieżącego użytkownika. Zwraca True jeśli dodano, False jeśli usunięto."""
+        user = self.scope['user']
+        obj, created = MessageReaction.objects.get_or_create(
+            user=user, message_id=message_id, reaction=reaction
+        )
+        if not created:
+            obj.delete()
+            return False
+        return True
+
+    @database_sync_to_async
+    def get_reaction_counts(self, message_id: int) -> dict:
+        """Zwraca słownik {reaction: count} dla danej wiadomości."""
+        from django.db.models import Count as DjCount
+        rows = (
+            MessageReaction.objects
+            .filter(message_id=message_id)
+            .values('reaction')
+            .annotate(count=DjCount('id'))
+        )
+        result = {'bulb': 0, 'question': 0}
+        for row in rows:
+            result[row['reaction']] = row['count']
+        return result
+
+    @database_sync_to_async
+    def get_user_reactions(self, user_id: int, message_id: int) -> list:
+        """Zwraca listę reakcji danego użytkownika dla wiadomości."""
+        return list(
+            MessageReaction.objects
+            .filter(user_id=user_id, message_id=message_id)
+            .values_list('reaction', flat=True)
+        )
+
+    # ── ZMIANA 4C — "przeczytane przez" ─────────────────────────────
+
+    @database_sync_to_async
+    def mark_message_read(self, message_id: int):
+        """Oznacza wiadomość jako przeczytaną przez bieżącego użytkownika."""
+        MessageReadBy.objects.get_or_create(
+            message_id=message_id,
+            user=self.scope['user'],
+        )
+
+    @database_sync_to_async
+    def get_read_by_data(self, message_id: int) -> list:
+        """Zwraca listę {user_id, username, avatar_url} dla wiadomości."""
+        entries = (
+            MessageReadBy.objects
+            .filter(message_id=message_id)
+            .select_related('user__profile')
+            .order_by('id')[:10]
+        )
+        result = []
+        for entry in entries:
+            user = entry.user
+            avatar_url = _get_avatar_url(user)
+            result.append({
+                'user_id': user.id,
+                'username': user.username,
+                'avatar_url': avatar_url,
+            })
+        return result
+
+
+# ── Funkcje pomocnicze (poza klasą) ─────────────────────────────────────────
+
+def _username_to_color(username: str) -> str:
+    """Deterministyczny kolor hex dla nazwy użytkownika (na potrzeby cytatu border-left)."""
+    hue = sum(ord(c) for c in username) % 360
+    return f"hsl({hue}, 60%, 55%)"
+
+
+def _get_avatar_url(user) -> str:
+    """Pobierz URL avatara użytkownika. Fallback do inicjałów przez placeholder."""
+    try:
+        profile = user.profile
+        if profile.avatar:
+            return profile.avatar.url
+    except Exception:
+        pass
+    return f"/static/home/images/favicon.ico"

@@ -34,6 +34,12 @@ const RoomLock = new Lock();
 let CurrentRoomId = null;
 
 /**
+ * Message ID being replied to (ZMIANA 2)
+ * @type {number|null}
+ */
+let currentReplyId = null;
+
+/**
  * Message ID to scroll to when joining a room (e.g., from link)
  * @type {number|null}
  */
@@ -162,9 +168,11 @@ export async function onSocketMessage(data) {
     else if (data.unsee_room) onRoomUnsee(data.unsee_room);
     else if (data.room_seen) onRoomSeen(data.room_seen);
     else if (data.notification) onReceiveNotification(data.notification);
-    else if (data.update_votes) onReceiveVotes(data.update_votes);
-    else if (data.edit_message) onReceiveEdit(data.edit_message);
-    else if (data.online_data) onReceiveOnlineUpdates(data.online_data);
+    else if (data.update_votes)    onReceiveVotes(data.update_votes);
+    else if (data.edit_message)   onReceiveEdit(data.edit_message);
+    else if (data.online_data)    onReceiveOnlineUpdates(data.online_data);
+    else if (data.update_reactions) onReceiveReactions(data.update_reactions);
+    else if (data.messages_read)    onReceiveReadBy(data.messages_read);
     else console.log("Cannot handle message!");
 }
 
@@ -173,58 +181,68 @@ export async function onReceiveNotification(notification) {
 }
 
 /**
- * Expands the category (accordion and archive section if needed) for the given room
+ * Expands the nav-cat-content (and archive section if needed) for the given room link.
  * @param {HTMLElement} roomLink - The room link element
  */
 function expandCategoryForRoom(roomLink) {
-    // Find which section this room belongs to (could be active or archive)
-    const listContainer = roomLink.closest('.list-of-rooms, .list-of-pms');
-    if (!listContainer) return;
-    
-    const sectionId = listContainer.id; // e.g., 'content-pub-rooms-active' or 'content-pub-rooms-archive'
-    
-    // Expand accordion for the main category
-    const accordionMap = {
-        'content-pub-rooms-active': 'toggleButtonPubRoomsActive',
-        'content-pub-rooms-archive': 'toggleButtonPubRoomsActive',
-        'content-tasks-active': 'toggleButtonTasksActive',
-        'content-tasks-archive': 'toggleButtonTasksActive',
-        'content-votes-active': 'toggleButtonVotesActive',
-        'content-votes-archive': 'toggleButtonVotesActive',
-        'content-prv-active': 'toggleButtonPrvActive',
-        'content-prv-archive': 'toggleButtonPrvActive'
-    };
-    
-    const accordionId = accordionMap[sectionId];
-    if (accordionId) {
-        const accordion = document.getElementById(accordionId);
-        const contentEl = document.getElementById(sectionId.replace('-archive', '-active'));
-        
-        if (accordion && contentEl) {
-            // Expand the accordion if it's collapsed
-            if (!accordion.classList.contains('activated')) {
-                accordion.classList.add('activated');
-                contentEl.style.display = 'block';
-                contentEl.style.height = '';
-                contentEl.style.overflow = '';
-                localStorage.setItem(`chat-accordion-${accordionId}`, 'expanded');
-            }
+    // Expand the nav-cat-content that wraps this room
+    const navCatContent = roomLink.closest('.nav-cat-content');
+    if (navCatContent) {
+        if (!navCatContent.classList.contains('open')) {
+            navCatContent.classList.add('open');
+            const catId = navCatContent.id;
+            const catBtn = catId ? document.querySelector(`[data-cat-content="${catId}"]`) : null;
+            if (catBtn) catBtn.setAttribute('aria-expanded', 'true');
+            if (catId) localStorage.setItem(`chat-cat-${catId}`, 'expanded');
         }
     }
-    
-    // If it's an archived room, also expand the archive section
+
+    // If it's inside an archive section, show it too
     const archiveSection = roomLink.closest('.archive-section');
     if (archiveSection) {
-        const archiveSectionId = archiveSection.id; // e.g., 'content-pub-rooms-archive'
-        const targetId = archiveSectionId.replace('content-', ''); // e.g., 'pub-rooms-archive'
-        
+        archiveSection.classList.add('visible');
+        const archiveSectionId = archiveSection.id; // e.g. 'content-pub-rooms-archive'
+        const targetId = archiveSectionId.replace('content-', ''); // e.g. 'pub-rooms-archive'
         const archiveBtn = document.querySelector(`.archive-toggle[data-target="${targetId}"]`);
         if (archiveBtn) {
-            archiveSection.style.display = 'block';
             archiveBtn.classList.add('active');
             localStorage.setItem(`chat-archive-${targetId}`, 'visible');
         }
     }
+}
+
+/**
+ * Build breadcrumb parts array for a given room_id by walking the sidebar DOM.
+ * @param {number|string} room_id
+ * @returns {Array<{label: string, active?: boolean}>}
+ */
+function deriveBreadcrumb(room_id) {
+    const link = DOM_API.getRoomLinkDiv(room_id);
+    if (!link) return [];
+
+    const parts = [];
+
+    // L0 — category label from the nav-cat-btn
+    const navCatContent = link.closest('.nav-cat-content');
+    if (navCatContent) {
+        const catId = navCatContent.id;
+        const catBtn = catId ? document.querySelector(`[data-cat-content="${catId}"]`) : null;
+        if (catBtn) {
+            // Extract text nodes only (skip .nav-cat-arrow span)
+            const label = Array.from(catBtn.childNodes)
+                .filter(n => n.nodeType === Node.TEXT_NODE)
+                .map(n => n.textContent.trim())
+                .filter(Boolean)
+                .join('');
+            if (label) parts.push({ label });
+        }
+    }
+
+    // Leaf — room name (may show override_label = task/vote title)
+    const roomName = link.querySelector('.room-name')?.textContent?.trim();
+    if (roomName) parts.push({ label: roomName, active: true });
+
+    return parts;
 }
 
 export async function onRoomTryJoin(room_id) {
@@ -260,6 +278,7 @@ export async function onRoomTryJoin(room_id) {
     WS_API.seenRoom(room_id);
     DOM_API.setRoomNotifications(response.notifications);
     DOM_API.createRoomDiv(CurrentRoomId, response.title, response.public, response.notifications);
+    DOM_API.updateBreadcrumb(deriveBreadcrumb(room_id));
     DOM_API.setFoldedRoomTitle(response.title);
     DOM_API.showFoldedRoomHeader();
     
@@ -325,7 +344,11 @@ export async function onReceiveMessages(messages) {
         DOM_API.addMessage(
             message.room_id, message.message_id, message.username, message.message,
             message.upvotes, message.downvotes, message.your_vote, message.own, message.edited,
-            message.attachments, message.timestamp, message.latest_timestamp
+            message.attachments, message.timestamp, message.latest_timestamp,
+            message.reply_to ?? null,
+            message.reactions ?? { bulb: 0, question: 0 },
+            message.your_reactions ?? [],
+            message.read_by ?? []
         );
 
         if (message.new && document.hidden && !message.own) {
@@ -363,13 +386,60 @@ export async function onReceiveVotes(event) {
     DOM_API.getMessageDownvotesCountDiv(event.message_id).textContent = event.downvotes;
 
     if (event.your_vote /* vote type e.g. upvote or downvote or null if it wasn't you who triggered */) {
-        // find vote button you pressed
         const active_btn = DOM_API.getVoteDiv(event.message_id, event.your_vote);
-        // make all vote buttons appear inactive
         if (message_div) $$('.msg-vote', message_div).forEach(btn => btn.classList.remove('active'));
-        // vote was added
         if (event.add) active_btn?.classList.add('active');
     }
+
+    // ZMIANA 4A — update vote bar after vote change
+    DOM_API.updateVoteBar(event.message_id, event.upvotes, event.downvotes);
+}
+
+/**
+ * ZMIANA 4B — update emoji reaction counts + active state for a message.
+ */
+export async function onReceiveReactions(event) {
+    const msgDiv = DOM_API.getMessageDiv(event.message_id);
+    if (!msgDiv) return;
+
+    // Update counts
+    for (const [key, count] of Object.entries(event.counts || {})) {
+        const countEl = $(`.reaction-btn[data-reaction="${key}"] .reaction-count`, msgDiv);
+        const btn = $(`.reaction-btn[data-reaction="${key}"]`, msgDiv);
+        if (!btn) continue;
+        if (count > 0) {
+            if (countEl) {
+                countEl.textContent = count;
+            } else {
+                btn.insertAdjacentHTML('beforeend', `<span class="reaction-count">${count}</span>`);
+            }
+        } else if (countEl) {
+            countEl.remove();
+        }
+    }
+
+    // Toggle active state if it was the current user
+    if (event.your_reaction !== undefined && event.your_reaction !== null) {
+        const btn = $(`.reaction-btn[data-reaction="${event.your_reaction}"]`, msgDiv);
+        if (btn) btn.classList.toggle('reaction-btn--active', event.added ?? false);
+    }
+}
+
+/**
+ * ZMIANA 4C — update "read by" avatars for a message.
+ */
+export async function onReceiveReadBy(event) {
+    const msgDiv = DOM_API.getMessageDiv(event.message_id);
+    if (!msgDiv) return;
+    const readByDiv = $('.msg-read-by', msgDiv);
+    if (!readByDiv) return;
+
+    const readBy = event.read_by || [];
+    const visible = readBy.slice(0, 3);
+    const extra = readBy.length - visible.length;
+    readByDiv.innerHTML = visible.map(u =>
+        `<img class="msg-avatar" src="${u.avatar_url}" title="${u.username}" alt="${u.username}">`
+    ).join('') + (extra > 0 ? `<span class="msg-read-extra">+${extra}</span>` : '');
 }
 
 export async function onReceiveEdit(edit_info) {
@@ -408,6 +478,36 @@ export async function onRoomSeen(room_id) {
     DOM_API.getRoomLinkDiv(room_id)?.classList.remove("room-not-seen");
     DOM_API.setRoomSeenIconState(room_id, true);
     updateUnreadFilter();
+}
+
+/**
+ * Set a message as the current reply target (ZMIANA 2).
+ * Updates the reply-preview bar in the input area.
+ */
+export function setReplyTarget(message_id, username, snippet) {
+    currentReplyId = message_id;
+    const preview = document.getElementById('reply-preview');
+    const previewText = document.getElementById('reply-preview-text');
+    if (preview && previewText) {
+        previewText.textContent = `${username}: ${snippet}`;
+        preview.style.display = '';
+    }
+}
+
+/**
+ * Clear the current reply target (ZMIANA 2).
+ */
+export function clearReplyTarget() {
+    currentReplyId = null;
+    const preview = document.getElementById('reply-preview');
+    if (preview) preview.style.display = 'none';
+}
+
+/**
+ * ZMIANA 4B — send toggle-reaction command to server.
+ */
+export function onToggleReaction(reaction, message_id) {
+    WS_API?.toggleReaction(reaction, message_id);
 }
 
 export async function onUpdateVote(vote, message_id, is_add) {
@@ -504,17 +604,28 @@ export async function onSubmitMessage(message, editing_message_id) {
     } else {
         const files = DOM_API.getFiles();
         const attachments = {};
-        if (message.replace(" ", "").length == 0 && (!files || files.length == 0)) return;
+        const messageText = (typeof message === 'string')
+            ? (message.replace(/<[^>]*>/g, '').trim())
+            : '';
+        if (messageText.length === 0 && (!files || files.length === 0)) return;
         if (files?.length) {
             attachments.images = (await WS_API.uploadFiles(files)).filenames;
         }
-        WS_API.sendMessage(CurrentRoomId, message, DOM_API.getAnonymousValue(), attachments);
+        WS_API.sendMessage(CurrentRoomId, message, DOM_API.getAnonymousValue(), attachments, currentReplyId);
+        clearReplyTarget();
         // remove files from input and image preview
         DOM_API.clearFiles();
         const messageInput = DOM_API.getMessageInput();
-        messageInput.value = "";
-        messageInput.style.height = 'auto';
-        messageInput.style.height = '38px';
+        if (messageInput) {
+            if (messageInput.isContentEditable) {
+                messageInput.innerHTML = '';
+            } else {
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                messageInput.style.height = '38px';
+            }
+            messageInput.dispatchEvent(new Event('input'));
+        }
         // Reset editing mode if it was active
         if (DOM_API.isEditing()) {
             DOM_API.stopEditing();

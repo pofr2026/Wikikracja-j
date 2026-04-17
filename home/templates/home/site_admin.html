@@ -10,10 +10,9 @@
     </span>
       <span style="font-size:.72rem;color:var(--text-muted);font-family:'Courier New',monospace;">Wikikracja v.{{ app_version }}</span>
   </div>
-<div><h5>docelowo tu będzie panel admina 
-  <br> np 2 podpisy będą potrzebne, aby zmiany mogły być wprowadzone, 
-  <br><br><br>  <h5>
-    
+<div class="mb-4 px-1" style="font-size:.82rem;color:var(--text-muted);line-height:1.65;">
+    <i class="fas fa-triangle-exclamation me-2" style="color:var(--accent);opacity:.6;"></i>
+    {% trans "Docelowo panel administracyjny będzie wymagał uwierzytelnienia przez kilka uprawnionych osób (domyślnie każdy; zmiany będą logowane)" %}
   </div>
   {# ── PARAMETRY GŁOSOWAŃ ── #}
   <div class="card mb-4">
@@ -95,6 +94,42 @@
         <span style="font-size:.72rem;color:var(--text-muted);">
           <i class="fas fa-info-circle me-1"></i>
           {% trans "Parametry są definiowane jako zmienne środowiskowe. Edycja przez panel będzie dostępna w przyszłej wersji." %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  {# ── AKTUALIZACJE ── #}
+  <div class="card mb-4">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="fas fa-arrow-up-right-dots" style="color:var(--accent);opacity:.8;font-size:.85rem;"></i>
+      <span class="section-heading" style="font-size:.85rem;">{% trans "Aktualizacje" %}</span>
+    </div>
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+        <div>
+          <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.25rem;">{% trans "Twoja aktualna wersja" %}</div>
+          <div class="fw-semibold" style="font-size:1.05rem;font-family:'Courier New',monospace;letter-spacing:.03em;">
+            Wikikracja v.{{ app_version }}
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-sm" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text-muted);font-size:.8rem;cursor:not-allowed;" disabled title="{% trans 'Funkcja planowana w przyszłej wersji' %}">
+            <i class="fas fa-rotate me-1" style="font-size:.75rem;"></i>{% trans "Sprawdź aktualizacje" %}
+          </button>
+          <button class="btn btn-sm" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--text-muted);font-size:.8rem;cursor:not-allowed;" disabled title="{% trans 'Funkcja planowana w przyszłej wersji' %}">
+            <i class="fas fa-download me-1" style="font-size:.75rem;"></i>{% trans "Aktualizuj" %}
+          </button>
+        </div>
+
+      </div>
+
+      <div class="mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,.07);">
+        <span style="font-size:.72rem;color:var(--text-muted);">
+          <i class="fas fa-info-circle me-1"></i>
+          {% trans "Automatyczne sprawdzanie i instalacja aktualizacji są planowane w przyszłej wersji." %}
         </span>
       </div>
     </div>
