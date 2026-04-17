@@ -1,0 +1,50 @@
+{% extends 'home/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="section">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+    <span class="section-heading" style="font-size:.9rem;">
+      <i class="fas fa-tags me-2" style="color:var(--accent);opacity:.8;"></i>{% trans "Kategorie ogłoszeń" %}
+    </span>
+    <div class="d-flex gap-2">
+      <a href="{% url 'board:start' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-bullhorn me-1"></i>{% trans "Ogłoszenia" %}
+      </a>
+      <a href="{% url 'board:category_create' %}" class="btn btn-sm btn-outline-success">
+        <i class="fas fa-plus me-1"></i>{% trans "Dodaj kategorię" %}
+      </a>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>{% trans "Nazwa" %}</th>
+        <th class="text-center">{% trans "Priorytet" %}</th>
+        <th class="text-end">{% trans "Akcje" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in object_list %}
+        <tr>
+          <td>{{ category.name }}</td>
+          <td class="text-center">{{ category.priority }}</td>
+          <td>
+            <div class="btn-group float-end" role="group">
+              <a href="{% url 'board:category_update' category.id %}" class="btn btn-sm btn-primary">{% trans "Edytuj" %}</a>
+              <a href="{% url 'board:category_delete' category.id %}" class="btn btn-sm btn-danger">{% trans "Usuń" %}</a>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="3">{% trans "Brak kategorii." %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock %}

@@ -16,6 +16,7 @@
     {% csrf_token %}
     {{ form.title|as_crispy_field }}
     {{ form.subtitle|as_crispy_field }}
+    {{ form.category|as_crispy_field }}
     <div class="d-flex gap-3 mb-3">
       {{ form.is_public|as_crispy_field }}
       {{ form.is_archived|as_crispy_field }}

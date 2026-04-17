@@ -464,4 +464,4 @@ PUSH_NOTIFICATIONS_SETTINGS = {
 ONBOARDING_RULES_POST_ID = None  # set to the pk after creating the post
 
 # Application version — bump on each release
-APP_VERSION = '1.0'
+APP_VERSION = '0.95'

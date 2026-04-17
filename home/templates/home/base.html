@@ -83,6 +83,8 @@
 	  z-index: 100; border-right: 1px solid var(--border); overflow: hidden;
 	}
 	.sidebar-logo { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+	.sidebar-version-link { font-size:.6rem; color:var(--text-muted); font-family:'Courier New',monospace; display:inline-block; margin-top:3px; text-align:right; text-decoration:none !important; border:1px solid transparent; border-radius:.35rem; padding:.15rem .4rem; transition:color .15s, border-color .15s; float:right; }
+	.sidebar-version-link:hover { color:var(--text-primary) !important; border-color:rgba(255,255,255,.2); }
 	.sidebar-logo .logo-title { color: var(--accent); font-weight: 700; font-size: 1.05rem; display: block; }
 	.sidebar-logo .logo-sub { color: var(--text-muted); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; display: block; margin-top: 2px; }
 	.sidebar-nav { flex: 1; padding: .75rem 0; overflow-y: auto; }
@@ -298,11 +300,13 @@
   <aside class="sidebar" id="sidebar">
 
     <!-- Logo -->
-    <a href="{% url 'home' %}" class="sidebar-logo" style="text-decoration:none;">
-      <span class="logo-title"><i class="fas fa-fw fa-building-columns"></i><span class="logo-label ms-1">{% trans "W Lobby" %}</span></span>
-      <span class="logo-sub">{% trans "Obywatelskie" %}</span>
-      <span class="logo-label" style="font-size:.6rem;color:var(--text-muted);font-family:'Courier New',monospace;display:block;margin-top:3px;text-align:right;">Wikikracja v.{{ app_version }}</span>
-    </a>
+    <div class="sidebar-logo">
+      <a href="{% url 'home' %}" style="text-decoration:none;">
+        <span class="logo-title"><i class="fas fa-fw fa-building-columns"></i><span class="logo-label ms-1">{% trans "W Lobby" %}</span></span>
+        <span class="logo-sub">{% trans "Obywatelskie" %}</span>
+      </a>
+      <a href="{% url 'site_admin' %}" class="sidebar-version-link">Wikikracja v.{{ app_version }}</a>
+    </div>
 
     <!-- Main navigation -->
     <nav class="sidebar-nav">

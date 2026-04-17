@@ -898,3 +898,15 @@ def service_worker(request):
         response['Expires'] = '0'
         response['Service-Worker-Allowed'] = "/"
         return response
+
+
+@login_required
+def site_admin(request: HttpRequest) -> HttpResponse:
+    from board.models import Post as BoardPost
+    return render(request, 'home/site_admin.html', {
+        'signatures': settings.WYMAGANYCH_PODPISOW,
+        'signatures_span': settings.CZAS_NA_ZEBRANIE_PODPISOW,
+        'discussion_span': settings.DYSKUSJA,
+        'referendum_span': settings.CZAS_TRWANIA_REFERENDUM,
+        'documents': BoardPost.objects.filter(is_archived=False).order_by('title'),
+    })
