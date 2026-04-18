@@ -2,6 +2,14 @@
   --app-max-width: 1200px;
 }
 
+/* Bootstrap variable overrides — higher specificity than darkly.css :root */
+html[data-theme] {
+  --bs-body-bg:      var(--bg-base);
+  --bs-body-color:   var(--text-primary);
+  --bs-primary:      var(--accent);
+  --bs-border-color: var(--border);
+}
+
 body {
   background-color: var(--bs-body-bg);
   color: var(--bs-body-color);

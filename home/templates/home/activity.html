@@ -2,63 +2,9 @@
 {% load i18n %}
 {% load feed_filters %}
 
-{% block extra_css %}
-<style>
-.activity-list .feed-row {
-  display: flex;
-  align-items: flex-start;
-  gap: .75rem;
-  padding: .6rem .75rem;
-  border-bottom: 1px solid var(--border);
-  text-decoration: none;
-  color: inherit;
-  transition: background .12s, border-color .12s;
-  position: relative;
-}
-.activity-list .feed-row:last-child { border-bottom: none; }
-.activity-list .feed-row:hover {
-  background: var(--accent-muted);
-  border-color: rgba(0,209,178,.25);
-}
-.activity-list .feed-row:hover .feed-title { color: var(--accent); }
-.feed-title {
-  font-size: .875rem;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color .12s;
-}
-.feed-desc {
-  font-size: .75rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Grid mode */
-.activity-list.view-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: .75rem;
-  padding: .75rem;
-}
-.activity-list.view-grid .feed-row {
-  border: 1px solid var(--border);
-  border-radius: .4rem;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: .4rem;
-}
-.activity-list.view-grid .feed-row:hover { border-color: rgba(0,209,178,.35); }
-.activity-list.view-grid .feed-title { white-space: normal; }
-.activity-list.view-grid .feed-desc { white-space: normal; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
-</style>
 {% endblock %}
 
 {% block content %}
-{% include 'glosowania/_card_styles.html' %}
 <div class="section">
 
   {# ── Toolbar ── #}

@@ -23,55 +23,12 @@
 	<!-- https://fontawesome.com/ -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+	<link rel="stylesheet" type="text/css" href="{% static 'home/css/tokens.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'home/css/darkly.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'home/css/app.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'home/css/components.css' %}">
 
 	<style>
-	/* ===== DESIGN TOKENS ===== */
-	/* Layout (theme-independent) */
-	:root {
-	  --sidebar-width: 240px;
-	  --topbar-height: 60px;
-	  --sidebar-collapsed-width: 52px;
-	}
-	/* Dark theme (default) */
-	:root, [data-theme="dark"] {
-	  --bg-base: #161b2e;
-	  --bg-sidebar: #1c2035;
-	  --bg-card: #1e2340;
-	  --accent: #00d1b2;
-	  --accent-hover: #00b09b;
-	  --accent-muted: rgba(0,209,178,.12);
-	  --color-accent: #00d1b2;
-	  --text-primary: #e8eaf0;
-	  --text-muted: rgba(232,234,240,.55);
-	  --border: rgba(255,255,255,.08);
-	  --btn-glass-bg: rgba(255,255,255,.06);
-	  --btn-glass-border: rgba(255,255,255,.12);
-	  --btn-glass-color: rgba(255,255,255,.65);
-	  --btn-glass-hover-bg: rgba(255,255,255,.11);
-	  --btn-glass-hover-border: rgba(255,255,255,.2);
-	  --btn-glass-hover-color: rgba(255,255,255,.9);
-	}
-	/* Light theme */
-	[data-theme="light"] {
-	  --bg-base: #f0f2f5;
-	  --bg-sidebar: #ffffff;
-	  --bg-card: #ffffff;
-	  --accent: #059984;
-	  --accent-hover: #047a6a;
-	  --accent-muted: rgba(5,153,132,.1);
-	  --color-accent: #059984;
-	  --text-primary: #1e2030;
-	  --text-muted: rgba(30,32,48,.5);
-	  --border: rgba(0,0,0,.1);
-	  --btn-glass-bg: rgba(0,0,0,.04);
-	  --btn-glass-border: rgba(0,0,0,.14);
-	  --btn-glass-color: rgba(0,0,0,.6);
-	  --btn-glass-hover-bg: rgba(0,0,0,.08);
-	  --btn-glass-hover-border: rgba(0,0,0,.22);
-	  --btn-glass-hover-color: rgba(0,0,0,.85);
-	}
 	html, body { background: var(--bg-base) !important; color: var(--text-primary) !important; margin: 0; }
 	/* layout */
 	.layout-wrapper { display: flex !important; min-height: 100vh; }

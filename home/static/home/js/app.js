@@ -155,3 +155,32 @@ document.addEventListener('DOMContentLoaded', function() {
         frequencyField.addEventListener('change', toggleOrdinalFields);
     }
 });
+
+// ============================================================
+// Theme toggle
+// ============================================================
+(function () {
+  const STORAGE_KEY = 'app-theme';
+
+  window.applyTheme = function (theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+    const icon = document.getElementById('theme-toggle-icon');
+    if (icon) icon.className = 'fas fa-circle-half-stroke';
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    window.applyTheme(localStorage.getItem(STORAGE_KEY) || 'dark');
+
+    const btn = document.getElementById('theme-toggle-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      const themes = ['dark', 'light', 'civic'];
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = themes[(themes.indexOf(current) + 1) % themes.length];
+      window.applyTheme(next);
+    });
+    btn.addEventListener('mouseover', function () { btn.style.color = 'var(--text-primary)'; });
+    btn.addEventListener('mouseout',  function () { btn.style.color = ''; });
+  });
+})();

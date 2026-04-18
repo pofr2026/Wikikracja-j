@@ -3,23 +3,6 @@
 {% load i18n %}
 {% load feed_filters %}
 
-{% block extra_css %}
-<style>
-.task-dash-row {
-  border-radius: .35rem;
-  border: 1px solid transparent;
-  padding: 3px 6px;
-  margin: 0 -6px;
-  transition: background .15s, border-color .15s;
-}
-.task-dash-row:hover {
-  background: var(--accent-muted);
-  border-color: rgba(0,209,178,.35);
-}
-.task-dash-row:hover .task-dash-link {
-  color: var(--accent) !important;
-}
-</style>
 {% endblock %}
 
 {% block content %}
