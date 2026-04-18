@@ -135,10 +135,8 @@ msgid "Updated important announcement by %(username)s: %(title)s - %(post_url)s"
 msgstr ""
 
 #: .\board\templates\board\archive.html:10
-#, fuzzy
-#| msgid "Brak ogłoszeń"
 msgid "Archiwum ogłoszeń"
-msgstr "No announcements"
+msgstr "Announcement Archive"
 
 #: .\board\templates\board\archive.html:13
 #: .\board\templates\board\board.html:10
@@ -149,7 +147,7 @@ msgstr "Announcements"
 
 #: .\board\templates\board\archive.html:27
 msgid "Archiwum jest puste"
-msgstr ""
+msgstr "Archive is empty"
 
 #: .\board\templates\board\board.html:15
 msgid "Archiwum"
@@ -157,23 +155,19 @@ msgstr "Archive"
 
 #: .\board\templates\board\board.html:18
 msgid "Kategorie"
-msgstr ""
+msgstr "Categories"
 
 #: .\board\templates\board\board.html:21
-#, fuzzy
-#| msgid "Ogłoszenia"
 msgid "Utwórz ogłoszenie"
-msgstr "Announcements"
+msgstr "Create announcement"
 
 #: .\board\templates\board\board.html:32
 msgid "Wyróżnione"
-msgstr ""
+msgstr "Featured"
 
 #: .\board\templates\board\board.html:44
-#, fuzzy
-#| msgid "Pozostał 1 dzień"
 msgid "Pozostałe"
-msgstr "1 day left"
+msgstr "Other"
 
 #: .\board\templates\board\board.html:58
 #: .\elibrary\templates\elibrary\book_list.html:164
@@ -226,12 +220,12 @@ msgstr ""
 #: .\bookkeeping\templates\bookkeeping\transaction_list.html:63
 #: .\events\templates\events\event_detail.html:16
 msgid "Delete"
-msgstr ""
+msgstr "Delete"
 
 #: .\board\templates\board\post_detail.html:10
 #: .\elibrary\templates\elibrary\book_detail.html:11
 msgid "Wróć"
-msgstr ""
+msgstr "Back"
 
 #: .\board\templates\board\post_detail.html:27
 #: .\chat\templates\chat\chat.html:148
@@ -250,7 +244,7 @@ msgstr ""
 #: .\events\templates\events\event_list.html:92
 #: .\tasks\templates\tasks\task_detail.html:82
 msgid "Edit"
-msgstr ""
+msgstr "Edit"
 
 #: .\board\templates\board\post_detail.html:33
 #: .\chat\templates\chat\add.html:16
@@ -259,17 +253,17 @@ msgstr ""
 #: .\obywatele\templates\obywatele\dodaj.html:71
 #: .\tasks\templates\tasks\task_form.html:32
 msgid "Back"
-msgstr ""
+msgstr "Back"
 
 #: .\board\templates\board\postcategory_confirm_delete.html:9
 #: .\board\templates\board\postcategory_confirm_delete.html:18
 msgid "Usuń kategorię"
-msgstr ""
+msgstr "Delete category"
 
 #: .\board\templates\board\postcategory_confirm_delete.html:12
 #: .\board\templates\board\postcategory_form.html:14
 msgid "Powrót"
-msgstr ""
+msgstr "Back"
 
 #: .\board\templates\board\postcategory_confirm_delete.html:28
 msgid "Ta kategoria jest przypisana do następujących ogłoszeń:"
@@ -289,7 +283,7 @@ msgstr "Date"
 #: .\board\templates\board\postcategory_confirm_delete.html:34
 #: .\board\templates\board\postcategory_list.html:26
 msgid "Akcje"
-msgstr ""
+msgstr "Actions"
 
 #: .\board\templates\board\postcategory_confirm_delete.html:44
 #: .\board\templates\board\postcategory_list.html:36
@@ -315,12 +309,12 @@ msgstr ""
 #: .\board\templates\board\postcategory_confirm_delete.html:59
 #: .\board\templates\board\postcategory_list.html:24
 msgid "Nazwa"
-msgstr ""
+msgstr "Name"
 
 #: .\board\templates\board\postcategory_confirm_delete.html:60
 #: .\board\templates\board\postcategory_list.html:25
 msgid "Priorytet"
-msgstr ""
+msgstr "Priority"
 
 #: .\board\templates\board\postcategory_confirm_delete.html:66
 msgid "Tak, usuń kategorię"
@@ -329,48 +323,40 @@ msgstr ""
 #: .\board\templates\board\postcategory_confirm_delete.html:69
 #: .\board\templates\board\postcategory_form.html:29
 msgid "Anuluj"
-msgstr ""
+msgstr "Cancel"
 
 #: .\board\templates\board\postcategory_form.html:11
 #: .\board\templates\board\postcategory_form.html:20
 msgid "Edytuj kategorię"
-msgstr ""
+msgstr "Edit category"
 
 #: .\board\templates\board\postcategory_form.html:11
 #: .\board\templates\board\postcategory_form.html:20
-#, fuzzy
-#| msgid "Szukaj w kategoriach"
 msgid "Nowa kategoria"
-msgstr "Search by category"
+msgstr "New category"
 
 #: .\board\templates\board\postcategory_form.html:28
 msgid "Zapisz"
-msgstr ""
+msgstr "Save"
 
 #: .\board\templates\board\postcategory_list.html:9
-#, fuzzy
-#| msgid "Brak ogłoszeń"
 msgid "Kategorie ogłoszeń"
-msgstr "No announcements"
+msgstr "Announcement categories"
 
 #: .\board\templates\board\postcategory_list.html:16
-#, fuzzy
-#| msgid "Szukaj w kategoriach"
 msgid "Dodaj kategorię"
-msgstr "Search by category"
+msgstr "Add category"
 
 #: .\board\templates\board\postcategory_list.html:37
 #: .\elibrary\templates\elibrary\book_detail.html:75
 #: .\glosowania\templates\glosowania\szczegoly.html:600
 #: .\glosowania\templates\glosowania\szczegoly.html:659
 msgid "Usuń"
-msgstr ""
+msgstr "Delete"
 
 #: .\board\templates\board\postcategory_list.html:43
-#, fuzzy
-#| msgid "Brak obywateli"
 msgid "Brak kategorii."
-msgstr "No citizens"
+msgstr "No categories."
 
 #: .\board\views.py:55
 msgid "Cannot delete category because it is in use. Remove all posts that use it first."
@@ -763,7 +749,10 @@ msgstr ""
 
 #: .\chat\templates\chat\chat.html:47 .\chat\templates\chat\room_link.html:11
 msgid "Unread"
-msgstr ""
+msgstr "Unread"
+
+msgid "Nieprzeczytane"
+msgstr "Unread"
 
 #: .\chat\templates\chat\chat.html:62 .\chat\templates\chat\chat.html:89
 #: .\chat\templates\chat\chat.html:120 .\chat\templates\chat\chat.html:151

@@ -15,6 +15,7 @@ urlpatterns = [
     path('onboarding/doc-read/<int:post_id>/', views.mark_doc_read, name='mark_doc_read'),
     path('aktywnosc/', views.activity_page, name='activity'),
     path('site-settings/', views.site_admin, name='site_admin'),
+    path('site-settings/onboarding-posts/', views.onboarding_posts_for_category, name='onboarding_posts_for_category'),
     path('search/', views.global_search, name='search'),
 
     # not in use at this point. Contact through https://wikikracja.pl/kontakt/

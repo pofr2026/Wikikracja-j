@@ -3,6 +3,13 @@
 {% load i18n %}
 
 {% block glosowania %}
+<div class="d-flex justify-content-end mb-2">
+  {% if user.is_authenticated %}
+  <a href="{% url 'glosowania:dodaj_nowy' %}" class="btn btn-sm btn-primary">
+    <i class="fas fa-plus me-1"></i>{% trans "Dodaj" %}
+  </a>
+  {% endif %}
+</div>
 {% include 'glosowania/_view_toggle.html' %}
 
 <div class="proposals-list" id="proposals-list">

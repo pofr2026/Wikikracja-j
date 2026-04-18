@@ -16,6 +16,12 @@
   <a href="{% url 'elibrary:add' %}" class="toolbar-add-btn">
     <i class="fas fa-book-medical"></i> {% trans 'Dodaj eBook' %}
   </a>
+  <a href="{% url 'board:archive' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="fas fa-box-archive me-1"></i>{% trans "Archiwum" %}
+  </a>
+  <a href="{% url 'board:category_list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="fas fa-tags me-1"></i>{% trans "Kategorie" %}
+  </a>
 
   <span class="toolbar-divider"></span>
 

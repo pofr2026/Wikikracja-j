@@ -5,23 +5,41 @@
 {% block content %}
 <div class="section">
 
-  {# ── Toolbar ── #}
-  <div class="proposals-toolbar">
-
+  {# ── Toolbar linia 1: filtry typów + nieprzeczytane ── #}
+  <div class="proposals-toolbar mb-1" style="flex-wrap:wrap;">
     <div class="toolbar-sort" style="flex-wrap:wrap;gap:.35rem;">
-      {% for ct_val, ct_label in content_types %}
+      <a href="?filter=unread&sort={{ sort }}&order={{ order }}"
+         class="sort-btn {% if filter_unread %}active{% endif %}"
+         style="color:#60a5fa;border-color:rgba(96,165,250,.35);{% if filter_unread %}background:rgba(96,165,250,.12);{% endif %}">
+        <i class="fas fa-bell"></i>{% trans "Nieprzeczytane" %}
+        {% if unread_count %}<span style="font-size:.7rem;">({{ unread_count }})</span>{% endif %}
+      </a>
+      <a href="?sort={{ sort }}&order={{ order }}"
+         class="sort-btn {% if not ct_filter and not filter_unread %}active{% endif %}">
+        {% trans "Wszystkie" %}
+      </a>
+      {% for ct_val, ct_label in content_types %}{% if ct_val %}
       <a href="?type={{ ct_val }}&sort={{ sort }}&order={{ order }}"
          class="sort-btn {% if ct_filter == ct_val %}active{% endif %}">
         {{ ct_label }}
       </a>
-      {% endfor %}
+      {% endif %}{% endfor %}
     </div>
+  </div>
+
+  {# ── Toolbar linia 2: akcje + sortowanie + widok ── #}
+  <div class="proposals-toolbar mb-3">
+
+    <button type="button" class="sort-btn" id="btn-mark-all"
+            style="color:#60a5fa;border-color:rgba(96,165,250,.35);">
+      <i class="fas fa-check-double"></i>{% trans "Oznacz jako przeczytane" %}
+    </button>
 
     <span class="toolbar-divider"></span>
 
     <div class="toolbar-sort">
-      <span class="toolbar-sort-label">{% trans "Sort:" %}</span>
-      <a href="?type={{ ct_filter }}&sort=date&order={% if sort == 'date' and order == 'desc' %}asc{% else %}desc{% endif %}"
+      <span class="toolbar-sort-label">{% trans "Sortuj" %}:</span>
+      <a href="?type={{ ct_filter }}&sort=date&order={% if sort == 'date' and order == 'desc' %}asc{% else %}desc{% endif %}{% if filter_unread %}&filter=unread{% endif %}"
          class="sort-btn {% if sort == 'date' %}active{% endif %}">
         {% trans "Data" %}
         {% if sort == 'date' %}<i class="fas fa-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} sort-arrow"></i>{% endif %}
@@ -111,5 +129,14 @@
     setActivityView(localStorage.getItem(KEY) || 'list');
   });
 })();
+
+document.getElementById('btn-mark-all')?.addEventListener('click', function() {
+  fetch("{% url 'mark_all_read' %}", {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.success) location.reload();
+  });
+});
 </script>
 {% endblock %}

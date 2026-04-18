@@ -398,6 +398,12 @@ def generate_feed_items(user):
 @login_required
 def activity_page(request):
     all_items = generate_feed_items(request.user)
+    unread_count = sum(1 for i in all_items if not i['is_read'])
+
+    # Filter unread only
+    filter_unread = request.GET.get('filter') == 'unread'
+    if filter_unread:
+        all_items = [i for i in all_items if not i['is_read']]
 
     # Filter by content_type
     ct_filter = request.GET.get('type', '')
@@ -426,6 +432,8 @@ def activity_page(request):
         'ct_filter': ct_filter,
         'sort': sort,
         'order': order,
+        'filter_unread': filter_unread,
+        'unread_count': unread_count,
         'content_types': content_types,
     })
 
@@ -439,8 +447,18 @@ def mark_doc_read(request, post_id):
     except BoardPost.DoesNotExist:
         return JsonResponse({'ok': False}, status=404)
     obj, _ = OnboardingProgress.objects.get_or_create(user=request.user)
-    obj.docs_read.add(post)
-    return JsonResponse({'ok': True})
+    if obj.docs_read.filter(pk=post.pk).exists():
+        obj.docs_read.remove(post)
+        is_read = False
+    else:
+        obj.docs_read.add(post)
+        is_read = True
+    from site_settings.models import SiteSettings
+    required_docs = SiteSettings.get().onboarding_posts.count()
+    done_docs = obj.docs_read.filter(pk__in=SiteSettings.get().onboarding_posts.values_list('pk', flat=True)).count()
+    done = done_docs + (1 if obj.step_argued else 0) + (1 if obj.step_chatted else 0) + (1 if obj.step_voted else 0)
+    total = required_docs + 3
+    return JsonResponse({'ok': True, 'is_read': is_read, 'done': done, 'total': total})
 
 
 @require_POST
@@ -917,6 +935,18 @@ def service_worker(request):
         response['Expires'] = '0'
         response['Service-Worker-Allowed'] = "/"
         return response
+
+
+@login_required
+def onboarding_posts_for_category(request):
+    from board.models import Post as BoardPost
+    from site_settings.models import SiteSettings
+    cat_id = request.GET.get('cat_id')
+    if not cat_id:
+        return JsonResponse({'posts': []})
+    posts = list(BoardPost.objects.filter(category_id=cat_id, is_archived=False).order_by('title').values('id', 'title'))
+    selected = list(SiteSettings.get().onboarding_posts.values_list('id', flat=True))
+    return JsonResponse({'posts': posts, 'selected': selected})
 
 
 @login_required
