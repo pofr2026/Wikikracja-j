@@ -234,6 +234,7 @@ INSTALLED_APPS = [
     'tasks',
     'captcha',
     'push_notifications',
+    'site_settings',
 ]
 
 if DEBUG:

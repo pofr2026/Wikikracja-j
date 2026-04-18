@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 from datetime import datetime
 
 # Third party imports
@@ -292,6 +293,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         # Sanitize HTML (ZMIANA 6 — rich text)
         message_clean = bleach.clean(message, tags=ALLOWED_HTML_TAGS, attributes=ALLOWED_HTML_ATTRS, strip=True)
+        message_clean = re.sub(r'(<br\s*/?>)+$', '', message_clean).rstrip()
 
         if not message_clean.strip().replace('<br>', '').replace('<br/>', '') and not attachments:
             raise ClientError("EMPTY_MESSAGE")
@@ -318,9 +320,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
         await self.save_attachments(message_id, attachments)
 
-        # Add upvote by author (default behaviour)
-        upvotes, downvotes = await self.add_vote("upvote", message_id)
-
         # Pobierz dane cytowanej wiadomości (ZMIANA 2)
         reply_to_data = None
         if reply_to_id:
@@ -333,8 +332,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             anonymous=is_anonymous,
             message=message_clean,
             message_id=message_id,
-            upvotes=upvotes,
-            downvotes=downvotes,
+            upvotes=0,
+            downvotes=0,
             new=True,
             edited=False,
             date=msg.time,
@@ -547,6 +546,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         else:
             # Sanitize HTML (ZMIANA 6 — rich text)
             new_message = bleach.clean(new_message, tags=ALLOWED_HTML_TAGS, attributes=ALLOWED_HTML_ATTRS, strip=True)
+            new_message = re.sub(r'(<br\s*/?>)+$', '', new_message).rstrip()
 
         # verify that all new attachments are valid
         if attachments:

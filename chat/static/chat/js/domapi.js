@@ -60,6 +60,8 @@ export default class DomApi {
 
         this.getMessagesDiv()?.insertAdjacentHTML('beforeend', html);
         this.getVoteDiv(message_id, vote)?.classList.add('active');
+        const msgText = this.getMessageDiv(message_id)?.querySelector('.msg-text');
+        if (msgText) msgText.dataset.raw = message;
     }
 
     getMessageDiv(message_id) {
@@ -119,6 +121,7 @@ export default class DomApi {
         if (msgDiv) {
             const msgText = $(".msg-text", msgDiv);
             if (msgText) {
+                msgText.dataset.raw = text;
                 msgText.innerHTML = this.formatMessage(text);
                 return msgText;
             }
@@ -161,8 +164,7 @@ export default class DomApi {
         if (!msgDiv) return '';
         const msgText = $(".msg-text", msgDiv);
         if (!msgText) return '';
-        // Return innerHTML to preserve rich text formatting
-        return msgText.innerHTML ?? '';
+        return msgText.dataset.raw ?? msgText.innerHTML ?? '';
     }
 
     formatMessage(raw_message) {
@@ -242,9 +244,10 @@ export default class DomApi {
                 return inner;
             }
             const html = Array.from(el.childNodes).map((c, i) => serialize(c, i === 0)).join('');
-            return (typeof DOMPurify !== 'undefined')
+            const sanitized = (typeof DOMPurify !== 'undefined')
                 ? DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR: [] })
                 : html.replace(/<(?!\/?(?:b|i|u|br)\b)[^>]*>/gi, '');
+            return sanitized.replace(/(<br\s*\/?>\s*)+$/, '');
         }
         return el.value ?? '';
     }
@@ -286,7 +289,7 @@ export default class DomApi {
             input.dataset.editMessage = message_id;
             input.dataset.originalMessageText = text;
             if (input.isContentEditable) {
-                input.textContent = text;
+                input.innerHTML = text;
             } else {
                 input.value = text;
             }

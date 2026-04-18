@@ -56,7 +56,7 @@
         {% endif %}
         {% if chat_room %}
           <span class="detail-meta-sep">·</span>
-          <a href="{% url 'chat:chat' %}#room_id={{ chat_room.id }}" target="_blank"
+          <a href="{% url 'chat:chat' %}#room_id={{ chat_room.id }}" 
              class="proposal-chat-link {{ chat_room_pulse_class }}" style="font-size:.78rem;">
             <i class="fas fa-comment-dots"></i>
             <span>{% trans 'Chat' %}</span>

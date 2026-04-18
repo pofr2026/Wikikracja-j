@@ -164,29 +164,44 @@ def home(request: HttpRequest):
     # Kafelek aktywność — 3 najnowsze pozycje (tylko non-event)
     last_feed_items = [i for i in feed_items if i['content_type'] != 'event'][:3]
 
+    # Licznik nieprzeczytanych pokoi czatu
+    chat_unread_count = Room.objects.filter(allowed=request.user).exclude(seen_by=request.user).count()
+
+    # Licznik aktywnych zadań użytkownika
+    my_tasks_count = Task.objects.filter(
+        Q(assigned_to=request.user) | Q(votes__user=request.user, votes__value=1),
+        status=Task.Status.ACTIVE,
+    ).distinct().count()
+
     # Onboarding widget
+    from site_settings.models import SiteSettings
+    ss = SiteSettings.get()
+    onboarding_docs = list(ss.onboarding_posts.order_by('title'))
     onboarding = None
+    onboarding_docs_read_ids = set()
     try:
-        op = OnboardingProgress.objects.get(user=request.user)
-        if not op.completed:
+        op = OnboardingProgress.objects.prefetch_related('docs_read').get(user=request.user)
+        onboarding_docs_read_ids = set(op.docs_read.values_list('id', flat=True))
+        if not op.is_completed(onboarding_docs):
             onboarding = op
     except OnboardingProgress.DoesNotExist:
-        onboarding = OnboardingProgress()  # unsaved, all False defaults
-
-    rules_post_pk = getattr(settings, 'ONBOARDING_RULES_POST_ID', None)
+        onboarding = OnboardingProgress.objects.create(user=request.user)
 
     return render(request, 'home/home.html', {
         'feed_items': feed_items,
         'first_unread': first_unread,
         'unread_items': unread_items,
         'filter_unread': filter_unread,
+        'chat_unread_count': chat_unread_count,
+        'my_tasks_count': my_tasks_count,
         'ongoing_count': ongoing_count,
         'upcoming_count': upcoming_count,
         'signatures_count': signatures_count,
         'active_referendum': active_referendum,
         'my_tasks': my_tasks,
         'onboarding': onboarding,
-        'rules_post_pk': rules_post_pk,
+        'onboarding_docs': onboarding_docs,
+        'onboarding_docs_read_ids': onboarding_docs_read_ids,
         'upcoming_events': upcoming_events,
         'income': income,
         'expenses': expenses,
@@ -417,11 +432,15 @@ def activity_page(request):
 
 @login_required
 @require_POST
-def mark_rules_read(request):
+def mark_doc_read(request, post_id):
+    from board.models import Post as BoardPost
+    try:
+        post = BoardPost.objects.get(pk=post_id)
+    except BoardPost.DoesNotExist:
+        return JsonResponse({'ok': False}, status=404)
     obj, _ = OnboardingProgress.objects.get_or_create(user=request.user)
-    obj.step1_read = True
-    obj.save(update_fields=['step1_read'])
-    return redirect(request.POST.get('next', '/'))
+    obj.docs_read.add(post)
+    return JsonResponse({'ok': True})
 
 
 @require_POST
@@ -902,11 +921,34 @@ def service_worker(request):
 
 @login_required
 def site_admin(request: HttpRequest) -> HttpResponse:
-    from board.models import Post as BoardPost
+    from board.models import Post as BoardPost, PostCategory
+    from site_settings.models import SiteSettings
+
+    ss = SiteSettings.get()
+
+    if request.method == 'POST' and 'save_onboarding' in request.POST:
+        cat_id = request.POST.get('onboarding_category') or None
+        ss.onboarding_category_id = cat_id if cat_id else None
+        ss.save(update_fields=['onboarding_category'])
+        post_ids = request.POST.getlist('onboarding_posts')
+        ss.onboarding_posts.set(post_ids)
+        messages.success(request, _('Onboarding zapisany.'))
+        return redirect('site_admin')
+
+    selected_cat_id = ss.onboarding_category_id
+    if selected_cat_id:
+        cat_posts = BoardPost.objects.filter(category_id=selected_cat_id, is_archived=False).order_by('title')
+    else:
+        cat_posts = BoardPost.objects.none()
+
     return render(request, 'home/site_admin.html', {
         'signatures': settings.WYMAGANYCH_PODPISOW,
         'signatures_span': settings.CZAS_NA_ZEBRANIE_PODPISOW,
         'discussion_span': settings.DYSKUSJA,
         'referendum_span': settings.CZAS_TRWANIA_REFERENDUM,
         'documents': BoardPost.objects.filter(is_archived=False).order_by('title'),
+        'ss': ss,
+        'categories': PostCategory.objects.order_by('name'),
+        'cat_posts': cat_posts,
+        'selected_onboarding_post_ids': set(ss.onboarding_posts.values_list('id', flat=True)),
     })

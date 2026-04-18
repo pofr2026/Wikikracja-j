@@ -66,10 +66,21 @@ class ReadStatus(models.Model):
 
 class OnboardingProgress(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='onboarding')
-    step1_read = models.BooleanField(default=False)
-    step2_discussed = models.BooleanField(default=False)
-    step3_voted = models.BooleanField(default=False)
+    docs_read = models.ManyToManyField('board.Post', blank=True, related_name='+')
+    step_argued = models.BooleanField(default=False)
+    step_chatted = models.BooleanField(default=False)
+    step_voted = models.BooleanField(default=False)
+
+    def is_completed(self, required_posts):
+        if required_posts:
+            read_ids = set(self.docs_read.values_list('id', flat=True))
+            if not all(p.id in read_ids for p in required_posts):
+                return False
+        return self.step_argued and self.step_chatted and self.step_voted
 
     @property
     def completed(self):
-        return self.step1_read and self.step2_discussed and self.step3_voted
+        from site_settings.models import SiteSettings
+        ss = SiteSettings.get()
+        required = list(ss.onboarding_posts.all())
+        return self.is_completed(required)

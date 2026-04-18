@@ -32,7 +32,7 @@
       {% endif %}
 
       {% if i.chat_room_pulse_class %}
-        <a href="{{ i.chat_room_url }}" target="_blank"
+        <a href="{{ i.chat_room_url }}" 
            class="proposal-chat-link proposal-chat-link--pulse {{ i.chat_room_pulse_class }}"
            onclick="event.stopPropagation()">
           <i class="fas fa-comment-dots"></i>
@@ -42,7 +42,7 @@
           {% endwith %}
         </a>
       {% elif i.chat_room %}
-        <a href="{{ i.chat_room_url }}" target="_blank"
+        <a href="{{ i.chat_room_url }}" 
            class="proposal-chat-link"
            onclick="event.stopPropagation()">
           <i class="fas fa-comment-dots"></i>

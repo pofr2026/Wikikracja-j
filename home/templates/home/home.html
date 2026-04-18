@@ -104,6 +104,42 @@
   </div>
 </div>
 
+{# ══ Skróty ════════════════════════════════════════════════════════════════ #}
+<div class="d-flex gap-2 flex-wrap align-items-center mb-3">
+  {% if chat_unread_count %}
+  <a href="{% url 'chat:chat' %}" class="badge-status" style="text-decoration:none;background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.3);">
+    <i class="fas fa-comments me-1"></i>{{ chat_unread_count }} {% trans "nieprzeczytanych" %}
+  </a>
+  {% else %}
+  <a href="{% url 'chat:chat' %}" class="badge-status" style="text-decoration:none;">
+    <i class="fas fa-comments me-1"></i>{% trans "Czat" %}
+  </a>
+  {% endif %}
+  {% if ongoing_count %}
+  <a href="{% url 'glosowania:referendum' %}" class="badge-status badge-referendum" style="text-decoration:none;">
+    <i class="fas fa-landmark me-1"></i>{{ ongoing_count }} {% trans "referenda" %}
+  </a>
+  {% endif %}
+  {% if upcoming_count %}
+  <a href="{% url 'glosowania:discussion' %}" class="badge-status badge-discussion" style="text-decoration:none;">
+    <i class="fas fa-comments me-1"></i>{{ upcoming_count }} {% trans "dyskusje" %}
+  </a>
+  {% endif %}
+  {% if signatures_count %}
+  <a href="{% url 'glosowania:proposition' %}" class="badge-status badge-proposition" style="text-decoration:none;">
+    <i class="fas fa-file-signature me-1"></i>{{ signatures_count }} {% trans "propozycje" %}
+  </a>
+  {% endif %}
+  {% if my_tasks_count %}
+  <a href="{% url 'tasks:list' %}" class="badge-status badge-discussion" style="text-decoration:none;">
+    <i class="fas fa-list-check me-1"></i>{{ my_tasks_count }} {% trans "zadania" %}
+  </a>
+  {% endif %}
+  <a href="{% url 'bookkeeping:transaction_list' %}" class="badge-status {% if balance >= 0 %}badge-approved{% else %}badge-rejected{% endif %}" style="text-decoration:none;">
+    <i class="fas fa-dollar-sign me-1"></i>{{ balance }} {% trans "zł" %}
+  </a>
+</div>
+
 {# ══ Rząd 1: Aktywność (+ opcjonalnie Onboarding) ══════════════════════════ #}
 <div class="row g-3 mb-3">
 
@@ -162,7 +198,7 @@
   {# Pierwsze kroki (tylko dla nowych) #}
   {% if onboarding %}
   <div class="col-12 col-lg-4">
-    <div class="card h-100">
+    <div class="card h-100" id="onboarding-card">
       <div class="card-body d-flex flex-column gap-2">
         <div class="d-flex align-items-center gap-2 mb-1">
           <i class="fas fa-rocket" style="color:var(--accent);font-size:.85rem;"></i>
@@ -170,46 +206,69 @@
         </div>
         <ul class="list-unstyled mb-0 d-flex flex-column gap-1" style="font-size:.82rem;">
 
+          {# Dokumenty do przeczytania #}
+          {% for doc in onboarding_docs %}
+          {% with is_read=doc.id|stringformat:"s" %}
+          {% if doc.id in onboarding_docs_read_ids %}
           <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
-            {% if onboarding.step1_read %}
-              <i class="fas fa-check-circle flex-shrink-0" style="color:#00bc8c;font-size:.85rem;"></i>
-              <span style="color:var(--text-muted);">{% trans "Przeczytaj zasady wspólnoty" %}</span>
-            {% else %}
-              <i class="fas fa-circle flex-shrink-0" style="color:var(--text-muted);opacity:.4;font-size:.85rem;"></i>
-              {% if rules_post_pk %}
-                <a href="{% url 'board:view_post' rules_post_pk %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;position:relative;z-index:2;">{% trans "Przeczytaj zasady wspólnoty" %}</a>
-                <form action="{% url 'mark_rules_read' %}" method="post" class="d-inline flex-shrink-0" style="position:relative;z-index:2;">
-                  {% csrf_token %}
-                  <input type="hidden" name="next" value="{{ request.path }}">
-                  <button type="submit" class="btn btn-sm btn-outline-secondary" style="font-size:.72rem;padding:1px 7px;">{% trans "Przeczytałem" %}</button>
-                </form>
-              {% else %}
-                <span style="color:var(--text-muted);">{% trans "Przeczytaj zasady wspólnoty" %}</span>
-              {% endif %}
-            {% endif %}
+            <i class="fas fa-check-circle flex-shrink-0" style="color:#00bc8c;font-size:.85rem;"></i>
+            <span style="color:var(--text-muted);">{{ doc.title }}</span>
           </li>
+          {% else %}
+          <li class="task-dash-row d-flex align-items-center gap-2 onboarding-doc-row" data-post-id="{{ doc.id }}" style="min-width:0;">
+            <i class="fas fa-circle flex-shrink-0 onboarding-circle" style="color:var(--text-muted);opacity:.4;font-size:.85rem;"></i>
+            <a href="{% url 'board:view_post' doc.pk %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;">{{ doc.title }}</a>
+            <button class="btn btn-sm btn-outline-secondary onboarding-read-btn flex-shrink-0" style="font-size:.72rem;padding:1px 7px;" data-url="{% url 'mark_doc_read' doc.pk %}">{% trans "Przeczytałem" %}</button>
+          </li>
+          {% endif %}
+          {% endwith %}
+          {% endfor %}
 
+          {# Zabierz głos w dyskusji #}
           <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
-            {% if onboarding.step2_discussed %}
+            {% if onboarding.step_argued %}
               <i class="fas fa-check-circle flex-shrink-0" style="color:#00bc8c;font-size:.85rem;"></i>
               <span style="color:var(--text-muted);">{% trans "Zabierz głos w dyskusji" %}</span>
             {% else %}
               <i class="fas fa-circle flex-shrink-0" style="color:var(--text-muted);opacity:.4;font-size:.85rem;"></i>
-              <a href="{% url 'glosowania:discussion' %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;position:relative;z-index:2;">{% trans "Zabierz głos w dyskusji" %}</a>
+              <a href="{% url 'glosowania:discussion' %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;">{% trans "Zabierz głos w dyskusji" %}</a>
             {% endif %}
           </li>
 
+          {# Napisz na czacie #}
           <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
-            {% if onboarding.step3_voted %}
+            {% if onboarding.step_chatted %}
+              <i class="fas fa-check-circle flex-shrink-0" style="color:#00bc8c;font-size:.85rem;"></i>
+              <span style="color:var(--text-muted);">{% trans "Napisz na czacie" %}</span>
+            {% else %}
+              <i class="fas fa-circle flex-shrink-0" style="color:var(--text-muted);opacity:.4;font-size:.85rem;"></i>
+              <a href="{% url 'chat:chat' %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;">{% trans "Napisz na czacie" %}</a>
+            {% endif %}
+          </li>
+
+          {# Oddaj głos w referendum #}
+          <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
+            {% if onboarding.step_voted %}
               <i class="fas fa-check-circle flex-shrink-0" style="color:#00bc8c;font-size:.85rem;"></i>
               <span style="color:var(--text-muted);">{% trans "Oddaj pierwszy głos" %}</span>
             {% else %}
               <i class="fas fa-circle flex-shrink-0" style="color:var(--text-muted);opacity:.4;font-size:.85rem;"></i>
-              <a href="{% url 'glosowania:referendum' %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;position:relative;z-index:2;">{% trans "Oddaj pierwszy głos" %}</a>
+              <a href="{% url 'glosowania:referendum' %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;">{% trans "Oddaj pierwszy głos" %}</a>
             {% endif %}
           </li>
 
         </ul>
+      </div>
+      {# Pasek postępu #}
+      <div class="card-footer px-3 py-2">
+        {% with total=onboarding_docs|length|add:3 %}
+        {% with done_docs=onboarding_docs_read_ids|length %}
+        {% with done_steps=onboarding.step_argued|add:onboarding.step_chatted|add:onboarding.step_voted %}
+        <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:4px;">{% trans "Postęp" %}: {{ done_docs|add:done_steps }}/{{ total }}</div>
+        <div class="progress" style="height:5px;">
+          <div class="progress-bar" style="background:var(--accent);width:{% widthratio done_docs|add:done_steps total 100 %}%;"></div>
+        </div>
+        {% endwith %}{% endwith %}{% endwith %}
       </div>
     </div>
   </div>
@@ -369,25 +428,6 @@
 
 </div>
 
-{# ══ separator: statystyki głosowań ════════════════════════════════════════ #}
-<div class="d-flex gap-2 flex-wrap align-items-center mb-3">
-  {% if ongoing_count %}
-  <a href="{% url 'glosowania:referendum' %}" class="badge-status badge-referendum" style="text-decoration:none;">
-    <i class="fas fa-landmark me-1"></i>{{ ongoing_count }} {% trans "referenda" %}
-  </a>
-  {% endif %}
-  {% if upcoming_count %}
-  <a href="{% url 'glosowania:discussion' %}" class="badge-status badge-discussion" style="text-decoration:none;">
-    <i class="fas fa-comments me-1"></i>{{ upcoming_count }} {% trans "dyskusje" %}
-  </a>
-  {% endif %}
-  {% if signatures_count %}
-  <a href="{% url 'glosowania:proposition' %}" class="badge-status badge-proposition" style="text-decoration:none;">
-    <i class="fas fa-file-signature me-1"></i>{{ signatures_count }} {% trans "propozycje" %}
-  </a>
-  {% endif %}
-</div>
-
 {# ══ Rząd 3: Moje zadania + Nowi obywatele + Finanse ═══════════════════════ #}
 <div class="row g-3 mb-3">
 
@@ -502,4 +542,30 @@
 </div>
 
 {% endif %}
+
+{% if onboarding %}
+<script>
+document.querySelectorAll('.onboarding-read-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var url = btn.dataset.url;
+    var row = btn.closest('.onboarding-doc-row');
+    fetch(url, {
+      method: 'POST',
+      headers: {'X-CSRFToken': '{{ csrf_token }}'},
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data.ok) {
+        var icon = row.querySelector('.onboarding-circle');
+        icon.className = 'fas fa-check-circle flex-shrink-0';
+        icon.style.color = '#00bc8c';
+        icon.style.opacity = '1';
+        btn.remove();
+        row.querySelector('a').outerHTML = '<span style="color:var(--text-muted);">' + row.querySelector('a').textContent + '</span>';
+        row.classList.remove('onboarding-doc-row');
+      }
+    });
+  });
+});
+</script>
+{% endif %}
+
 {% endblock %}

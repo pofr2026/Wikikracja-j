@@ -35,7 +35,7 @@
       {% endif %}
 
       {% if task.chat_room_url %}
-        <a href="{{ task.chat_room_url }}" target="_blank"
+        <a href="{{ task.chat_room_url }}" 
            class="proposal-chat-link {% if task.chat_room_pulse_class %}proposal-chat-link--pulse{% endif %}"
            onclick="event.stopPropagation()">
           <i class="fas fa-comment-dots"></i>
