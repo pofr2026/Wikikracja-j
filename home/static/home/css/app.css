@@ -651,3 +651,17 @@ hr { border-color: var(--border) !important; opacity: 1 !important; }
 
 /* Section margin: re-expose for .section */
 .section { margin-top: 1rem; margin-bottom: 1rem; }
+/* Official theme — sidebar override (dark navy sidebar on light bg) */
+[data-theme="official"] .sidebar {
+  --text-primary: #e8eaf0;
+  --text-muted:   rgba(232,234,240,.6);
+  --border:       rgba(255,255,255,.08);
+  --accent:       #f4874b;
+}
+[data-theme="official"] .sidebar .nav-link { color: rgba(232,234,240,.75); }
+[data-theme="official"] .sidebar .nav-link:hover,
+[data-theme="official"] .sidebar .nav-link.active { color: #f4874b; }
+[data-theme="official"] .sidebar-logo .logo-title { color: #f4874b; }
+[data-theme="official"] .sidebar-logo .logo-sub { color: rgba(232,234,240,.5); }
+[data-theme="official"] .sidebar-version-link { color: rgba(232,234,240,.4); }
+[data-theme="official"] .sidebar-version-link:hover { color: rgba(232,234,240,.8) !important; }

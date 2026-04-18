@@ -233,16 +233,15 @@ Do oddania / na sprzedaż / do wypożyczenia:
 - Podpowiedzi z możliwymi przepisami i biznesami do zrobienia
 
 # JORDAN (TO DO)
+**NOWE FUNKCJE** 
 - w profilu użytkownika można sprawdzić:
-  - ~~zadania w których bierze udział~~
-  -	~~wypowiedzi/argumenty etc...~~
   - {napisać wiadomość bezpośrednio}
-~~- wersja strony wraz z listą zmian z każdą wersją~~
 - wszystkie strony mają korzystać z tych samych styli *(Design system / style guide)*
 - system update, tak żeby można było zrobić update strony jednym przyciskiem (ściąga repo z githuba i instaluje)
 - **ogłoszenia**
   - dodanie opcji "wyświetl na pulpicie użytkowników" wtedy pojawia się na pulpicie. 
   - data ważności (po tej dacie ogłoszenie się archiwizuje) 
+**BUGS**
 
 ------------------------------------------------------------
 

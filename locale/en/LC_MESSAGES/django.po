@@ -298,7 +298,7 @@ msgstr ""
 #: .\glosowania\templates\glosowania\szczegoly.html:658
 #: .\glosowania\templates\glosowania\szczegoly.html:771
 msgid "Edytuj"
-msgstr ""
+msgstr "Edit"
 
 #: .\board\templates\board\postcategory_confirm_delete.html:51
 msgid "Przed usunięciem kategorii odepnij ją od wszystkich ogłoszeń."
@@ -3194,6 +3194,21 @@ msgstr "Light"
 #: .\obywatele\templates\obywatele\my_profile.html:258
 msgid "Ciemny"
 msgstr "Dark"
+
+msgid "Obywatelski"
+msgstr "Civic"
+
+msgid "Oficjalny"
+msgstr "Official"
+
+msgid "Zmień hasło"
+msgstr "Change password"
+
+msgid "Zmień email"
+msgstr "Change email"
+
+msgid "Zmień nazwę użytkownika"
+msgstr "Change username"
 
 #: .\obywatele\templates\obywatele\my_profile.html:274
 msgid "Email Notifications"

@@ -4,204 +4,159 @@
 {% load profile_tags %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'obywatele/css/profile.css' %}">
+<style>
+.profile-row {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  padding: .35rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .875rem;
+}
+.profile-row:last-child { border-bottom: none; }
+.profile-key { color: var(--text-muted); font-size: .78rem; min-width: 160px; flex-shrink: 0; }
+.profile-val { color: var(--text-primary); font-weight: 500; }
+.profile-val.empty { color: var(--text-muted); font-weight: 400; }
+</style>
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'obywatele/js/profile.js' %}"></script>
+<script>
+function updateThemeBtns(active) {
+  ['dark','light','civic','official'].forEach(function(t) {
+    var el = document.getElementById('theme-btn-' + t);
+    if (el) el.className = 'btn btn-sm ' + (active === t ? 'btn-primary' : 'btn-outline-secondary');
+  });
+}
+function toggleTheme(theme) {
+  var current = localStorage.getItem('app-theme') || 'dark';
+  var next = (current === theme) ? 'dark' : theme;
+  window.applyTheme(next);
+  updateThemeBtns(next);
+}
+updateThemeBtns(localStorage.getItem('app-theme') || 'dark');
+
+// Avatar hover overlay + preview + auto-submit
+(function() {
+  const wrap = document.getElementById('avatar-wrap');
+  const overlay = document.getElementById('avatar-overlay');
+  const input = document.getElementById('avatar-input');
+  const form = document.getElementById('avatar-form');
+  if (!wrap) return;
+
+  wrap.addEventListener('mouseenter', function() { overlay.style.opacity = '1'; });
+  wrap.addEventListener('mouseleave', function() { overlay.style.opacity = '0'; });
+
+  input.addEventListener('change', function() {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const existing = document.getElementById('avatar-img');
+      if (existing.tagName === 'IMG') {
+        existing.src = e.target.result;
+      } else {
+        const img = document.createElement('img');
+        img.id = 'avatar-img';
+        img.src = e.target.result;
+        img.alt = 'avatar';
+        img.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:block;';
+        existing.replaceWith(img);
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+    form.submit();
+  });
+})();
+</script>
 {% endblock %}
 {% block content %}
-<div class="section d-flex flex-column gap-3">
+<div class="section d-flex flex-column gap-3" style="max-width:640px;">
 
-  {# ── AWATAR ── #}
+  {# ── PROFIL ── #}
   <div class="card">
-    <div class="card-header d-flex align-items-center gap-2">
-      <i class="fas fa-image" style="color:var(--accent);opacity:.8;font-size:.85rem;"></i>
-      <span class="section-heading">{% trans "Avatar" %}</span>
-    </div>
-    <div class="card-body">
-      <div class="d-flex align-items-center gap-4 flex-wrap">
-        <div>
+    <div class="card-header d-flex align-items-center gap-3">
+      {# Avatar z inline upload overlay #}
+      <form id="avatar-form" method="post" action="{% url 'obywatele:upload_avatar' %}" enctype="multipart/form-data" style="flex-shrink:0;">
+        {% csrf_token %}
+        <input type="file" id="avatar-input" name="avatar" accept="image/*" style="display:none;">
+        <div id="avatar-wrap" style="position:relative;width:64px;height:64px;cursor:pointer;" onclick="document.getElementById('avatar-input').click()">
           {% if profile.avatar %}
-            <img src="{{ profile.avatar.url }}" alt="avatar"
-                 style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--border);">
+            <img id="avatar-img" src="{{ profile.avatar.url }}" alt="avatar"
+                 style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:block;">
           {% else %}
-            <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;">
-              <i class="fas fa-user" style="font-size:2rem;color:var(--text-muted);"></i>
+            <div id="avatar-img" style="width:64px;height:64px;border-radius:50%;background:var(--accent-muted);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-user" style="font-size:1.4rem;color:var(--accent);"></i>
             </div>
           {% endif %}
-        </div>
-        <form method="post" action="{% url 'obywatele:upload_avatar' %}" enctype="multipart/form-data" class="d-flex flex-column gap-2">
-          {% csrf_token %}
-          <input type="file" name="avatar" accept="image/*" class="form-control form-control-sm" style="max-width:300px;">
-          <div>
-            <button type="submit" class="btn btn-sm btn-outline-secondary">
-              <i class="fas fa-upload me-1" style="font-size:.75rem;"></i>{% trans "Upload avatar" %}
-            </button>
+          <div id="avatar-overlay" style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s;">
+            <i class="fas fa-camera" style="color:#fff;font-size:1.1rem;"></i>
           </div>
-        </form>
+        </div>
+      </form>
+      <div>
+        <div style="font-weight:700;font-size:1rem;">{{ user.get_full_name|default:user.username }}</div>
+        <div style="font-size:.78rem;color:var(--text-muted);">{{ user.email }}</div>
       </div>
-    </div>
-  </div>
-
-  {# ── DANE OSOBOWE ── #}
-  <div class="card">
-    <div class="card-header d-flex align-items-center gap-2">
-      <i class="fas fa-id-card" style="color:var(--accent);opacity:.8;font-size:.85rem;"></i>
-      <span class="section-heading">{% trans "Personal Data" %}</span>
     </div>
     <div class="card-body">
-      <form method="post" action="{% url 'obywatele:my_assets' %}">
-        {% csrf_token %}
-        <div class="row g-3 mb-3">
-          <div class="col-sm-6">
-            <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "First name" %} <span style="color:#f87171;">*</span></label>
-            <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control form-control-sm" required>
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Last name" %} <span style="color:#f87171;">*</span></label>
-            <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control form-control-sm" required>
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Communicator or Phone number" %} <span style="color:#f87171;">*</span></label>
-            <input type="text" name="phone" value="{{ profile.phone|default:'' }}" class="form-control form-control-sm" required>
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "City" %} <span style="color:#f87171;">*</span></label>
-            <input type="text" name="city" value="{{ profile.city|default:'' }}" class="form-control form-control-sm" required>
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Job" %} <span style="color:#f87171;">*</span></label>
-            <input type="text" name="job" value="{{ profile.job|default:'' }}" class="form-control form-control-sm" required>
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Responsibilities" %}</label>
-            <input type="text" name="responsibilities" value="{{ profile.responsibilities|default:'' }}" class="form-control form-control-sm">
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Business" %}</label>
-            <input type="text" name="business" value="{{ profile.business|default:'' }}" class="form-control form-control-sm">
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Hobby" %}</label>
-            <input type="text" name="hobby" value="{{ profile.hobby|default:'' }}" class="form-control form-control-sm">
-          </div>
-        </div>
+      <div class="profile-row">
+        <span class="profile-key">{% trans "Username" %}</span>
+        <span class="profile-val">{{ user.username }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="profile-key">{% trans "Member since" %}</span>
+        <span class="profile-val">{{ user.date_joined|date:"Y-m-d" }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="profile-key">{% trans "Reputation" %}</span>
+        <span class="profile-val">{{ profile.reputation|default:"0" }}</span>
+      </div>
+      {% if profile.introduced_by %}
+      <div class="profile-row">
+        <span class="profile-key">{% trans "Introduced by" %}</span>
+        <span class="profile-val">{{ profile.introduced_by }}</span>
+      </div>
+      {% endif %}
 
-        <details class="mb-3">
-          <summary style="font-size:.82rem;color:var(--text-muted);cursor:pointer;user-select:none;padding:.3rem 0;">
-            {% trans "More fields (resources, skills)" %}
-          </summary>
-          <div class="row g-3 mt-1">
-            <div class="col-sm-6">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "To give away" %}</label>
-              <input type="text" name="to_give_away" value="{{ profile.to_give_away|default:'' }}" class="form-control form-control-sm">
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "To borrow" %}</label>
-              <input type="text" name="to_borrow" value="{{ profile.to_borrow|default:'' }}" class="form-control form-control-sm">
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "For sale" %}</label>
-              <input type="text" name="for_sale" value="{{ profile.for_sale|default:'' }}" class="form-control form-control-sm">
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "I need" %}</label>
-              <input type="text" name="i_need" value="{{ profile.i_need|default:'' }}" class="form-control form-control-sm">
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Skills" %}</label>
-              <input type="text" name="skills" value="{{ profile.skills|default:'' }}" class="form-control form-control-sm">
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Knowledge" %}</label>
-              <input type="text" name="knowledge" value="{{ profile.knowledge|default:'' }}" class="form-control form-control-sm">
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "I want to learn" %}</label>
-              <input type="text" name="want_to_learn" value="{{ profile.want_to_learn|default:'' }}" class="form-control form-control-sm">
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Gift" %}</label>
-              <input type="text" name="gift" value="{{ profile.gift|default:'' }}" class="form-control form-control-sm">
-            </div>
-            <div class="col-12">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Other" %}</label>
-              <textarea name="other" rows="2" class="form-control form-control-sm">{{ profile.other|default:'' }}</textarea>
-            </div>
-            <div class="col-12">
-              <label class="form-label" style="font-size:.82rem;color:var(--text-muted);">{% trans "Why do you want to join?" %}</label>
-              <textarea name="why" rows="2" class="form-control form-control-sm">{{ profile.why|default:'' }}</textarea>
-            </div>
-          </div>
-        </details>
-
-        <button type="submit" class="btn btn-sm btn-outline-secondary">
-          <i class="fas fa-floppy-disk me-1" style="font-size:.75rem;"></i>{% trans "Save" %}
-        </button>
-      </form>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a href="{% url 'account_change_password' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-key me-1"></i>{% trans "Zmień hasło" %}
+        </a>
+        <a href="{% url 'obywatele:change_email' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-envelope me-1"></i>{% trans "Zmień email" %}
+        </a>
+        <a href="{% url 'obywatele:change_username' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-at me-1"></i>{% trans "Zmień nazwę użytkownika" %}
+        </a>
+      </div>
     </div>
   </div>
 
-  {# ── KONTO ── #}
+  {# ── ZASOBY I DANE ── #}
   <div class="card">
-    <div class="card-header d-flex align-items-center gap-2">
-      <i class="fas fa-user-gear" style="color:var(--accent);opacity:.8;font-size:.85rem;"></i>
-      <span class="section-heading">{% trans "Account" %}</span>
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <span class="section-heading">{% trans "Personal Data" %} &amp; {% trans "Resources" %}</span>
+      <a href="{% url 'obywatele:my_assets' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-pen me-1"></i>{% trans "Edytuj" %}
+      </a>
     </div>
-    <div class="card-body d-flex flex-column gap-4">
-
-      {# Username #}
-      <div>
-        <div class="fw-semibold mb-1" style="font-size:.875rem;">{% trans "Username" %}</div>
-        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.75rem;">
-          {% trans "Current:" %} <span class="fw-semibold" style="color:var(--text-primary);">{{ user.username }}</span>
-        </div>
-        <form method="post" action="{% url 'obywatele:change_username' %}" class="d-flex gap-2 align-items-end flex-wrap">
-          {% csrf_token %}
-          <div>
-            <label class="form-label" style="font-size:.78rem;color:var(--text-muted);margin-bottom:.3rem;">{% trans "New username" %}</label>
-            <input type="text" name="username" class="form-control form-control-sm" style="max-width:220px;" placeholder="{{ user.username }}">
-          </div>
-          <button type="submit" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-floppy-disk me-1" style="font-size:.75rem;"></i>{% trans "Save" %}
-          </button>
-        </form>
-      </div>
-
-      <div style="border-top:1px solid rgba(255,255,255,.07);"></div>
-
-      {# Email #}
-      <div>
-        <div class="fw-semibold mb-1" style="font-size:.875rem;">{% trans "Email address" %}</div>
-        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.75rem;">
-          {% trans "Current:" %} <span class="fw-semibold" style="color:var(--text-primary);">{{ user.email }}</span>
-        </div>
-        <form method="post" action="{% url 'obywatele:change_email' %}" class="d-flex gap-2 align-items-end flex-wrap">
-          {% csrf_token %}
-          <div>
-            <label class="form-label" style="font-size:.78rem;color:var(--text-muted);margin-bottom:.3rem;">{% trans "New email address" %}</label>
-            <input type="email" name="new_email1" class="form-control form-control-sm" style="max-width:240px;">
-          </div>
-          <div>
-            <label class="form-label" style="font-size:.78rem;color:var(--text-muted);margin-bottom:.3rem;">{% trans "Confirm new email" %}</label>
-            <input type="email" name="new_email2" class="form-control form-control-sm" style="max-width:240px;">
-          </div>
-          <button type="submit" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-floppy-disk me-1" style="font-size:.75rem;"></i>{% trans "Save" %}
-          </button>
-        </form>
-      </div>
-
-      <div style="border-top:1px solid rgba(255,255,255,.07);"></div>
-
-      {# Password #}
-      <div>
-        <div class="fw-semibold mb-1" style="font-size:.875rem;">{% trans "Password" %}</div>
-        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.75rem;">{% trans "Change your login password." %}</div>
-        <a href="{% url 'account_change_password' %}" class="btn btn-sm btn-outline-secondary">
-          <i class="fas fa-key me-1" style="font-size:.75rem;"></i>{% trans "Change password" %}
-        </a>
-      </div>
-
+    <div class="card-body">
+      <div class="profile-row"><span class="profile-key">{% trans "City" %}</span><span class="profile-val {% if not profile.city %}empty{% endif %}">{{ profile.city|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Communicator or Phone number" %}</span><span class="profile-val {% if not profile.phone %}empty{% endif %}">{{ profile.phone|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Job" %}</span><span class="profile-val {% if not profile.job %}empty{% endif %}">{{ profile.job|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Responsibilities" %}</span><span class="profile-val {% if not profile.responsibilities %}empty{% endif %}">{{ profile.responsibilities|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Business" %}</span><span class="profile-val {% if not profile.business %}empty{% endif %}">{{ profile.business|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Hobby" %}</span><span class="profile-val {% if not profile.hobby %}empty{% endif %}">{{ profile.hobby|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Skills" %}</span><span class="profile-val {% if not profile.skills %}empty{% endif %}">{{ profile.skills|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Knowledge" %}</span><span class="profile-val {% if not profile.knowledge %}empty{% endif %}">{{ profile.knowledge|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "I want to learn" %}</span><span class="profile-val {% if not profile.want_to_learn %}empty{% endif %}">{{ profile.want_to_learn|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "To give away" %}</span><span class="profile-val {% if not profile.to_give_away %}empty{% endif %}">{{ profile.to_give_away|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "To borrow" %}</span><span class="profile-val {% if not profile.to_borrow %}empty{% endif %}">{{ profile.to_borrow|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "For sale" %}</span><span class="profile-val {% if not profile.for_sale %}empty{% endif %}">{{ profile.for_sale|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "I need" %}</span><span class="profile-val {% if not profile.i_need %}empty{% endif %}">{{ profile.i_need|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Gift" %}</span><span class="profile-val {% if not profile.gift %}empty{% endif %}">{{ profile.gift|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Other" %}</span><span class="profile-val {% if not profile.other %}empty{% endif %}">{{ profile.other|default:"—" }}</span></div>
+      <div class="profile-row"><span class="profile-key">{% trans "Why do you want to join?" %}</span><span class="profile-val {% if not profile.why %}empty{% endif %}">{{ profile.why|default:"—" }}</span></div>
     </div>
   </div>
 
@@ -211,7 +166,6 @@
       <span class="section-heading">{% trans "Language" %}</span>
     </div>
     <div class="card-body">
-      <p class="text-muted small mb-3">{% trans "Choose the language of the interface. By default it is detected from your browser settings." %}</p>
       <div class="d-flex align-items-center gap-2 flex-wrap">
         <form method="post" action="{% url 'obywatele:set_language' %}">
           {% csrf_token %}
@@ -247,26 +201,26 @@
       <span class="section-heading">{% trans "Design" %}</span>
     </div>
     <div class="card-body">
-      <p class="text-muted small mb-3">{% trans "Wybierz wygląd interfejsu." %}</p>
       <div class="d-flex align-items-center gap-2 flex-wrap">
+        <button type="button" id="theme-btn-dark" class="btn btn-sm btn-outline-secondary"
+                onclick="toggleTheme('dark');">
+          <i class="fas fa-moon me-1"></i>{% trans "Ciemny" %}
+        </button>
         <button type="button" id="theme-btn-light" class="btn btn-sm btn-outline-secondary"
-                onclick="window.applyTheme('light'); updateThemeBtns('light');">
+                onclick="toggleTheme('light');">
           <i class="fas fa-sun me-1"></i>{% trans "Jasny" %}
         </button>
-        <button type="button" id="theme-btn-dark" class="btn btn-sm btn-outline-secondary"
-                onclick="window.applyTheme('dark'); updateThemeBtns('dark');">
-          <i class="fas fa-moon me-1"></i>{% trans "Ciemny" %}
+        <button type="button" id="theme-btn-civic" class="btn btn-sm btn-outline-secondary"
+                onclick="toggleTheme('civic');">
+          <i class="fas fa-landmark me-1"></i>{% trans "Obywatelski" %}
+        </button>
+        <button type="button" id="theme-btn-official" class="btn btn-sm btn-outline-secondary"
+                onclick="toggleTheme('official');">
+          <i class="fas fa-building-columns me-1"></i>{% trans "Oficjalny" %}
         </button>
       </div>
     </div>
   </div>
-  <script>
-  function updateThemeBtns(active) {
-    document.getElementById('theme-btn-light').className = 'btn btn-sm ' + (active === 'light' ? 'btn-primary' : 'btn-outline-secondary');
-    document.getElementById('theme-btn-dark').className  = 'btn btn-sm ' + (active === 'dark'  ? 'btn-primary' : 'btn-outline-secondary');
-  }
-  updateThemeBtns(localStorage.getItem('app-theme') || 'dark');
-  </script>
 
   {# ── POWIADOMIENIA EMAIL ── #}
   <div class="card">

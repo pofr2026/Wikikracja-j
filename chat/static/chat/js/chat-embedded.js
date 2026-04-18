@@ -138,7 +138,7 @@ async function initEmbeddedChat(container) {
             attachments:      msg.attachments ?? {},
             original_ts:      msg.timestamp,
             latest_ts:        formatTime(msg.latest_timestamp ?? msg.timestamp),
-            type:             null,          // brak głosowania kciukami w embedded
+            type:             "public",
             reply_to:         msg.reply_to  ?? null,
             reactions:        msg.reactions  ?? { bulb: 0, question: 0 },
             your_reactions:   msg.your_reactions ?? [],

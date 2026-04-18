@@ -90,6 +90,43 @@
 
 }
 
+/* Official theme — granatowy sidebar, pomarańczowy akcent */
+[data-theme="official"] {
+  --bg-base:    #F9FAFB;
+  --bg-sidebar: #0E1726;
+  --bg-card:    #ffffff;
+
+  --accent:       #D95F0D;
+  --accent-hover: #b84f0a;
+  --accent-muted: rgba(217,95,13,.1);
+  --accent-glow:  rgba(217,95,13,.25);
+  --color-accent: #D95F0D;
+
+  --text-primary: #1F2937;
+  --text-muted:   #6B7280;
+
+  --border: rgba(0,0,0,.09);
+
+  --btn-glass-bg:           rgba(0,0,0,.04);
+  --btn-glass-border:       rgba(0,0,0,.12);
+  --btn-glass-color:        #6B7280;
+  --btn-glass-hover-bg:     rgba(217,95,13,.07);
+  --btn-glass-hover-border: rgba(217,95,13,.3);
+  --btn-glass-hover-color:  #1F2937;
+
+  --badge-proposition-bg:    rgba(59,130,246,.1);
+  --badge-proposition-color: #1d4ed8;
+  --badge-discussion-bg:     rgba(168,85,247,.1);
+  --badge-discussion-color:  #6d28d9;
+  --badge-referendum-bg:     rgba(217,95,13,.1);
+  --badge-referendum-color:  #D95F0D;
+  --badge-approved-bg:       rgba(0,188,140,.1);
+  --badge-approved-color:    #047a6a;
+  --badge-rejected-bg:       rgba(239,68,68,.1);
+  --badge-rejected-color:    #dc2626;
+
+}
+
 /* Light theme */
 [data-theme="light"] {
   --bg-base:    #f0f2f5;

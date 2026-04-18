@@ -303,7 +303,7 @@ msgstr ""
 #: .\glosowania\templates\glosowania\szczegoly.html:658
 #: .\glosowania\templates\glosowania\szczegoly.html:771
 msgid "Edytuj"
-msgstr ""
+msgstr "Edytuj"
 
 #: .\board\templates\board\postcategory_confirm_delete.html:51
 msgid "Przed usunięciem kategorii odepnij ją od wszystkich ogłoszeń."
@@ -3029,7 +3029,7 @@ msgstr "Dlaczego chcesz należeć do grupy?"
 
 #: .\obywatele\models.py:62 .\obywatele\templates\obywatele\my_profile.html:18
 msgid "Avatar"
-msgstr ""
+msgstr "Zdjęcie profilowe"
 
 #: .\obywatele\models.py:69 .\obywatele\templates\obywatele\my_profile.html:211
 msgid "Language"
@@ -3199,21 +3199,21 @@ msgstr "Tutaj możesz edytować twoje zasoby"
 
 #: .\obywatele\templates\obywatele\my_profile.html:37
 msgid "Upload avatar"
-msgstr ""
+msgstr "Wgraj zdjęcie"
 
 #: .\obywatele\templates\obywatele\my_profile.html:49
 msgid "Personal Data"
-msgstr ""
+msgstr "Dane osobowe"
 
 #: .\obywatele\templates\obywatele\my_profile.html:91
 msgid "More fields (resources, skills)"
-msgstr ""
+msgstr "Więcej pól (zasoby, umiejętności)"
 
 #: .\obywatele\templates\obywatele\my_profile.html:148
 #, fuzzy
 #| msgid "Amount"
 msgid "Account"
-msgstr "Kwota"
+msgstr "Konto"
 
 #: .\obywatele\templates\obywatele\my_profile.html:156
 #: .\obywatele\templates\obywatele\my_profile.html:176
@@ -3256,7 +3256,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Resign"
 msgid "Design"
-msgstr "Zrezygnuj"
+msgstr "Wygląd"
 
 #: .\obywatele\templates\obywatele\my_profile.html:250
 msgid "Wybierz wygląd interfejsu."
@@ -3269,6 +3269,21 @@ msgstr "Jasny"
 #: .\obywatele\templates\obywatele\my_profile.html:258
 msgid "Ciemny"
 msgstr "Ciemny"
+
+msgid "Obywatelski"
+msgstr "Obywatelski"
+
+msgid "Oficjalny"
+msgstr "Oficjalny"
+
+msgid "Zmień hasło"
+msgstr "Zmień hasło"
+
+msgid "Zmień email"
+msgstr "Zmień email"
+
+msgid "Zmień nazwę użytkownika"
+msgstr "Zmień nazwę użytkownika"
 
 #: .\obywatele\templates\obywatele\my_profile.html:274
 msgid "Email Notifications"
