@@ -249,27 +249,21 @@
     <div class="card-body">
       <p class="text-muted small mb-3">{% trans "Wybierz wygląd interfejsu." %}</p>
       <div class="d-flex align-items-center gap-2 flex-wrap">
-        <button type="button" id="theme-btn-dark" class="btn btn-sm btn-outline-secondary"
-                onclick="window.applyTheme('dark'); updateThemeBtns('dark');">
-          <i class="fas fa-moon me-1"></i>{% trans "Ciemny" %}
-        </button>
         <button type="button" id="theme-btn-light" class="btn btn-sm btn-outline-secondary"
                 onclick="window.applyTheme('light'); updateThemeBtns('light');">
           <i class="fas fa-sun me-1"></i>{% trans "Jasny" %}
         </button>
-        <button type="button" id="theme-btn-civic" class="btn btn-sm btn-outline-secondary"
-                onclick="window.applyTheme('civic'); updateThemeBtns('civic');">
-          <i class="fas fa-landmark me-1"></i>{% trans "Obywatelski" %}
+        <button type="button" id="theme-btn-dark" class="btn btn-sm btn-outline-secondary"
+                onclick="window.applyTheme('dark'); updateThemeBtns('dark');">
+          <i class="fas fa-moon me-1"></i>{% trans "Ciemny" %}
         </button>
       </div>
     </div>
   </div>
   <script>
   function updateThemeBtns(active) {
-    ['dark','light','civic'].forEach(function(t) {
-      var el = document.getElementById('theme-btn-' + t);
-      if (el) el.className = 'btn btn-sm ' + (active === t ? 'btn-primary' : 'btn-outline-secondary');
-    });
+    document.getElementById('theme-btn-light').className = 'btn btn-sm ' + (active === 'light' ? 'btn-primary' : 'btn-outline-secondary');
+    document.getElementById('theme-btn-dark').className  = 'btn btn-sm ' + (active === 'dark'  ? 'btn-primary' : 'btn-outline-secondary');
   }
   updateThemeBtns(localStorage.getItem('app-theme') || 'dark');
   </script>
