@@ -171,7 +171,10 @@ export default class DomApi {
             ? DOMPurify.sanitize(raw_message, { ALLOWED_TAGS, ALLOWED_ATTR: [] })
             : escapeHtml(raw_message);
         const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/g;
-        return clean.replace(URL_REGEX, (match) => `<a href='${match}' target="_blank">${match}</a>`);
+        return clean.replace(URL_REGEX, (match) => {
+            const isInternal = match.replace(/^https?/, 'http').startsWith(window.location.origin.replace(/^https?/, 'http'));
+            return `<a href='${match}'${isInternal ? '' : ' target="_blank" rel="noopener"'}>${match}</a>`;
+        });
     }
 
     getPreviewDiv() {

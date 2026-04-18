@@ -11,8 +11,14 @@
         <h1 class="h4">
           {{ task.title }}
 {% if task.chat_room_url %}
-            <a href="{{ task.chat_room_url }}" target="_blank" class="text-decoration-none ms-3 {{ task.chat_room_pulse_class }}">
-              <i class="fas fa-comments"></i>
+            <a href="{{ task.chat_room_url }}" target="_blank"
+               class="proposal-chat-link {% if task.chat_room_pulse_class %}proposal-chat-link--pulse{% endif %} ms-2"
+               onclick="event.stopPropagation()">
+              <i class="fas fa-comment-dots"></i>
+              <span>{% trans "Czat" %}</span>
+              {% with n=task.chat_room.messages.count %}
+                {% if n %}<span class="proposal-chat-count">{{ n }}</span>{% endif %}
+              {% endwith %}
             </a>
           {% endif %}
         </h1>

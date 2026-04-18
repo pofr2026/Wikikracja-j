@@ -15,7 +15,7 @@ Użycie:
   <h2 class="ec-section-title">
     <i class="fas fa-comments fa-fw"></i> {% trans 'Czat' %}
     <a href="{% url 'chat:chat' %}#room_id={{ chat_room.pk }}"
-       class="ec-open-full" target="_blank" title="{% trans 'Otwórz w czacie' %}">
+       class="ec-open-full" title="{% trans 'Otwórz w czacie' %}">
       <i class="fas fa-arrow-up-right-from-square fa-fw"></i>
     </a>
   </h2>
@@ -107,9 +107,10 @@ Użycie:
   align-items: flex-end;
 }
 
-/* Dopasuj min-height inputu do kontekstu embedded */
-.ec-input-area [id^="ec-input-"] {
+/* Embedded input nieco niższy niż w głównym czacie */
+.ec-input-area .message-input-rich {
   min-height: 4rem;
+  max-height: 120px;
 }
 </style>
 

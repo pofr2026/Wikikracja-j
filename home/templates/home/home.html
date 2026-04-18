@@ -141,7 +141,7 @@
       </div>
       <div class="card-body p-0">
         {% for item in last_feed_items %}
-        <div class="task-dash-row d-flex align-items-center gap-2 px-3 py-2 border-bottom" style="min-width:0;">
+        <div class="task-dash-row d-flex align-items-center gap-2 px-3 py-2" style="min-width:0;">
           <span class="badge-status flex-shrink-0
             {% if item.content_type == 'decision' %}badge-referendum
             {% elif item.content_type == 'task' %}badge-discussion
@@ -187,46 +187,44 @@
           <i class="fas fa-rocket" style="color:var(--accent);font-size:.85rem;"></i>
           <span class="section-heading" style="font-size:.85rem;">{% trans "Pierwsze kroki" %}</span>
         </div>
-        <ul class="list-unstyled mb-0 d-flex flex-column gap-2" style="font-size:.82rem;">
+        <ul class="list-unstyled mb-0 d-flex flex-column gap-1" style="font-size:.82rem;">
 
-          <li class="d-flex align-items-start gap-2">
+          <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
             {% if onboarding.step1_read %}
-              <i class="fas fa-check-circle mt-1 flex-shrink-0" style="color:#00bc8c;"></i>
+              <i class="fas fa-check-circle flex-shrink-0" style="color:#00bc8c;font-size:.85rem;"></i>
               <span style="color:var(--text-muted);">{% trans "Przeczytaj zasady wspólnoty" %}</span>
             {% else %}
-              <i class="fas fa-circle mt-1 flex-shrink-0" style="color:var(--text-muted);opacity:.4;"></i>
-              <div>
-                {% if rules_post_pk %}
-                  <a href="{% url 'board:view_post' rules_post_pk %}" style="color:var(--accent);">{% trans "Przeczytaj zasady wspólnoty" %}</a>
-                  <form action="{% url 'mark_rules_read' %}" method="post" class="d-inline ms-2">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.path }}">
-                    <button type="submit" class="btn btn-sm btn-outline-secondary" style="font-size:.72rem;padding:1px 7px;">{% trans "Przeczytałem" %}</button>
-                  </form>
-                {% else %}
-                  <span style="color:var(--text-muted);">{% trans "Przeczytaj zasady wspólnoty" %}</span>
-                {% endif %}
-              </div>
+              <i class="fas fa-circle flex-shrink-0" style="color:var(--text-muted);opacity:.4;font-size:.85rem;"></i>
+              {% if rules_post_pk %}
+                <a href="{% url 'board:view_post' rules_post_pk %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;position:relative;z-index:2;">{% trans "Przeczytaj zasady wspólnoty" %}</a>
+                <form action="{% url 'mark_rules_read' %}" method="post" class="d-inline flex-shrink-0" style="position:relative;z-index:2;">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  <button type="submit" class="btn btn-sm btn-outline-secondary" style="font-size:.72rem;padding:1px 7px;">{% trans "Przeczytałem" %}</button>
+                </form>
+              {% else %}
+                <span style="color:var(--text-muted);">{% trans "Przeczytaj zasady wspólnoty" %}</span>
+              {% endif %}
             {% endif %}
           </li>
 
-          <li class="d-flex align-items-start gap-2">
+          <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
             {% if onboarding.step2_discussed %}
-              <i class="fas fa-check-circle mt-1 flex-shrink-0" style="color:#00bc8c;"></i>
+              <i class="fas fa-check-circle flex-shrink-0" style="color:#00bc8c;font-size:.85rem;"></i>
               <span style="color:var(--text-muted);">{% trans "Zabierz głos w dyskusji" %}</span>
             {% else %}
-              <i class="fas fa-circle mt-1 flex-shrink-0" style="color:var(--text-muted);opacity:.4;"></i>
-              <a href="{% url 'glosowania:discussion' %}" style="color:var(--accent);">{% trans "Zabierz głos w dyskusji" %}</a>
+              <i class="fas fa-circle flex-shrink-0" style="color:var(--text-muted);opacity:.4;font-size:.85rem;"></i>
+              <a href="{% url 'glosowania:discussion' %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;position:relative;z-index:2;">{% trans "Zabierz głos w dyskusji" %}</a>
             {% endif %}
           </li>
 
-          <li class="d-flex align-items-start gap-2">
+          <li class="task-dash-row d-flex align-items-center gap-2" style="min-width:0;">
             {% if onboarding.step3_voted %}
-              <i class="fas fa-check-circle mt-1 flex-shrink-0" style="color:#00bc8c;"></i>
+              <i class="fas fa-check-circle flex-shrink-0" style="color:#00bc8c;font-size:.85rem;"></i>
               <span style="color:var(--text-muted);">{% trans "Oddaj pierwszy głos" %}</span>
             {% else %}
-              <i class="fas fa-circle mt-1 flex-shrink-0" style="color:var(--text-muted);opacity:.4;"></i>
-              <a href="{% url 'glosowania:referendum' %}" style="color:var(--accent);">{% trans "Oddaj pierwszy głos" %}</a>
+              <i class="fas fa-circle flex-shrink-0" style="color:var(--text-muted);opacity:.4;font-size:.85rem;"></i>
+              <a href="{% url 'glosowania:referendum' %}" class="task-dash-link" style="color:var(--accent);text-decoration:none;flex:1;position:relative;z-index:2;">{% trans "Oddaj pierwszy głos" %}</a>
             {% endif %}
           </li>
 
@@ -262,7 +260,9 @@
           </li>
           {% endfor %}
         </ul>
-        <span style="font-size:.78rem;color:var(--accent);opacity:.8;margin-top:auto;">{% trans "Pełny kalendarz" %} →</span>
+        <a href="{% url 'events:list' %}" class="task-dash-row d-flex align-items-center gap-2 mt-auto" style="text-decoration:none;font-size:.78rem;color:var(--accent);position:relative;z-index:2;">
+          <i class="fas fa-calendar-days" style="font-size:.75rem;opacity:.7;"></i>{% trans "Pełny kalendarz" %} →
+        </a>
         <a href="{% url 'events:list' %}" class="stretched-link"></a>
         {% else %}
         <div class="d-flex flex-column justify-content-center align-items-center gap-2 flex-grow-1 py-2">

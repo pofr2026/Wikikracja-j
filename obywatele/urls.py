@@ -24,6 +24,7 @@ urlpatterns = (
     path('my_assets/', v.my_assets, name='my_assets'),
     path('nowy/', v.dodaj, name='zaproponuj_osobe'),
     path('change_username/', v.change_username, name='change_username'),
+    path('change_email/', v.change_email, name='change_email'),
     path("assets/", login_required(v.AssetListView.as_view()), name='assets'),
     path('parameters/', v.parameters, name='parameters'),
     path('wspolnota/', v.wspolnota, name='wspolnota'),

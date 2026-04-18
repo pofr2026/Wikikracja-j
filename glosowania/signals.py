@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 
 # First party imports
 from chat.models import Message, Room
+from django.conf import settings
 from glosowania.models import Decyzja
 from zzz.utils import get_site_domain
 
@@ -42,7 +43,8 @@ def create_or_update_chat_room_for_referendum(sender, instance, created, **kwarg
 
             # Create initial welcome message in the room
             HOST = get_site_domain()
-            details_url = f"http://{HOST}/glosowania/details/{instance.pk}"
+            protocol = getattr(settings, 'SITE_PROTOCOL', 'http')
+            details_url = f"{protocol}://{HOST}/glosowania/details/{instance.pk}"
             welcome_message = _("This chat room has been created for project #{id}.\n"
                                 "View details: {details_url}\n"
                                 "Discuss the proposal, share your thoughts, and ask questions here.").format(id=instance.pk, details_url=details_url)

@@ -46,7 +46,7 @@ export function makeNotification(notif) {
         });
         notification.onclick = function() {
             if (window.location.pathname !== "/chat/") {
-                window.location.href = "/chat#room_id=" + notif.room_id;
+                window.location.href = "/chat/#room_id=" + notif.room_id;
             }
         };
     }

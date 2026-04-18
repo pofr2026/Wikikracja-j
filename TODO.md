@@ -234,13 +234,15 @@ Do oddania / na sprzedaż / do wypożyczenia:
 
 # JORDAN (TO DO)
 - w profilu użytkownika można sprawdzić:
-	- wszystkie wpisy w czacie
-	- zadania w których bierze udział
-	- wypowiedzi/argumenty etc...
-  -{napisać wiadomość bezpośrednio}
-- versja strony wraz z listą zmian z każdą wersją
+  - ~~zadania w których bierze udział~~
+  -	~~wypowiedzi/argumenty etc...~~
+  - {napisać wiadomość bezpośrednio}
+~~- wersja strony wraz z listą zmian z każdą wersją~~
 - wszystkie strony mają korzystać z tych samych styli *(Design system / style guide)*
 - system update, tak żeby można było zrobić update strony jednym przyciskiem (ściąga repo z githuba i instaluje)
+- **ogłoszenia**
+  - dodanie opcji "wyświetl na pulpicie użytkowników" wtedy pojawia się na pulpicie. 
+  - data ważności (po tej dacie ogłoszenie się archiwizuje) 
 
 ------------------------------------------------------------
 

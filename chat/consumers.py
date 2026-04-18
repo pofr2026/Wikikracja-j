@@ -180,12 +180,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         room = await self.get_room_or_error(room_id, self.scope["user"])
 
         user_id = self.scope["user"].id
-        is_allowed = await self.allowed_in_room(room)
-        log.info(f"User {user_id} trying to join room {room_id} ({room.title}): allowed={is_allowed}")
-
-        if not is_allowed:
-            log.warning(f"ACCESS_DENIED: User {user_id} not in room.allowed for room {room_id}")
-            raise ClientError("ACCESS_DENIED")
+        if not room.public:
+            is_allowed = await self.allowed_in_room(room)
+            log.info(f"User {user_id} trying to join private room {room_id} ({room.title}): allowed={is_allowed}")
+            if not is_allowed:
+                log.warning(f"ACCESS_DENIED: User {user_id} not in room.allowed for private room {room_id}")
+                raise ClientError("ACCESS_DENIED")
 
         # user can only be in one room at the time
         for room_id_to_leave in self.rooms.items():
@@ -241,6 +241,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     date=msg_data['time'],
                     latest_date=msg_data['time'],
                     attachments=attachments,
+                    reply_to=msg_data.get('reply_to'),
                 )
             except TypeError:
                 data = None
@@ -943,7 +944,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         """
         # Fetch messages with related data (same as original)
         messages = Message.objects.filter(room=room_id) \
-            .select_related('sender') \
+            .select_related('sender', 'reply_to__sender') \
             .prefetch_related(
                 Prefetch('attachments', queryset=MessageAttachment.objects.all()),
                 'messagehistory'
@@ -978,6 +979,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         }
 
         # Build message data
+        import re as _re
         result = []
         for msg in messages:
             edited = hasattr(msg, 'messagehistory')
@@ -987,6 +989,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 attachments_of_type = attachments.get(attachment.type, [])
                 attachments_of_type.append(attachment.filename)
                 attachments[attachment.type] = attachments_of_type
+
+            reply_to_data = None
+            if msg.reply_to_id and msg.reply_to:
+                rm = msg.reply_to
+                ru = 'Anonymous User' if rm.anonymous else (rm.sender.username if rm.sender else 'Unknown')
+                plain = _re.sub(r'<[^>]+>', '', rm.text)
+                reply_to_data = {
+                    'id': rm.id,
+                    'username': ru,
+                    'text_snippet': plain[:120],
+                    'author_color': _username_to_color(ru),
+                }
 
             result.append({
                 'id': msg.id,
@@ -999,6 +1013,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 'downvotes': msg.downvotes,
                 'edited': edited,
                 'attachments': attachments,
+                'reply_to': reply_to_data,
             })
 
         return {

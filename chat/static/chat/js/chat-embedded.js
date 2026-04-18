@@ -73,7 +73,10 @@ async function initEmbeddedChat(container) {
             ? DOMPurify.sanitize(raw, { ALLOWED_TAGS, ALLOWED_ATTR: [] })
             : raw.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/g;
-        return clean.replace(URL_REGEX, (url) => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+        return clean.replace(URL_REGEX, (url) => {
+            const isInternal = url.replace(/^https?/, 'http').startsWith(window.location.origin.replace(/^https?/, 'http'));
+            return `<a href="${url}"${isInternal ? '' : ' target="_blank" rel="noopener"'}>${url}</a>`;
+        });
     }
 
     function getInputHtml() {
@@ -213,6 +216,7 @@ async function initEmbeddedChat(container) {
             })
             .catch(err => {
                 messagesEl.innerHTML = '<div class="ec-loading">Brak dostępu do tego czatu.</div>';
+                container.querySelector('.ec-input-area').style.display = 'none';
                 console.error('embedded chat join error:', err);
             });
     }

@@ -510,7 +510,7 @@ body:has(.chat-rooms) {
 /* ZMIANA 6 — RICH TEXT INPUT (contenteditable)               */
 /* ============================================================ */
 
-#message-input.message-input-rich {
+.message-input-rich {
     border: 1px solid var(--border);
     border-radius: .3rem;
     background-color: var(--bg-base);
@@ -527,47 +527,19 @@ body:has(.chat-rooms) {
     word-break: break-word;
 }
 
-#message-input.message-input-rich:empty::before {
+.message-input-rich:empty::before {
     content: attr(data-placeholder);
     color: var(--color-text-muted);
     pointer-events: none;
     opacity: .6;
 }
 
-#message-input.message-input-rich:focus {
+.message-input-rich:focus {
     border-color: var(--accent-muted);
 }
 
-#message-input.message-input-rich.input--error {
+.message-input-rich.input--error {
     border-color: var(--color-error);
-}
-
-/* Fallback textarea (in case contenteditable not used) */
-#message-input:not(.message-input-rich) {
-    border: 1px solid var(--border);
-    border-radius: .3rem;
-    background-color: var(--bg-base);
-    color: var(--color-text);
-    flex: 1;
-    padding: 0.5rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    font-family: inherit;
-    resize: none;
-    overflow: hidden;
-    min-height: 38px;
-    max-height: 120px;
-}
-
-#message-input:not(.message-input-rich):focus {
-    border-color: var(--accent-muted);
-    outline: none;
-    box-shadow: none;
-}
-
-#message-input:not(.message-input-rich)::placeholder {
-    color: var(--color-text-muted);
-    opacity: .6;
 }
 
 /* ============================================================ */

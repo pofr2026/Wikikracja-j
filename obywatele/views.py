@@ -707,6 +707,27 @@ def my_profile(request: HttpRequest):
         },
     ]
     
+    profile_form = ProfileForm(initial={
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'phone': profile.phone,
+        'responsibilities': profile.responsibilities,
+        'city': profile.city,
+        'hobby': profile.hobby,
+        'to_give_away': profile.to_give_away,
+        'to_borrow': profile.to_borrow,
+        'for_sale': profile.for_sale,
+        'i_need': profile.i_need,
+        'skills': profile.skills,
+        'knowledge': profile.knowledge,
+        'want_to_learn': profile.want_to_learn,
+        'business': profile.business,
+        'job': profile.job,
+        'gift': profile.gift,
+        'other': profile.other,
+        'why': profile.why,
+    })
+
     return render(request, 'obywatele/my_profile.html', {
         'profile': profile,
         'user': user,
@@ -714,6 +735,8 @@ def my_profile(request: HttpRequest):
         'required_reputation': required_reputation(),
         'asset_fields': asset_fields,
         'notifications': notifications,
+        'avatar_form': AvatarForm(),
+        'profile_form': profile_form,
     })
 
 
@@ -786,20 +809,11 @@ def my_assets(request: HttpRequest):
             profile.why = form.cleaned_data['why']
             profile.save()
 
-            return render(request, 'obywatele/my_profile.html', {
-                'message': _('Changes was saved'),
-                'profile': profile,
-                'required_reputation': required_reputation(),
-            })
+            success(request, _('Changes was saved'))
+            return redirect('obywatele:my_profile')
         else:  # form.is_NOT_valid():
-            message = form.errors
-            error(request, (message))
-
-            return render(request, 'obywatele/my_profile.html', {
-                'message': _('Form is not valid!'),
-                'profile': profile,
-                'required_reputation': required_reputation(),
-            })
+            error(request, form.errors)
+            return redirect('obywatele:my_profile')
     else:  # request.method != 'POST':
         form = ProfileForm(initial={  # pre-populate fields from database
             'first_name': user.first_name,
