@@ -21,8 +21,8 @@ RUN pip install --no-cache-dir --no-compile --user -r requirements.txt
 COPY . /app/
 
 # Build-time operations
-RUN python manage.py collectstatic --noinput -v 2 \
-    || (echo "Static collection failed, continuing..." && python manage.py collectstatic --noinput -v 2 --clear)
+RUN DEBUG=False python manage.py collectstatic --noinput -v 2 \
+    || (echo "Static collection failed, continuing..." && DEBUG=False python manage.py collectstatic --noinput -v 2 --clear)
 
 # 2. Runtime stage - minimal Alpine image
 FROM python:3.14-alpine AS runtime
