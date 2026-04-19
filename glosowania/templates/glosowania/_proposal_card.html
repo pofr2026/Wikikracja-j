@@ -1,0 +1,157 @@
+{% load i18n %}
+{% comment %}
+  Partial: kafelek propozycji.
+  Oczekiwane zmienne z {% include ... with i=item %}:
+    i          — obiekt Decyzja
+    show_dates — bool, czy pokazać daty referendum (tylko widok referendum)
+{% endcomment %}
+
+<div class="proposal-card" id="card-{{ i.pk }}">
+
+  {# ── NAGŁÓWEK + PREVIEW (klikalny, poza linkami dzieci) ── #}
+  <div class="proposal-card-header" onclick="toggleCard({{ i.pk }})" role="button" tabindex="0"
+       onkeydown="if(event.key==='Enter'||event.key===' ')toggleCard({{ i.pk }})">
+
+    <div class="proposal-card-title-row">
+      <span class="proposal-card-num">#{{ i.pk }}</span>
+      <span class="proposal-card-title">{{ i.display_title }}</span>
+      <i class="fas fa-chevron-down proposal-card-chevron" id="chevron-{{ i.pk }}"></i>
+    </div>
+
+    <div class="proposal-card-badges-row">
+      {% if i.status == 1 %}
+        <span class="badge-status badge-proposition">{% trans 'Propozycja' %}</span>
+      {% elif i.status == 2 %}
+        <span class="badge-status badge-discussion">{% trans 'Dyskusja' %}</span>
+      {% elif i.status == 3 %}
+        <span class="badge-status badge-referendum">{% trans 'Referendum' %}</span>
+      {% elif i.status == 4 %}
+        <span class="badge-status badge-rejected">{% trans 'Odrzucone' %}</span>
+      {% elif i.status == 5 %}
+        <span class="badge-status badge-approved">{% trans 'Zatwierdzone' %}</span>
+      {% endif %}
+
+      {% if i.chat_room_pulse_class %}
+        <a href="{{ i.chat_room_url }}" 
+           class="proposal-chat-link proposal-chat-link--pulse {{ i.chat_room_pulse_class }}"
+           onclick="event.stopPropagation()">
+          <i class="fas fa-comment-dots"></i>
+          <span>{% trans 'Chat' %}</span>
+          {% with n=i.chat_room.messages.count %}
+            {% if n %}<span class="proposal-chat-count">{{ n }}</span>{% endif %}
+          {% endwith %}
+        </a>
+      {% elif i.chat_room %}
+        <a href="{{ i.chat_room_url }}" 
+           class="proposal-chat-link"
+           onclick="event.stopPropagation()">
+          <i class="fas fa-comment-dots"></i>
+          <span>{% trans 'Chat' %}</span>
+          {% with n=i.chat_room.messages.count %}
+            {% if n %}<span class="proposal-chat-count">{{ n }}</span>{% endif %}
+          {% endwith %}
+        </a>
+      {% endif %}
+    </div>
+
+    {# Podgląd treści — widoczny przed rozwinięciem, chowa się po #}
+    {% if i.tresc %}
+    <p class="proposal-preview">{{ i.tresc }}</p>
+    {% endif %}
+
+    {# Pasek meta: autor (klikalny → profil) + data + podpisy + szczegóły #}
+    <div class="proposal-card-meta">
+
+      {% if i.author %}
+      <a href="{% url 'obywatele:obywatele_szczegoly' pk=i.author.pk %}"
+         class="proposal-author-link" onclick="event.stopPropagation()"
+         title="{{ i.author.username }}">
+        <span class="proposal-author-avatar">
+          {% if i.author.uzytkownik.avatar %}
+            <img src="{{ i.author.uzytkownik.avatar.url }}" alt="">
+          {% else %}
+            {{ i.author.username|slice:":2"|upper }}
+          {% endif %}
+        </span>
+        <span class="proposal-author-name">{{ i.author.username }}</span>
+      </a>
+      {% else %}
+      <span class="proposal-author-name">—</span>
+      {% endif %}
+
+      <span class="proposal-meta-sep">·</span>
+      <span class="proposal-date">{{ i.data_powstania|date:"d.m.Y" }}</span>
+
+      {% if i.ile_osob_podpisalo %}
+        <span class="proposal-meta-sep">·</span>
+        <span class="proposal-signatures">
+          <i class="fas fa-pen-nib fa-fw"></i> {{ i.ile_osob_podpisalo }}
+        </span>
+      {% endif %}
+
+      {# Szczegóły — prawy dolny róg, widoczny na zwiniętym kafelku #}
+      <a href="{% url 'glosowania:details' pk=i.pk %}"
+         class="proposal-details-inline" onclick="event.stopPropagation()">
+        {% trans 'Szczegóły' %} <i class="fas fa-arrow-right fa-fw"></i>
+      </a>
+
+    </div>
+
+  </div>{# /.proposal-card-header #}
+
+  {# ── CIAŁO (zwinięte domyślnie) — klikalne → szczegóły ── #}
+  <div class="proposal-card-body" id="body-{{ i.pk }}" style="display:none;cursor:pointer;"
+       onclick="window.location.href='{% url 'glosowania:details' pk=i.pk %}'"
+       role="link">
+
+    {# Szczegóły u góry ciała (po rozwinięciu) #}
+    <div class="proposal-body-topbar">
+      <a href="{% url 'glosowania:details' pk=i.pk %}" class="proposal-details-btn"
+         onclick="event.stopPropagation()">
+        <i class="fas fa-arrow-up-right-from-square fa-fw"></i> {% trans 'Szczegóły' %}
+      </a>
+    </div>
+
+    {% if i.tresc %}
+    <div class="proposal-section">
+      <div class="proposal-section-label">
+        <i class="fas fa-scroll fa-fw"></i> {% trans 'Treść przepisu' %}
+      </div>
+      <div class="proposal-section-text">{{ i.tresc|linebreaksbr }}</div>
+    </div>
+    {% endif %}
+
+    {% if i.kara %}
+    <div class="proposal-section">
+      <div class="proposal-section-label">
+        <i class="fas fa-triangle-exclamation fa-fw"></i> {% trans 'Konsekwencje' %}
+      </div>
+      <div class="proposal-section-text">{{ i.kara|linebreaksbr }}</div>
+    </div>
+    {% endif %}
+
+    {% if i.uzasadnienie %}
+    <div class="proposal-section">
+      <div class="proposal-section-label">
+        <i class="fas fa-lightbulb fa-fw"></i> {% trans 'Uzasadnienie' %}
+      </div>
+      <div class="proposal-section-text">{{ i.uzasadnienie|linebreaksbr }}</div>
+    </div>
+    {% endif %}
+
+    {% if show_dates %}
+    <div class="proposal-section">
+      <div class="proposal-section-label">
+        <i class="fas fa-calendar fa-fw"></i> {% trans 'Referendum' %}
+      </div>
+      <div class="proposal-section-text">
+        {% trans 'Start' %}: {{ i.data_referendum_start|date:"d.m.Y"|default:"—" }}
+        &nbsp;·&nbsp;
+        {% trans 'Koniec' %}: {{ i.data_referendum_stop|date:"d.m.Y"|default:"—" }}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>{# /.proposal-card-body #}
+
+</div>{# /.proposal-card #}

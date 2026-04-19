@@ -1,0 +1,39 @@
+{% extends 'home/base.html' %}
+{% load i18n %}
+
+{% block content %}
+
+
+<nav class="stepper-nav">
+    {% with t=current_tab s=current_sort o=current_order %}
+
+    <div class="stepper-step-wrap {% if t == 'mine' %}active{% endif %}">
+      <a href="{% url 'tasks:list' %}?tab=mine&sort={{ s }}&order={{ o }}" class="stepper-step">
+        {% trans 'Mine' %}
+      </a>
+    </div>
+
+    <div class="stepper-step-wrap {% if t == 'awaiting' %}active{% endif %}">
+      <a href="{% url 'tasks:list' %}?tab=awaiting&sort={{ s }}&order={{ o }}" class="stepper-step">
+        {% trans 'Awaiting pickup' %}
+      </a>
+    </div>
+
+    <div class="stepper-step-wrap {% if t == 'active' %}active{% endif %}">
+      <a href="{% url 'tasks:list' %}?tab=active&sort={{ s }}&order={{ o }}" class="stepper-step">
+        {% trans 'In progress' %}
+      </a>
+    </div>
+
+    <div class="stepper-step-wrap {% if t == 'finished' %}active{% endif %}">
+      <a href="{% url 'tasks:list' %}?tab=finished&sort={{ s }}&order={{ o }}" class="stepper-step">
+        {% trans 'Finished' %}
+      </a>
+    </div>
+
+    {% endwith %}
+  </nav>
+
+  {% block tasks %}{% endblock %}
+
+{% endblock %}

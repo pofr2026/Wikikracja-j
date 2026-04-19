@@ -32,3 +32,4 @@ class HomeConfig(AppConfig):
                     Site.objects.create(id=1, domain=site_domain, name=site_name or site_domain)
                 except Exception:
                     pass
+        import home.signals  # noqa

@@ -2,23 +2,17 @@
 {% load static %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
-{% comment %} {% load django_bootstrap5 %} {% endcomment %}
 {% load crispy_forms_tags %}
 
 {% block citizens %}
-
-	{% comment %}<form action="" method="get" class="form">
-		<div class="row">
-			{% for obj in filter.form  %}
-				<div class="col-lg-3 col-sm-12">
-					{{ obj|as_crispy_field }}
-				</div>
-			{% endfor %}
-		</div>
-	<div class="row">
-		<button type="submit" class="btn btn-secondary">{% trans 'Filter' %}</button>
-	</div>{% endcomment %}
-	</form>
-		{% render_table table 'django_tables2/bootstrap-responsive.html' %}
-
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="section-heading">{% trans "Assets" %}</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      {% render_table table %}
+    </div>
+  </div>
+</div>
 {% endblock citizens %}

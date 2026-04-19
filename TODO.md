@@ -20,6 +20,7 @@
 
 # ZADANIA (TASKS)
 
+- Design szczegółów zadania do poprawienia (wygląd strony szczegółów)
 - Opis do Tasks: Pomysł przechodzi do działu "W realizacji" jeśli zaistnieją 2 warunki: - ktoś wziął na siebie realizację projektu - zwolenników realizacji jest o 2 więcej niż przeciwników.
 - Filtr, który pokazuje tylko moje zadania
 - Kategorie przypisywane do Zadań i Ludzi. Kategorie: pisanie, ludzie, programowanie, grafika, finanse, itp. Kategorie powinno dać się: tworzyć, przypisać, zmieniać nazwę i filtrować.
@@ -53,6 +54,7 @@
 - Konfigurowalna częstotliwość wysyłania powiadomień o nowych zdarzeniach (czat, referenda, prośba o dołączenie)
 - Lepsze wyjaśnienie do emaili z powiadomieniami (głosowania i czat oddzielnie)
 - Emaile nie są tłumaczone na angielski
+- Poprawki w tłumaczeniach języka (niespójności/brakujące tłumaczenia w UI)
 - Dodać tytuł propozycji w emailach (tytuł i treść)
 - Dodać informację, że podanie emaila jest niezbędne żeby otrzymać hasło
 - Dodać komunikat jeśli użytkownik odzyskuje hasło ale nie ma ustawionego emaila
@@ -230,6 +232,17 @@ Do oddania / na sprzedaż / do wypożyczenia:
 - PWA: https://web.dev/what-are-pwas/ https://beeware.org/
 - System reputacji oparty na predykcjach - kto trafniej przewiduje przyszłe wydarzenia zyskuje punkty, przyznanie się do błędu zatrzymuje utratę punktów.
 - Podpowiedzi z możliwymi przepisami i biznesami do zrobienia
+
+# JORDAN (TO DO)
+**NOWE FUNKCJE** 
+- w profilu użytkownika można sprawdzić:
+  - {napisać wiadomość bezpośrednio}
+- wszystkie strony mają korzystać z tych samych styli *(Design system / style guide)*
+- system update, tak żeby można było zrobić update strony jednym przyciskiem (ściąga repo z githuba i instaluje)
+- **ogłoszenia**
+  - dodanie opcji "wyświetl na pulpicie użytkowników" wtedy pojawia się na pulpicie. 
+  - data ważności (po tej dacie ogłoszenie się archiwizuje) 
+**BUGS**
 
 ------------------------------------------------------------
 

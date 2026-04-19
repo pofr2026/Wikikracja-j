@@ -1,46 +1,29 @@
 {% extends 'glosowania/menu.html' %}
-{% load django_bootstrap5 %}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
-{% bootstrap_messages %}
 {% load static %}
 {% load i18n %}
 
 {% block glosowania %}
+<div class="d-flex justify-content-end mb-2">
+  {% if user.is_authenticated %}
+  <a href="{% url 'glosowania:dodaj_nowy' %}" class="btn btn-sm btn-primary">
+    <i class="fas fa-plus me-1"></i>{% trans "Dodaj" %}
+  </a>
+  {% endif %}
+</div>
+{% include 'glosowania/_view_toggle.html' %}
 
-<div class="container mt-4">
-	<div>
-		{% if votings %}
-			{% for i in votings %}
-			<div class="mb-5 pb-3 border-bottom">
-				<h5>
-					{{ i.pk }}. <a href="{% url 'glosowania:details' pk=i.pk %}">{{ i.display_title }}</a>
-					{% if i.chat_room %}
-						<a href="{% url 'chat:chat' %}#room_id={{ i.chat_room.id }}" target="_blank" class="text-decoration-none ms-3 {{ i.chat_room_pulse_class }}">
-							<i class="fas fa-comments"></i>
-						</a>
-					{% endif %}
-				</h5>
-				{{ i.tresc|linebreaks }}
-				<div class="row">
-					<div class="col-md-6">
-						<b>{% trans "Penalty for non-compliance" %}:</b> {{ i.kara|linebreaks }}
-					</div>
-					<div class="col-md-6">
-						<b>{% trans "Reason" %}:</b> {{ i.uzasadnienie|linebreaks }}
-					</div>
-				</div>
-				<b>{% trans "This law supersedes the following bills" %}:</b> {{ i.znosi|default_if_none:"--" }}
-				<br>
-				<b>{% trans "Signatures" %}:</b> {{ i.ile_osob_podpisalo|default_if_none:"--" }}
-				<br>
-				<b>{% trans "Created" %}:</b> {{ i.data_powstania|date:"Y-m-d"|default_if_none:"--" }}
-			</div>
-			{% endfor %}
-		{% else %}
-			<div class="alert alert-dark">({% trans 'There is no proposal with this status' %})</div>
-		{% endif %}
-	</div>
+<div class="proposals-list" id="proposals-list">
+  {% if votings %}
+    {% for i in votings %}
+      {% include 'glosowania/_proposal_card.html' with show_dates=False %}
+    {% endfor %}
+  {% else %}
+    <div class="proposals-empty">
+      <i class="fas fa-inbox fa-2x mb-2"></i>
+      <div>{% trans 'There is no proposal with this status' %}</div>
+    </div>
+  {% endif %}
 </div>
 
+{% include 'glosowania/_card_script.html' %}
 {% endblock glosowania %}

@@ -155,3 +155,15 @@ document.addEventListener('DOMContentLoaded', function() {
         frequencyField.addEventListener('change', toggleOrdinalFields);
     }
 });
+
+// ============================================================
+// Theme toggle — handler is in base.html; applyTheme exposed globally for other scripts
+// ============================================================
+(function () {
+  const STORAGE_KEY = 'app-theme';
+
+  window.applyTheme = function (theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+  };
+})();

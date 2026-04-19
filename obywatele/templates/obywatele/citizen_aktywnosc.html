@@ -1,0 +1,47 @@
+{% extends 'obywatele/menu.html' %}
+{% load i18n %}
+
+{% block citizens %}
+<div class="container section">
+  <div class="mb-3">
+    <a href="{% url 'obywatele:obywatele_szczegoly' pk=target_user.pk %}" class="btn btn-sm btn-outline-secondary">
+      ← {{ target_user.username }}
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="section-heading">
+        {% if is_own %}
+          {% trans "My activity" %}
+        {% else %}
+          {% blocktrans with name=target_user.username %}Activity of {{ name }}{% endblocktrans %}
+        {% endif %}
+      </span>
+    </div>
+    <div class="card-body p-0">
+      {% if items %}
+        <ul class="list-group list-group-flush">
+          {% for item in items %}
+            <li class="list-group-item d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <small class="text-muted d-block">{{ item.label }}</small>
+                {% if item.url %}
+                  <a href="{{ item.url }}">{{ item.title }}</a>
+                {% else %}
+                  {{ item.title }}
+                {% endif %}
+              </div>
+              {% if item.ts %}
+                <small class="text-muted text-nowrap">{{ item.ts|date:"Y-m-d" }}</small>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted p-3 mb-0">{% trans "No activity found." %}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock citizens %}

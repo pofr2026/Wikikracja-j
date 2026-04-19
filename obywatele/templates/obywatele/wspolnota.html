@@ -1,0 +1,195 @@
+{% extends 'home/base.html' %}
+{% load i18n %}
+
+{% block content %}
+
+{# ── Page header ── #}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <h2 style="font-size:1.1rem;font-weight:700;color:var(--text-primary);margin:0;">
+    <i class="fas fa-users me-2" style="color:var(--accent);"></i>{% trans "Wspólnota" %}
+  </h2>
+  <span style="font-size:.8rem;color:var(--text-muted);">— {% trans "Przegląd społeczności" %}</span>
+</div>
+
+{# ── Stat tiles ── #}
+<div class="row g-3 mb-4">
+
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'obywatele:obywatele' %}" class="card h-100 text-decoration-none">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="wspol-stat-icon accent"><i class="fas fa-users"></i></div>
+        <div>
+          <div class="wspol-stat-value">{{ member_count }}</div>
+          <div class="wspol-stat-label">{% trans "aktywnych obywateli" %}</div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'obywatele:poczekalnia' %}" class="card h-100 text-decoration-none">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="wspol-stat-icon warning"><i class="fas fa-user-clock"></i></div>
+        <div>
+          <div class="wspol-stat-value">{{ pending_count }}</div>
+          <div class="wspol-stat-label">{% trans "kandydatów w poczekalni" %}</div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <a href="{% url 'obywatele:assets' %}" class="card h-100 text-decoration-none">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="wspol-stat-icon blue"><i class="fas fa-brain"></i></div>
+          <div class="wspol-stat-label">{% trans "Umiejętności i zasoby" %}</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="asset-chip"><i class="fas fa-brain" style="color:var(--accent);"></i> <strong>{{ skills_count }}</strong> {% trans "umiejętności" %}</span>
+          <span class="asset-chip"><i class="fas fa-book" style="color:var(--accent);"></i> <strong>{{ knowledge_count }}</strong> {% trans "wiedzy" %}</span>
+          <span class="asset-chip">🎁 <strong>{{ give_away_count }}</strong></span>
+          <span class="asset-chip">🤝 <strong>{{ borrow_count }}</strong></span>
+          <span class="asset-chip">🛒 <strong>{{ for_sale_count }}</strong></span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="wspol-stat-icon success"><i class="fas fa-chart-line"></i></div>
+        <div>
+          <div class="wspol-stat-value">{{ active_pct }}%</div>
+          <div class="wspol-stat-label">{% trans "zalogowanych w ciągu 30 dni" %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Directory + Finance ── #}
+<div class="row g-3 mb-3">
+
+  <div class="col-lg-8">
+    <div class="card h-100" style="position:relative;">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="wspol-section-title mb-0">
+          <i class="fas fa-comments"></i>{% trans "Czat" %}
+        </span>
+        <a href="{% url 'chat:chat' %}" class="btn btn-sm btn-outline-primary">
+          {% trans "Otwórz czat" %} &rarr;
+        </a>
+      </div>
+      <div class="card-body p-3 d-flex flex-column gap-1">
+        {% for msg in recent_chat_messages %}
+        <div class="chat-msg-row d-flex align-items-center gap-2" style="min-width:0; position:relative; z-index:1;">
+          <div class="wspol-avatar flex-shrink-0">
+            {% if msg.sender.uzytkownik.avatar %}
+              <img src="{{ msg.sender.uzytkownik.avatar.url }}" alt="">
+            {% else %}
+              {{ msg.sender.username|slice:":2"|upper }}
+            {% endif %}
+          </div>
+          <span class="chat-msg-sender">{{ msg.sender.username }}</span>
+          <span class="chat-msg-link">{{ msg.text|striptags|truncatechars:60 }}</span>
+          <span class="chat-msg-room">{{ msg.room.title|truncatechars:18 }}</span>
+          <span class="chat-msg-meta">{{ msg.time|date:"H:i" }}</span>
+          <a href="{% url 'chat:chat' %}#room_id={{ msg.room.id }}" class="stretched-link"></a>
+        </div>
+        {% empty %}
+        <p class="text-center" style="color:var(--text-muted);font-size:.85rem;padding:1rem 0;">{% trans "Brak wiadomości" %}</p>
+        {% endfor %}
+      </div>
+      <a href="{% url 'chat:chat' %}" class="stretched-link"></a>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="wspol-section-title mb-0">
+          <i class="fas fa-wallet"></i>{% trans "Finanse" %} {{ current_year }}
+        </span>
+        <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm btn-outline-primary">
+          {% trans "Raport" %} &rarr;
+        </a>
+      </div>
+      <div class="card-body">
+        <div class="finance-row">
+          <span class="finance-label"><i class="fas fa-arrow-down" style="color:#00bc8c;"></i> {% trans "Przychody" %}</span>
+          <span class="finance-value inc">{{ income|floatformat:2 }}</span>
+        </div>
+        <div class="finance-row">
+          <span class="finance-label"><i class="fas fa-arrow-up" style="color:#f87171;"></i> {% trans "Wydatki" %}</span>
+          <span class="finance-value exp">{{ expense|floatformat:2 }}</span>
+        </div>
+        <div class="finance-row">
+          <span class="finance-label" style="font-weight:600;color:var(--text-primary);">{% trans "Saldo" %}</span>
+          <span class="finance-value bal {% if balance >= 0 %}inc{% else %}exp{% endif %}">{{ balance|floatformat:2 }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{# ── Calendar ── #}
+<div class="card" id="calendar">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="wspol-section-title mb-0">
+      <i class="fas fa-calendar-days"></i>{{ cal_month_name }} {{ cal_year }}
+    </span>
+    <div class="d-flex align-items-center gap-2">
+      <a href="?month={{ prev_month }}#calendar" class="btn btn-sm btn-outline-secondary" title="{% trans 'Poprzedni miesiąc' %}">
+        <i class="fas fa-chevron-left"></i>
+      </a>
+      <a href="?month={{ next_month }}#calendar" class="btn btn-sm btn-outline-secondary" title="{% trans 'Następny miesiąc' %}">
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a href="{% url 'events:list' %}" class="btn btn-sm btn-outline-primary ms-1">
+        {% trans "Pełny kalendarz" %} &rarr;
+      </a>
+    </div>
+  </div>
+  <div class="card-body p-2">
+    <table class="cal-table">
+      <thead>
+        <tr>
+          <th>{% trans "Pn" %}</th>
+          <th>{% trans "Wt" %}</th>
+          <th>{% trans "Śr" %}</th>
+          <th>{% trans "Cz" %}</th>
+          <th>{% trans "Pt" %}</th>
+          <th>{% trans "So" %}</th>
+          <th>{% trans "Nd" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for week in cal_weeks %}
+        <tr>
+          {% for cell in week %}
+          <td>
+            {% if cell.day %}
+              {% if cell.events %}
+                <a href="{% url 'events:list' %}" class="text-decoration-none d-flex flex-column align-items-center"
+                   title="{% for e in cell.events %}{{ e.title }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                  <span class="cal-day has-event {% if cell.is_today %}today{% endif %}">{{ cell.day }}</span>
+                  <span class="cal-dot"></span>
+                </a>
+              {% else %}
+                <span class="cal-day {% if cell.is_today %}today{% endif %}">{{ cell.day }}</span>
+              {% endif %}
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

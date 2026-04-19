@@ -1,0 +1,36 @@
+{% extends 'home/base.html' %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="section">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+    <span class="section-heading" style="font-size:.9rem;">
+      <i class="fas fa-tags me-2" style="color:var(--accent);opacity:.8;"></i>
+      {% if form.instance.pk %}{% trans "Edytuj kategorię" %}{% else %}{% trans "Nowa kategoria" %}{% endif %}
+    </span>
+    <a href="{% url 'board:category_list' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i>{% trans "Powrót" %}
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0">{% if form.instance.pk %}{% trans "Edytuj kategorię" %}{% else %}{% trans "Nowa kategoria" %}{% endif %}</h5>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        {{ form.name|as_crispy_field }}
+        {{ form.priority|as_crispy_field }}
+        <div class="mb-3">
+          <button type="submit" class="btn btn-primary">{% trans "Zapisz" %}</button>
+          <a href="{% url 'board:category_list' %}" class="btn btn-secondary">{% trans "Anuluj" %}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

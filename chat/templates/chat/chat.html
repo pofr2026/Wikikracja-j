@@ -8,40 +8,14 @@
 	<link rel="stylesheet" href="{% static 'chat/css/chat.css' %}?v={{ version }}">
 
   <!-- Main chat script -->
+  <script src="{% static 'chat/js/dompurify.min.js' %}?v={{ version }}"></script>
+  <script src="{% static 'chat/js/ejs.min.js' %}?v={{ version }}"></script>
   <script src="{% static 'chat/js/chat.js' %}?v={{ version }}" type="module"></script>
   <script src="{% static 'chat/js/handlers.js' %}?v={{ version }}" type="module"></script>
-  <script src="{% static 'chat/js/ejs.min.js' %}?v={{ version }}"></script>
 
   <script>
     const TRANSLATIONS = {{ translations|default:"{}"|safe }};
-    
-    // Restore archive states from localStorage on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      const archiveTargets = ['pub-rooms-archive', 'tasks-archive', 'votes-archive', 'prv-archive'];
-      
-      archiveTargets.forEach(targetId => {
-        const archiveSection = document.getElementById(`content-${targetId}`);
-        const archiveBtn = document.querySelector(`.archive-toggle[data-target="${targetId}"]`);
-        
-        if (archiveSection && archiveBtn) {
-          const savedState = localStorage.getItem(`chat-archive-${targetId}`);
-          const hasUnreadRooms = archiveSection.querySelector('.room-not-seen') !== null;
-          
-          // Auto-expand if has unread rooms, otherwise respect saved state
-          if (hasUnreadRooms || savedState === 'visible') {
-            archiveSection.style.display = 'block';
-            archiveBtn.classList.add('active');
-            // Save state if auto-expanded due to unread rooms
-            if (hasUnreadRooms && savedState !== 'visible') {
-              localStorage.setItem(`chat-archive-${targetId}`, 'visible');
-            }
-          } else {
-            archiveSection.style.display = 'none';
-            archiveBtn.classList.remove('active');
-          }
-        }
-      });
-    });
+    const SITE_SETTINGS = { messageMaxLength: {{ MESSAGE_MAX_LENGTH }} };
   </script>
 
   <!-- ============================================================= -->
@@ -63,13 +37,13 @@
       <!-- Top controls -->
       <div class="room-list-controls p-2 border-bottom">
         <div class="d-flex gap-2 justify-content-end">
-          <a href="{% url 'chat:add_room' %}" class="btn btn-sm btn-outline-light">
+          <a href="{% url 'chat:add_room' %}" class="btn btn-sm btn-secondary">
             <i class="fas fa-plus me-1"></i>{% trans 'Room' %}
           </a>
-          <button class="btn btn-sm btn-outline-light" id="info-btn" data-bs-toggle="modal" data-bs-target="#chat-info-modal">
-            <i class="fas fa-info-circle me-1"></i>{% trans 'Info' %}
+          <button class="btn btn-sm btn-secondary" id="info-btn" data-bs-toggle="modal" data-bs-target="#chat-info-modal">
+            <i class="fas fa-circle-info me-1"></i>{% trans 'Info' %}
           </button>
-          <button class="btn btn-sm btn-outline-light" id="unread-filter-btn" title="{% trans 'Show only unread rooms' %}">
+          <button class="btn btn-sm btn-secondary" id="unread-filter-btn" title="{% trans 'Show only unread rooms' %}">
             <i class="fas fa-eye-slash me-1"></i>{% trans 'Unread' %}
           </button>
         </div>
@@ -77,109 +51,123 @@
       
       <div class="row">
         <div class="col p-1">
-          <!-- Public rooms -->
-          <p class="mb-0 py-1 text-muted">
-            <button class="btn accordion" id="toggleButtonPubRoomsActive">{% trans 'Public' %}</button>
-            <button class="btn btn-sm archive-toggle" data-target="pub-rooms-archive" title="{% trans 'Show archived rooms' %}">
-              <i class="fas fa-archive"></i>
-            </button>
-          </p>
-          <div id="content-pub-rooms-active" class="list-of-rooms">
-            {% for room in public_rooms_active %}
-              {% include 'chat/room_link.html' %}
-            {% empty %}
-              <p class="text-muted text-center">
-                {% trans 'None' %}
-              </p>
-            {% endfor %}
-          </div>
-          <div id="content-pub-rooms-archive" class="list-of-rooms archive-section">
-            {% for room in public_rooms_archived %}
-              {% include 'chat/room_link.html' %}
-            {% empty %}
-              <p class="text-muted text-center">
-                {% trans 'None' %}
-              </p>
-            {% endfor %}
+
+          <!-- ── Public rooms ── -->
+          <div class="nav-category" data-category="public">
+            <div class="nav-cat-header">
+              <button class="nav-cat-btn" data-cat-content="cat-public" aria-expanded="true">
+                {% trans 'Public' %}
+                <span class="nav-cat-arrow">▼</span>
+              </button>
+              <button class="btn btn-sm btn-secondary archive-toggle" data-target="pub-rooms-archive" title="{% trans 'Show archived rooms' %}">
+                <i class="fas fa-archive"></i>
+              </button>
+            </div>
+            <div class="nav-cat-content open" id="cat-public">
+              {% for room in public_rooms_active %}
+                {% include 'chat/room_link.html' %}
+              {% empty %}
+                <p class="text-muted text-center small">{% trans 'None' %}</p>
+              {% endfor %}
+              <div id="content-pub-rooms-archive" class="archive-section">
+                {% for room in public_rooms_archived %}
+                  {% include 'chat/room_link.html' %}
+                {% empty %}
+                  <p class="text-muted text-center small">{% trans 'None' %}</p>
+                {% endfor %}
+              </div>
+            </div>
           </div>
 
-          <!-- Tasks -->
-          <p class="mb-0 py-1 text-muted">
-            <button class="btn accordion" id="toggleButtonTasksActive">{% trans 'Tasks' %}</button>
-            <button class="btn btn-sm archive-toggle" data-target="tasks-archive" title="{% trans 'Show archived rooms' %}">
-              <i class="fas fa-archive"></i>
-            </button>
-          </p>
-          <div id="content-tasks-active" class="list-of-rooms">
-            {% for room in tasks_active %}
-              {% include 'chat/room_link.html' %}
-            {% empty %}
-              <p class="text-muted text-center">
-                {% trans 'None' %}
-              </p>
-            {% endfor %}
-          </div>
-          <div id="content-tasks-archive" class="list-of-rooms archive-section">
-            {% for room in tasks_archived %}
-              {% include 'chat/room_link.html' %}
-            {% empty %}
-              <p class="text-muted text-center">
-                {% trans 'None' %}
-              </p>
-            {% endfor %}
-          </div>
-
-          <!-- Votes -->
-          <p class="mb-0 py-1 text-muted">
-            <button class="btn accordion" id="toggleButtonVotesActive">{% trans 'Referendums' %}</button>
-            <button class="btn btn-sm archive-toggle" data-target="votes-archive" title="{% trans 'Show archived rooms' %}">
-              <i class="fas fa-archive"></i>
-            </button>
-          </p>
-          <div id="content-votes-active" class="list-of-rooms">
-            {% for room in votes_active %}
-              {% include 'chat/room_link.html' %}
-            {% empty %}
-              <p class="text-muted text-center">
-                {% trans 'None' %}
-              </p>
-            {% endfor %}
-          </div>
-          <div id="content-votes-archive" class="list-of-rooms archive-section">
-            {% for room in votes_archived %}
-              {% include 'chat/room_link.html' %}
-            {% empty %}
-              <p class="text-muted text-center">
-                {% trans 'None' %}
-              </p>
-            {% endfor %}
+          <!-- ── Tasks ── -->
+          <div class="nav-category" data-category="tasks">
+            <div class="nav-cat-header">
+              <button class="nav-cat-btn" data-cat-content="cat-tasks" aria-expanded="true">
+                {% trans 'Tasks' %}
+                <span class="nav-cat-arrow">▼</span>
+              </button>
+              <button class="btn btn-sm btn-secondary archive-toggle" data-target="tasks-archive" title="{% trans 'Show archived rooms' %}">
+                <i class="fas fa-archive"></i>
+              </button>
+            </div>
+            <div class="nav-cat-content open" id="cat-tasks">
+              {% for task in tasks_tree_active %}
+                {% with room=task.chat_room override_label=task.title %}
+                  {% include 'chat/room_link.html' %}
+                {% endwith %}
+              {% empty %}
+                <p class="text-muted text-center small">{% trans 'None' %}</p>
+              {% endfor %}
+              <div id="content-tasks-archive" class="archive-section">
+                {% for task in tasks_tree_archived %}
+                  {% with room=task.chat_room override_label=task.title %}
+                    {% include 'chat/room_link.html' %}
+                  {% endwith %}
+                {% empty %}
+                  <p class="text-muted text-center small">{% trans 'None' %}</p>
+                {% endfor %}
+              </div>
+            </div>
           </div>
 
-          <!-- Private -->
-          <p class="mb-0 py-1 text-muted">
-            <button class="btn accordion" id="toggleButtonPrvActive">{% trans 'Private' %}</button>
-            <button class="btn btn-sm archive-toggle" data-target="prv-archive" title="{% trans 'Show archived rooms' %}">
-              <i class="fas fa-archive"></i>
-            </button>
-          </p>
-          <div id="content-prv-active" class="list-of-pms">
-            {% for room in private_active %}
-              {% include 'chat/room_link.html' %}
-            {% empty %}
-              <p class="text-muted text-center">
-                {% trans 'None' %}
-              </p>
-            {% endfor %}
+          <!-- ── Referendums ── -->
+          <div class="nav-category" data-category="votes">
+            <div class="nav-cat-header">
+              <button class="nav-cat-btn" data-cat-content="cat-votes" aria-expanded="true">
+                {% trans 'Referendums' %}
+                <span class="nav-cat-arrow">▼</span>
+              </button>
+              <button class="btn btn-sm btn-secondary archive-toggle" data-target="votes-archive" title="{% trans 'Show archived rooms' %}">
+                <i class="fas fa-archive"></i>
+              </button>
+            </div>
+            <div class="nav-cat-content open" id="cat-votes">
+              {% for vote in votes_tree_active %}
+                {% with room=vote.chat_room override_label=vote.title %}
+                  {% include 'chat/room_link.html' %}
+                {% endwith %}
+              {% empty %}
+                <p class="text-muted text-center small">{% trans 'None' %}</p>
+              {% endfor %}
+              <div id="content-votes-archive" class="archive-section">
+                {% for vote in votes_tree_archived %}
+                  {% with room=vote.chat_room override_label=vote.title %}
+                    {% include 'chat/room_link.html' %}
+                  {% endwith %}
+                {% empty %}
+                  <p class="text-muted text-center small">{% trans 'None' %}</p>
+                {% endfor %}
+              </div>
+            </div>
           </div>
-          <div id="content-prv-archive" class="list-of-pms archive-section">
-            {% for room in private_archived %}
-              {% include 'chat/room_link.html' %}
-            {% empty %}
-              <p class="text-muted text-center">
-                {% trans 'None' %}
-              </p>
-            {% endfor %}
+
+          <!-- ── Private ── -->
+          <div class="nav-category" data-category="private">
+            <div class="nav-cat-header">
+              <button class="nav-cat-btn" data-cat-content="cat-private" aria-expanded="true">
+                {% trans 'Private' %}
+                <span class="nav-cat-arrow">▼</span>
+              </button>
+              <button class="btn btn-sm btn-secondary archive-toggle" data-target="prv-archive" title="{% trans 'Show archived rooms' %}">
+                <i class="fas fa-archive"></i>
+              </button>
+            </div>
+            <div class="nav-cat-content open" id="cat-private">
+              {% for room in private_active %}
+                {% include 'chat/room_link.html' %}
+              {% empty %}
+                <p class="text-muted text-center small">{% trans 'None' %}</p>
+              {% endfor %}
+              <div id="content-prv-archive" class="archive-section">
+                {% for room in private_archived %}
+                  {% include 'chat/room_link.html' %}
+                {% empty %}
+                  <p class="text-muted text-center small">{% trans 'None' %}</p>
+                {% endfor %}
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
     </div>

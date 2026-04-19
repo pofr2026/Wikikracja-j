@@ -13,7 +13,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.staticfiles import finders
-from django.db.models import Count
+from django.db.models import Count, Q, Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -25,14 +25,15 @@ from django.views.decorators.http import require_POST
 from board.models import Post
 from chat.models import Room, Message
 from elibrary.models import Book
-from glosowania.models import Decyzja
+from glosowania.models import Decyzja, Argument as DecyzjaArgument, KtoJuzGlosowal
+from bookkeeping.models import Transaction
 from obywatele.models import Uzytkownik, CitizenActivity
 from tasks.models import Task
 from events.models import Event
 
 # Local folder imports
 from .forms import RememberLoginForm
-from .models import FeedItem, ReadStatus
+from .models import FeedItem, OnboardingProgress, ReadStatus
 
 log = logging.getLogger(__name__)
 
@@ -92,15 +93,124 @@ def home(request: HttpRequest):
     ongoing_count = Decyzja.objects.filter(status=3).count()
     upcoming_count = Decyzja.objects.filter(status=2).count()
     signatures_count = Decyzja.objects.filter(status=1).count()
-    
+
+    # Nowe propozycje widget (max 3, zbierające podpisy)
+    new_proposals = Decyzja.objects.filter(status=1).select_related('author').order_by('-data_ostatniej_modyfikacji')[:3]
+
+    # My tasks widget (max 3, active — assigned to me or supported by me)
+    my_tasks = Task.objects.filter(
+        Q(assigned_to=request.user) |
+        Q(votes__user=request.user, votes__value=1)
+    ).filter(status=Task.Status.ACTIVE).distinct().order_by('updated_at')[:3]
+
+    # Active referendum widget
+    active_referendum = None
+    referendum_obj = Decyzja.objects.filter(status=3).select_related('author').order_by('-data_referendum_start').first()
+    if referendum_obj and referendum_obj.data_referendum_start and referendum_obj.data_referendum_stop:
+        today = timezone.now().date()
+        days_remaining = max(0, (referendum_obj.data_referendum_stop - today).days)
+        total_days = max(1, (referendum_obj.data_referendum_stop - referendum_obj.data_referendum_start).days)
+        time_pct = min(100, round(days_remaining / total_days * 100))
+        voters_count = referendum_obj.za + referendum_obj.przeciw
+        total_citizens = User.objects.filter(is_active=True).count()
+        turnout_pct = round(voters_count / total_citizens * 100) if total_citizens > 0 else 0
+        if time_pct > 50:
+            bar_color = 'success'
+        elif time_pct >= 20:
+            bar_color = 'warning'
+        else:
+            bar_color = 'danger'
+        user_voted = KtoJuzGlosowal.objects.filter(
+            projekt=referendum_obj,
+            ktory_uzytkownik_juz_zaglosowal=request.user,
+        ).exists()
+        active_referendum = {
+            'obj': referendum_obj,
+            'voters_count': voters_count,
+            'total_citizens': total_citizens,
+            'turnout_pct': turnout_pct,
+            'days_remaining': days_remaining,
+            'total_days': total_days,
+            'time_pct': time_pct,
+            'bar_color': bar_color,
+            'user_voted': user_voted,
+        }
+
+    # Karta 4 — Kalendarz: 3 najbliższe aktywne eventy
+    today_dt = timezone.now()
+    upcoming_events = list(
+        Event.objects.filter(start_date__gte=today_dt, is_active=True)
+        .order_by('start_date')[:3]
+    )
+
+    # Karta 5 — Finanse: przychody/wydatki za bieżący rok
+    current_year = today_dt.year
+    finance_qs = Transaction.objects.filter(payment_received_date__year=current_year)
+    income = finance_qs.filter(type='I').aggregate(total=Sum('amount'))['total'] or 0
+    expenses = finance_qs.filter(type='O').aggregate(total=Sum('amount'))['total'] or 0
+    balance = income - expenses
+
+    # Karta 6 — Nowi obywatele: 6 ostatnio dołączonych aktywnych
+    new_citizens = list(
+        Uzytkownik.objects.filter(uid__is_active=True)
+        .select_related('uid')
+        .order_by('-uid__date_joined')[:7]
+    )
+    candidates_count = (
+        Uzytkownik.objects.filter(uid__is_active=False).count()
+        if request.user.is_staff else None
+    )
+
+    # Kafelek aktywność — 3 najnowsze pozycje (tylko non-event)
+    last_feed_items = [i for i in feed_items if i['content_type'] != 'event'][:3]
+
+    # Licznik nieprzeczytanych pokoi czatu
+    chat_unread_count = Room.objects.filter(allowed=request.user).exclude(seen_by=request.user).count()
+
+    # Licznik aktywnych zadań użytkownika
+    my_tasks_count = Task.objects.filter(
+        Q(assigned_to=request.user) | Q(votes__user=request.user, votes__value=1),
+        status=Task.Status.ACTIVE,
+    ).distinct().count()
+
+    # Onboarding widget
+    from site_settings.models import SiteSettings
+    ss = SiteSettings.get()
+    onboarding_docs = list(ss.onboarding_posts.order_by('title'))
+    onboarding = None
+    onboarding_docs_read_ids = set()
+    try:
+        op = OnboardingProgress.objects.prefetch_related('docs_read').get(user=request.user)
+        onboarding_docs_read_ids = set(op.docs_read.values_list('id', flat=True))
+        if not op.is_completed(onboarding_docs):
+            onboarding = op
+    except OnboardingProgress.DoesNotExist:
+        onboarding = OnboardingProgress.objects.create(user=request.user)
+
     return render(request, 'home/home.html', {
         'feed_items': feed_items,
         'first_unread': first_unread,
         'unread_items': unread_items,
         'filter_unread': filter_unread,
+        'chat_unread_count': chat_unread_count,
+        'my_tasks_count': my_tasks_count,
         'ongoing_count': ongoing_count,
         'upcoming_count': upcoming_count,
         'signatures_count': signatures_count,
+        'active_referendum': active_referendum,
+        'my_tasks': my_tasks,
+        'onboarding': onboarding,
+        'onboarding_docs': onboarding_docs,
+        'onboarding_docs_read_ids': onboarding_docs_read_ids,
+        'upcoming_events': upcoming_events,
+        'income': income,
+        'expenses': expenses,
+        'balance': balance,
+        'current_year': current_year,
+        'new_citizens': new_citizens,
+        'candidates_count': candidates_count,
+        'last_feed_items': last_feed_items,
+        'new_proposals': new_proposals,
     })
 
 
@@ -286,6 +396,71 @@ def generate_feed_items(user):
 
 
 @login_required
+def activity_page(request):
+    all_items = generate_feed_items(request.user)
+    unread_count = sum(1 for i in all_items if not i['is_read'])
+
+    # Filter unread only
+    filter_unread = request.GET.get('filter') == 'unread'
+    if filter_unread:
+        all_items = [i for i in all_items if not i['is_read']]
+
+    # Filter by content_type
+    ct_filter = request.GET.get('type', '')
+    if ct_filter:
+        all_items = [i for i in all_items if i['content_type'] == ct_filter]
+
+    # Sort
+    sort = request.GET.get('sort', 'date')
+    order = request.GET.get('order', 'desc')
+    if sort == 'date':
+        all_items.sort(key=lambda x: x['timestamp'], reverse=(order == 'desc'))
+
+    content_types = [
+        ('', _('Wszystkie')),
+        ('post', _('Ogłoszenia')),
+        ('task', _('Zadania')),
+        ('decision', _('Głosowania')),
+        ('event', _('Kalendarz')),
+        ('citizen', _('Obywatele')),
+        ('book', _('Biblioteka')),
+        ('room_messages', _('Czat')),
+    ]
+
+    return render(request, 'home/activity.html', {
+        'feed_items': all_items,
+        'ct_filter': ct_filter,
+        'sort': sort,
+        'order': order,
+        'filter_unread': filter_unread,
+        'unread_count': unread_count,
+        'content_types': content_types,
+    })
+
+
+@login_required
+@require_POST
+def mark_doc_read(request, post_id):
+    from board.models import Post as BoardPost
+    try:
+        post = BoardPost.objects.get(pk=post_id)
+    except BoardPost.DoesNotExist:
+        return JsonResponse({'ok': False}, status=404)
+    obj, _ = OnboardingProgress.objects.get_or_create(user=request.user)
+    if obj.docs_read.filter(pk=post.pk).exists():
+        obj.docs_read.remove(post)
+        is_read = False
+    else:
+        obj.docs_read.add(post)
+        is_read = True
+    from site_settings.models import SiteSettings
+    required_docs = SiteSettings.get().onboarding_posts.count()
+    done_docs = obj.docs_read.filter(pk__in=SiteSettings.get().onboarding_posts.values_list('pk', flat=True)).count()
+    done = done_docs + (1 if obj.step_argued else 0) + (1 if obj.step_chatted else 0) + (1 if obj.step_voted else 0)
+    total = required_docs + 3
+    return JsonResponse({'ok': True, 'is_read': is_read, 'done': done, 'total': total})
+
+
 @require_POST
 def mark_as_read(request):
     """Mark a feed item as read"""
@@ -458,6 +633,223 @@ def mark_unread(request):
         return JsonResponse({'success': False, 'error': 'Invalid parameters'})
 
 
+ALL_SEARCH_CATS = ['post', 'task', 'decision', 'event', 'book', 'citizen', 'chat']
+
+
+@login_required
+def global_search(request: HttpRequest):
+    from django.contrib.auth.models import User as AuthUser
+    from chat.models import Room, Message
+
+    query = request.GET.get('q', '').strip()
+
+    # Determine active categories (empty = all)
+    selected = [c for c in request.GET.getlist('cat') if c in ALL_SEARCH_CATS]
+    active_cats = set(selected) if selected else set(ALL_SEARCH_CATS)
+
+    results = []
+
+    if query:
+        # ── Board posts ──────────────────────────────────────────────
+        if 'post' in active_cats:
+            from django.db.models import Q
+            posts = Post.objects.filter(
+                Q(title__icontains=query) |
+                Q(subtitle__icontains=query) |
+                Q(text__icontains=query)
+            ).distinct()[:10]
+            for obj in posts:
+                results.append({
+                    'cat': 'post',
+                    'type': _('Post'),
+                    'type_color': 'primary',
+                    'title': obj.title,
+                    'description': (strip_tags(obj.text) or '')[:120],
+                    'url': f'/board/view/{obj.pk}/',
+                })
+
+        # ── Tasks ────────────────────────────────────────────────────
+        if 'task' in active_cats:
+            from django.db.models import Q
+            tasks = Task.objects.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query)
+            ).distinct()[:10]
+            for obj in tasks:
+                results.append({
+                    'cat': 'task',
+                    'type': _('Task'),
+                    'type_color': 'warning',
+                    'title': obj.title,
+                    'description': (strip_tags(obj.description) or '')[:120],
+                    'url': f'/tasks/{obj.pk}/',
+                })
+
+        # ── Voting / decisions – all statuses (1=Propozycja … 5=Zatwierdzone) ──
+        if 'decision' in active_cats:
+            from django.db.models import Q
+
+            # 1. Search main decision fields
+            decisions = Decyzja.objects.filter(
+                Q(title__icontains=query) |
+                Q(tresc__icontains=query) |
+                Q(uzasadnienie__icontains=query) |
+                Q(args_for__icontains=query) |
+                Q(args_against__icontains=query)
+            ).distinct()[:10]
+
+            STATUS_LABELS = {
+                1: str(_('Proposition')),
+                2: str(_('Discussion')),
+                3: str(_('Referendum')),
+                4: str(_('Rejected')),
+                5: str(_('Approved')),
+            }
+
+            for obj in decisions:
+                matched_field = ''
+                q_low = query.lower()
+                if q_low in (obj.args_for or '').lower():
+                    matched_field = str(_('argument for'))
+                elif q_low in (obj.args_against or '').lower():
+                    matched_field = str(_('argument against'))
+                elif q_low in (obj.uzasadnienie or '').lower():
+                    matched_field = str(_('reasoning'))
+
+                snippet = strip_tags(obj.tresc or obj.uzasadnienie or '') or ''
+                results.append({
+                    'cat': 'decision',
+                    'type': _('Voting'),
+                    'type_color': 'danger',
+                    'title': obj.title,
+                    'description': snippet[:120],
+                    'meta': (STATUS_LABELS.get(obj.status, '') +
+                             (f' · {matched_field}' if matched_field else '')),
+                    'url': f'/glosowania/details/{obj.pk}/',
+                })
+
+            # 2. Search Argument model (user-added arguments across all statuses)
+            arguments_qs = DecyzjaArgument.objects.filter(
+                content__icontains=query
+            ).select_related('decyzja', 'author').distinct()[:15]
+
+            seen_decision_ids = {r['url'] for r in results if r['cat'] == 'decision'}
+            for arg in arguments_qs:
+                arg_type_label = (
+                    str(_('argument for')) if arg.argument_type == 'FOR'
+                    else str(_('argument against'))
+                )
+                status_label = STATUS_LABELS.get(arg.decyzja.status, '')
+                url = f'/glosowania/details/{arg.decyzja.pk}/'
+                author_name = arg.author.username if arg.author else str(_('unknown'))
+                results.append({
+                    'cat': 'decision',
+                    'type': _('Voting'),
+                    'type_color': 'danger',
+                    'title': arg.decyzja.title,
+                    'description': arg.content[:120],
+                    'meta': f'{status_label} · {arg_type_label} · {author_name}',
+                    'url': url,
+                })
+
+        # ── Events ───────────────────────────────────────────────────
+        if 'event' in active_cats:
+            from django.db.models import Q
+            events = Event.objects.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(place__icontains=query)
+            ).distinct()[:10]
+            for obj in events:
+                results.append({
+                    'cat': 'event',
+                    'type': _('Event'),
+                    'type_color': 'success',
+                    'title': obj.title,
+                    'description': (strip_tags(obj.description) or '')[:120],
+                    'url': f'/events/{obj.pk}/',
+                })
+
+        # ── Library ──────────────────────────────────────────────────
+        if 'book' in active_cats:
+            from django.db.models import Q
+            books = Book.objects.filter(
+                Q(title__icontains=query) |
+                Q(author__icontains=query) |
+                Q(abstract__icontains=query)
+            ).distinct()[:10]
+            for obj in books:
+                results.append({
+                    'cat': 'book',
+                    'type': _('Library'),
+                    'type_color': 'info',
+                    'title': obj.title or str(_('Untitled')),
+                    'description': (strip_tags(obj.abstract) or '')[:120],
+                    'url': f'/elibrary/{obj.pk}/detail/',
+                })
+
+        # ── Citizens ─────────────────────────────────────────────────
+        if 'citizen' in active_cats:
+            from django.db.models import Q
+            users = AuthUser.objects.filter(
+                Q(username__icontains=query) |
+                Q(first_name__icontains=query) |
+                Q(last_name__icontains=query)
+            ).distinct()[:10]
+            for obj in users:
+                results.append({
+                    'cat': 'citizen',
+                    'type': _('Citizen'),
+                    'type_color': 'secondary',
+                    'title': obj.get_full_name() or obj.username,
+                    'description': f'@{obj.username}',
+                    'url': f'/obywatele/{obj.pk}/',
+                })
+
+        # ── Chat (rooms + messages user has access to) ────────────────
+        if 'chat' in active_cats:
+            from django.db.models import Q
+            accessible_rooms = Room.objects.filter(allowed=request.user)
+
+            # Rooms by title
+            rooms = accessible_rooms.filter(title__icontains=query).distinct()[:5]
+            for obj in rooms:
+                results.append({
+                    'cat': 'chat',
+                    'type': _('Chat room'),
+                    'type_color': 'primary',
+                    'title': obj.title,
+                    'description': '',
+                    'url': f'/chat/#room_id={obj.pk}',
+                })
+
+            # Messages in accessible rooms
+            messages_qs = Message.objects.filter(
+                Q(text__icontains=query),
+                room__in=accessible_rooms,
+            ).select_related('sender', 'room').order_by('-time').distinct()[:15]
+            for obj in messages_qs:
+                sender_name = obj.sender.username if obj.sender else str(_('Anonymous'))
+                results.append({
+                    'cat': 'chat',
+                    'type': _('Chat message'),
+                    'type_color': 'primary',
+                    'title': f'{obj.room.title}',
+                    'description': f'{sender_name}: {strip_tags(obj.text)[:100]}',
+                    'url': f'/chat/#room_id={obj.room.pk}',
+                })
+
+    unread_items = [i for i in generate_feed_items(request.user) if not i['is_read']]
+    return render(request, 'home/search.html', {
+        'query': query,
+        'results': results,
+        'active_cats': active_cats,
+        'all_cats': ALL_SEARCH_CATS,
+        'selected_cats': selected,
+        'unread_items': unread_items,
+    })
+
+
 class RememberLoginView(LoginView):
     form_class = RememberLoginForm
     template_name = 'home/login.html'
@@ -543,3 +935,50 @@ def service_worker(request):
         response['Expires'] = '0'
         response['Service-Worker-Allowed'] = "/"
         return response
+
+
+@login_required
+def onboarding_posts_for_category(request):
+    from board.models import Post as BoardPost
+    from site_settings.models import SiteSettings
+    cat_id = request.GET.get('cat_id')
+    if not cat_id:
+        return JsonResponse({'posts': []})
+    posts = list(BoardPost.objects.filter(category_id=cat_id, is_archived=False).order_by('title').values('id', 'title'))
+    selected = list(SiteSettings.get().onboarding_posts.values_list('id', flat=True))
+    return JsonResponse({'posts': posts, 'selected': selected})
+
+
+@login_required
+def site_admin(request: HttpRequest) -> HttpResponse:
+    from board.models import Post as BoardPost, PostCategory
+    from site_settings.models import SiteSettings
+
+    ss = SiteSettings.get()
+
+    if request.method == 'POST' and 'save_onboarding' in request.POST:
+        cat_id = request.POST.get('onboarding_category') or None
+        ss.onboarding_category_id = cat_id if cat_id else None
+        ss.save(update_fields=['onboarding_category'])
+        post_ids = request.POST.getlist('onboarding_posts')
+        ss.onboarding_posts.set(post_ids)
+        messages.success(request, _('Onboarding zapisany.'))
+        return redirect('site_admin')
+
+    selected_cat_id = ss.onboarding_category_id
+    if selected_cat_id:
+        cat_posts = BoardPost.objects.filter(category_id=selected_cat_id, is_archived=False).order_by('title')
+    else:
+        cat_posts = BoardPost.objects.none()
+
+    return render(request, 'home/site_admin.html', {
+        'signatures': settings.WYMAGANYCH_PODPISOW,
+        'signatures_span': settings.CZAS_NA_ZEBRANIE_PODPISOW,
+        'discussion_span': settings.DYSKUSJA,
+        'referendum_span': settings.CZAS_TRWANIA_REFERENDUM,
+        'documents': BoardPost.objects.filter(is_archived=False).order_by('title'),
+        'ss': ss,
+        'categories': PostCategory.objects.order_by('name'),
+        'cat_posts': cat_posts,
+        'selected_onboarding_post_ids': set(ss.onboarding_posts.values_list('id', flat=True)),
+    })

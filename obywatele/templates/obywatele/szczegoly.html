@@ -3,7 +3,7 @@
 {% load i18n %}
 
 {% block citizens %}
-<div class="container section">
+<div>
   <div class="mb-3">
     {% if active %}
       {% if next %}
@@ -31,10 +31,17 @@
   </div>
 
   <div class="card mb-3">
-    <div class="card-header">
+    <div class="card-header d-flex align-items-center gap-3">
+      {% if b.avatar %}
+        <img src="{{ b.avatar.url }}" alt="avatar" class="rounded-circle" style="width:56px;height:56px;object-fit:cover;flex-shrink:0;">
+      {% else %}
+        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white" style="width:56px;height:56px;font-size:1.4rem;background:var(--color-accent);flex-shrink:0;">
+          {{ b.uid.username|slice:":2"|upper }}
+        </div>
+      {% endif %}
       <h5 class="mb-0">{{ b.uid.first_name|default:b.uid }} {{ b.uid.last_name }}</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="font-size:.875rem;">
       <div class="row">
         <div class="col-md-6 mb-2">
           <strong>{% trans 'Login' %}:</strong> {{ b.uid }}
@@ -85,13 +92,13 @@
         <form action="#" method="post" class="mt-3">
           {% csrf_token %}
           <div class="d-grid gap-2 d-md-flex">
-            <button class="btn {% if rate == 'pozytywny' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="accept">
+            <button class="btn {% if rate == 'positive' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="accept">
               {% trans 'I accept this person' %}
             </button>
-            <button class="btn {% if rate == 'obojętny' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="reset">
+            <button class="btn {% if rate == 'neutral' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="reset">
               {% trans 'Indifferent' %}
             </button>
-            <button class="btn {% if rate == 'negatywny' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="reject">
+            <button class="btn {% if rate == 'negative' %}btn-primary{% else %}btn-secondary{% endif %} flex-fill" type="submit" name="action" value="reject">
               {% trans 'I do not accept' %}
             </button>
           </div>
@@ -100,13 +107,32 @@
     </div>
   {% endif %}
 
+  {% if active %}
+  <div class="card mb-3">
+    <div class="card-header">
+      <span class="section-heading">{% trans 'Activity' %}</span>
+    </div>
+    <div class="card-body d-flex flex-wrap gap-2">
+      <a href="{% url 'obywatele:citizen_czaty' pk=b.uid.pk %}" class="btn btn-outline-secondary btn-sm">
+        {% trans "Chats" %}
+      </a>
+      <a href="{% url 'obywatele:citizen_zadania' pk=b.uid.pk %}" class="btn btn-outline-secondary btn-sm">
+        {% trans "Tasks" %}
+      </a>
+      <a href="{% url 'obywatele:citizen_aktywnosc' pk=b.uid.pk %}" class="btn btn-outline-secondary btn-sm">
+        {% trans "Activity" %}
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
   <div class="card">
     <div class="card-header">
       <span class="section-heading">{% trans 'Profile Details' %}</span>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-sm table-striped mb-0">
+        <table class="table table-sm table-striped mb-0" style="font-size:.875rem;">
           <tbody>
             <tr>
               <th scope="row" style="width: 30%;">{% trans "Communicator / Phone" %}</th>

@@ -1,12 +1,64 @@
 # Third party imports
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 # Local folder imports
-from .forms import PostForm
-from .models import Post
+from .forms import PostCategoryForm, PostForm
+from .models import Post, PostCategory
+
+
+# #########################  PostCategory ###########################
+
+
+class PostCategoryListView(LoginRequiredMixin, ListView):
+    model = PostCategory
+    template_name = 'board/postcategory_list.html'
+
+
+class PostCategoryCreateView(LoginRequiredMixin, CreateView):
+    model = PostCategory
+    form_class = PostCategoryForm
+    template_name = 'board/postcategory_form.html'
+    success_url = reverse_lazy('board:category_list')
+
+
+class PostCategoryUpdateView(LoginRequiredMixin, UpdateView):
+    model = PostCategory
+    form_class = PostCategoryForm
+    template_name = 'board/postcategory_form.html'
+    success_url = reverse_lazy('board:category_list')
+
+
+class PostCategoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = PostCategory
+    template_name = 'board/postcategory_confirm_delete.html'
+    success_url = reverse_lazy('board:category_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        related_posts = Post.objects.filter(category=self.object)
+        context['related_posts'] = related_posts
+        context['has_dependencies'] = related_posts.exists()
+        if 'delete_error' in self.request.session:
+            context['error'] = self.request.session.pop('delete_error')
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if Post.objects.filter(category=self.object).exists():
+            request.session['delete_error'] = _("Cannot delete category because it is in use. Remove all posts that use it first.")
+            return redirect('board:category_delete', pk=self.object.pk)
+        try:
+            return super().delete(request, *args, **kwargs)
+        except Exception as e:
+            request.session['delete_error'] = str(e)
+            return redirect('board:category_delete', pk=self.object.pk)
 
 
 def board(request: HttpRequest) -> HttpResponse:

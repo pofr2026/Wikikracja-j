@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 
 # First party imports
 from chat.models import Message, Room
+from django.conf import settings
 from zzz.utils import get_site_domain
 
 # Local folder imports
@@ -48,7 +49,8 @@ def create_or_update_task_chat_room(sender, instance, created, **kwargs):
             task_path = reverse('tasks:detail', kwargs={
                 'pk': instance.pk
             })
-            task_url = f"https://{domain}{task_path}"
+            protocol = getattr(settings, 'SITE_PROTOCOL', 'http')
+            task_url = f"{protocol}://{domain}{task_path}"
             message_text = _('Discussion room for task "%(task_title)s": %(task_url)s') % {
                 'task_title': instance.title,
                 'task_url': task_url

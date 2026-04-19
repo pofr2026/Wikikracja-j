@@ -24,3 +24,4 @@ pytz==2026.1.post1
 pywebpush==2.3.0
 redis==7.2.1
 whitenoise==6.12.0
+bleach>=6.0

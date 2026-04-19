@@ -6,10 +6,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import DeleteView, DetailView, ListView, UpdateView
 from PIL import Image
 
 # First party imports
+from board.models import Post, PostCategory
 from elibrary.forms import UpdateBookForm
 from elibrary.models import Book
 
@@ -41,10 +43,50 @@ def add(request: HttpRequest):
 
 
 class BookList(LoginRequiredMixin, ListView):
-    # template_name = 'elibrary/elibrary.html'
-
     def get_queryset(self):
         return Book.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        sort = self.request.GET.get('sort', 'date')
+        order = self.request.GET.get('order', 'desc')
+        context['current_sort'] = sort
+        context['current_order'] = order
+
+        # Posts sorted by category priority, then by date within each category
+        if sort == 'date':
+            post_order = 'updated' if order == 'asc' else '-updated'
+        else:
+            post_order = 'updated' if order == 'asc' else '-updated'
+
+        # Build category groups for posts
+        categories = list(PostCategory.objects.all())  # already ordered by priority, name
+        category_groups = []
+        for cat in categories:
+            posts = Post.objects.filter(
+                category=cat, is_archived=False
+            ).order_by(post_order)
+            if posts.exists():
+                category_groups.append({'category': cat, 'posts': posts})
+
+        # Posts without category → "Różne" group at the end
+        uncategorized = Post.objects.filter(
+            category__isnull=True, is_archived=False
+        ).order_by(post_order)
+        if uncategorized.exists():
+            category_groups.append({'category': None, 'posts': uncategorized})
+
+        context['category_groups'] = category_groups
+
+        # Books sorted
+        if sort == 'date':
+            book_qs = Book.objects.all().order_by('id' if order == 'asc' else '-id')
+        else:
+            book_qs = Book.objects.all().order_by('id' if order == 'asc' else '-id')
+        context['books'] = book_qs
+
+        return context
 
 
 class BookDeleteView(LoginRequiredMixin, DeleteView):

@@ -119,14 +119,22 @@ export default class WsApi {
      * @param {boolean} is_anonymous - Whether to send as anonymous
      * @param {Object} attachments - Attachment data (images array)
      */
-    sendMessage(room_id, message, is_anonymous, attachments) {
+    sendMessage(room_id, message, is_anonymous, attachments, reply_to_id = null) {
         this.sendJson({
             command: "send",
-            room_id, // room number
-            message, // value, message to send
+            room_id,
+            message,
             is_anonymous,
-            attachments
+            attachments,
+            ...(reply_to_id ? { reply_to_id } : {})
         });
+    }
+
+    /**
+     * ZMIANA 4B — toggle emoji reaction on a message.
+     */
+    toggleReaction(reaction, message_id) {
+        this.sendJson({ command: 'message-react', reaction, message_id });
     }
 
     /**

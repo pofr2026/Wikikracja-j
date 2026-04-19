@@ -1,0 +1,142 @@
+{% extends "home/base.html" %}
+{% load i18n %}
+{% load feed_filters %}
+
+{% block content %}
+<div class="section">
+
+  {# ── Toolbar linia 1: filtry typów + nieprzeczytane ── #}
+  <div class="proposals-toolbar mb-1" style="flex-wrap:wrap;">
+    <div class="toolbar-sort" style="flex-wrap:wrap;gap:.35rem;">
+      <a href="?filter=unread&sort={{ sort }}&order={{ order }}"
+         class="sort-btn {% if filter_unread %}active{% endif %}"
+         style="color:#60a5fa;border-color:rgba(96,165,250,.35);{% if filter_unread %}background:rgba(96,165,250,.12);{% endif %}">
+        <i class="fas fa-bell"></i>{% trans "Nieprzeczytane" %}
+        {% if unread_count %}<span style="font-size:.7rem;">({{ unread_count }})</span>{% endif %}
+      </a>
+      <a href="?sort={{ sort }}&order={{ order }}"
+         class="sort-btn {% if not ct_filter and not filter_unread %}active{% endif %}">
+        {% trans "Wszystkie" %}
+      </a>
+      {% for ct_val, ct_label in content_types %}{% if ct_val %}
+      <a href="?type={{ ct_val }}&sort={{ sort }}&order={{ order }}"
+         class="sort-btn {% if ct_filter == ct_val %}active{% endif %}">
+        {{ ct_label }}
+      </a>
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+
+  {# ── Toolbar linia 2: akcje + sortowanie + widok ── #}
+  <div class="proposals-toolbar mb-3">
+
+    <button type="button" class="sort-btn" id="btn-mark-all"
+            style="color:#60a5fa;border-color:rgba(96,165,250,.35);">
+      <i class="fas fa-check-double"></i>{% trans "Oznacz jako przeczytane" %}
+    </button>
+
+    <span class="toolbar-divider"></span>
+
+    <div class="toolbar-sort">
+      <span class="toolbar-sort-label">{% trans "Sortuj" %}:</span>
+      <a href="?type={{ ct_filter }}&sort=date&order={% if sort == 'date' and order == 'desc' %}asc{% else %}desc{% endif %}{% if filter_unread %}&filter=unread{% endif %}"
+         class="sort-btn {% if sort == 'date' %}active{% endif %}">
+        {% trans "Data" %}
+        {% if sort == 'date' %}<i class="fas fa-arrow-{% if order == 'asc' %}up{% else %}down{% endif %} sort-arrow"></i>{% endif %}
+      </a>
+    </div>
+
+    <span class="toolbar-divider"></span>
+
+    <div class="toolbar-view">
+      <button class="view-toggle-btn" id="btn-list" onclick="setActivityView('list')" title="{% trans 'Lista' %}">
+        <i class="fas fa-list"></i>
+      </button>
+      <button class="view-toggle-btn" id="btn-grid" onclick="setActivityView('grid')" title="{% trans 'Siatka' %}">
+        <i class="fas fa-grip"></i>
+      </button>
+    </div>
+
+  </div>
+
+  {# ── Lista ── #}
+  <div class="card">
+    <div class="activity-list" id="activity-list">
+      {% for item in feed_items %}
+      <a href="{{ item.url }}" class="feed-row">
+
+        <span class="badge-status flex-shrink-0 mt-1
+          {% if item.content_type == 'decision' %}badge-referendum
+          {% elif item.content_type == 'task' %}badge-discussion
+          {% elif item.content_type == 'event' %}badge-approved
+          {% elif item.content_type == 'citizen' %}badge-rejected
+          {% else %}badge-proposition
+          {% endif %}" style="font-size:.65rem;padding:1px 5px;">
+          {{ item.content_type|content_type_label }}
+        </span>
+
+        <div style="min-width:0;flex:1;">
+          <div class="feed-title {% if not item.is_read %}fw-semibold{% endif %}">
+            {{ item.title }}
+            {% if item.content_type == 'room_messages' and item.message_count > 1 %}
+            <span class="badge-status badge-discussion ms-1" style="font-size:.6rem;vertical-align:middle;">{{ item.message_count }}</span>
+            {% endif %}
+          </div>
+          {% if item.description and item.content_type != 'event' %}
+          <div class="feed-desc">{{ item.description|safe }}</div>
+          {% endif %}
+        </div>
+
+        <div class="d-flex flex-column align-items-end flex-shrink-0 gap-1">
+          {% if item.author %}
+          <span style="font-size:.72rem;color:var(--text-muted);">{{ item.author.username }}</span>
+          {% endif %}
+          <span style="font-size:.72rem;color:var(--text-muted);white-space:nowrap;">{{ item.timestamp|date:"d.m H:i" }}</span>
+        </div>
+
+      </a>
+      {% empty %}
+      <div class="p-5 text-center">
+        <i class="fas fa-inbox fa-2x d-block mb-2" style="color:var(--text-muted);opacity:.35;"></i>
+        <span style="font-size:.875rem;color:var(--text-muted);">{% trans "Brak aktywności" %}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var KEY = 'activity_view';
+  window.setActivityView = function (mode) {
+    var list = document.getElementById('activity-list');
+    var btnList = document.getElementById('btn-list');
+    var btnGrid = document.getElementById('btn-grid');
+    if (!list) return;
+    if (mode === 'grid') {
+      list.classList.add('view-grid');
+      btnGrid.classList.add('active');
+      btnList.classList.remove('active');
+    } else {
+      list.classList.remove('view-grid');
+      btnList.classList.add('active');
+      btnGrid.classList.remove('active');
+    }
+    localStorage.setItem(KEY, mode);
+  };
+  document.addEventListener('DOMContentLoaded', function () {
+    setActivityView(localStorage.getItem(KEY) || 'list');
+  });
+})();
+
+document.getElementById('btn-mark-all')?.addEventListener('click', function() {
+  fetch("{% url 'mark_all_read' %}", {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.success) location.reload();
+  });
+});
+</script>
+{% endblock %}

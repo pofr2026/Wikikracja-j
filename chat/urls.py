@@ -18,4 +18,7 @@ urlpatterns = [
 
     # Toggle notifications endpoint
     path('api/toggle-notifications/', views.toggle_notifications, name='toggle_notifications'),
+
+    # Embedded chat widget API
+    path('api/room/<int:room_id>/', views.room_data, name='room_data'),
 ]

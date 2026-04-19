@@ -1,37 +1,35 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-  </head>
-<body>
-    
 {% extends 'home/base.html' %}
 {% load i18n %}
 {% load static %}
 {% load crispy_forms_tags %}
-    
+
 {% block content %}
-  <h2>{% trans 'Create post' %}</h2>
-  <form method="POST" class="post-form">
-    {% csrf_token %}
-    {{ form.title|as_crispy_field }}
-    {{ form.subtitle|as_crispy_field }}
-    <div class="d-flex gap-3 mb-3">
-      {{ form.is_public|as_crispy_field }}
-      {{ form.is_archived|as_crispy_field }}
-      {{ form.is_important|as_crispy_field }}
+<div class="section">
+  <div class="card">
+    <div class="card-header">
+      <span class="section-heading">{% trans 'Create post' %}</span>
     </div>
-    {{ form.text|as_crispy_field }}
-    
-    <script src="{% static 'tinymce/tinymce.min.js' %}" referrerpolicy="origin"></script>
-    <script src="{% static 'js/uploader.js' %}"> </script>
+    <div class="card-body">
+      <form method="POST" class="post-form">
+        {% csrf_token %}
+        {{ form.title|as_crispy_field }}
+        {{ form.subtitle|as_crispy_field }}
+        {{ form.category|as_crispy_field }}
+        <div class="d-flex gap-3 mb-3">
+          {{ form.is_public|as_crispy_field }}
+          {{ form.is_archived|as_crispy_field }}
+          {{ form.is_important|as_crispy_field }}
+        </div>
+        {{ form.text|as_crispy_field }}
 
-    <div class="mb-3">
-      <button type="submit" class="btn btn-primary">{% trans 'Save' %}</button>
-      <a href="{% url 'board:start' %}" class="btn btn-secondary">{% trans 'Cancel' %}</a>
+        <script src="{% static 'tinymce/tinymce.min.js' %}" referrerpolicy="origin"></script>
+
+        <div class="mb-3 d-flex gap-2">
+          <button type="submit" class="btn btn-primary" onclick="this.disabled=true;this.form.submit();">{% trans 'Save' %}</button>
+          <a href="{% url 'board:start' %}" class="btn btn-secondary">{% trans 'Cancel' %}</a>
+        </div>
+      </form>
     </div>
-  </form>
-
+  </div>
+</div>
 {% endblock %}
-</body>
-</html>
