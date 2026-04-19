@@ -55,10 +55,13 @@ Try the live demo: **https://demo.wikikracja.pl/**
 
 2. **Create & activate virtual environment**
    ```bash   
-   python -m venv .venv
+   # Windows
+   py -3.14 -m venv .venv 
+   .venv\Scripts\activate 
 
-   source .venv/bin/activate # Linux / macOS
-   .venv\Scripts\activate # Windows
+   # Linux / macOS
+   python -m venv .venv
+   source .venv/bin/activate 
    ```
 
 3. **Install dependencies (manual option)**

@@ -46,9 +46,10 @@ urlpatterns: List[URLPattern | URLResolver] = [
 # Serve static files only in DEBUG mode (WhiteNoise handles this in production)
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    # Third party imports
-    from debug_toolbar.toolbar import debug_toolbar_urls
-    urlpatterns += debug_toolbar_urls()
+    if settings.DEBUG_TOOLBAR:
+        # Third party imports
+        from debug_toolbar.toolbar import debug_toolbar_urls
+        urlpatterns += debug_toolbar_urls()
 
 # Media files (user uploads) - must be served in all environments
 # In production, Django will serve these (inefficient but works)

@@ -3,6 +3,7 @@ from glosowania.models import Decyzja
 
 
 class Command(BaseCommand):
+    # TODO: Wszystkie pokoje zostały już zaktualizowane, nowe pokoje będą miały już poprawne tytuły. Można usunąć cały ten skrypt.
     help = 'Update existing chat room titles to include voting numbers'
 
     def handle(self, *args, **options):

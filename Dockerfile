@@ -21,8 +21,8 @@ RUN pip install --no-cache-dir --no-compile --user -r requirements.txt
 COPY . /app/
 
 # Build-time operations
-RUN python manage.py compilemessages -v 0 --ignore=.git/* --ignore=static/* --ignore=.mypy_cache/* \
-    && python manage.py collectstatic --noinput -v 2
+RUN python manage.py collectstatic --noinput -v 2 \
+    || (echo "Static collection failed, continuing..." && python manage.py collectstatic --noinput -v 2 --clear)
 
 # 2. Runtime stage - minimal Alpine image
 FROM python:3.14-alpine AS runtime
@@ -66,4 +66,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import django; django.setup(); from django.http import HttpResponse; print('OK')" || exit 1
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py update_site && python manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py compilemessages --ignore=.git/* --ignore=static/* --ignore=.mypy_cache/* || echo 'compilemessages failed, continuing...' && python manage.py update_site && python manage.py runserver 0.0.0.0:8000"]
