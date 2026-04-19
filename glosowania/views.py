@@ -6,7 +6,8 @@ import time
 from datetime import datetime, timedelta
 
 # Third party imports (additional)
-from django.db.models import Count
+from django.db import transaction
+from django.db.models import Count, F
 
 # Third party imports
 from django.conf import settings as s
@@ -112,43 +113,43 @@ def details(request: HttpRequest, pk: int):
     szczegoly = get_object_or_404(Decyzja, pk=pk)
 
     if request.GET.get('sign'):
-        try:
-            nowy_projekt = Decyzja.objects.get(pk=pk)
-        except Decyzja.DoesNotExist:
-            return redirect('glosowania:index')
-        osoba_podpisujaca = request.user
-        podpis = ZebranePodpisy(projekt=nowy_projekt, podpis_uzytkownika=osoba_podpisujaca)
-        nowy_projekt.ile_osob_podpisalo += 1
-        podpis.save()
-        nowy_projekt.save()
+        with transaction.atomic():
+            try:
+                nowy_projekt = Decyzja.objects.select_for_update().get(pk=pk)
+            except Decyzja.DoesNotExist:
+                return redirect('glosowania:index')
+            osoba_podpisujaca = request.user
+            podpis = ZebranePodpisy(projekt=nowy_projekt, podpis_uzytkownika=osoba_podpisujaca)
+            Decyzja.objects.filter(pk=pk).update(ile_osob_podpisalo=F('ile_osob_podpisalo') + 1)
+            podpis.save()
         message = _('You signed this motion for a referendum.')
         messages.success(request, (message))
         return redirect('glosowania:details', pk)
 
     if request.GET.get('withdraw'):
-        try:
-            nowy_projekt = Decyzja.objects.get(pk=pk)
-        except Decyzja.DoesNotExist:
-            return redirect('glosowania:index')
-        osoba_podpisujaca = request.user
-        podpis = ZebranePodpisy.objects.get(projekt=nowy_projekt, podpis_uzytkownika=osoba_podpisujaca)
-        podpis.delete()
-        nowy_projekt.ile_osob_podpisalo -= 1
-        nowy_projekt.save()
+        with transaction.atomic():
+            try:
+                nowy_projekt = Decyzja.objects.select_for_update().get(pk=pk)
+            except Decyzja.DoesNotExist:
+                return redirect('glosowania:index')
+            osoba_podpisujaca = request.user
+            podpis = ZebranePodpisy.objects.get(projekt=nowy_projekt, podpis_uzytkownika=osoba_podpisujaca)
+            podpis.delete()
+            Decyzja.objects.filter(pk=pk).update(ile_osob_podpisalo=F('ile_osob_podpisalo') - 1)
         message = _('Not signed.')
         messages.success(request, (message))
         return redirect('glosowania:details', pk)
 
     if request.GET.get('tak'):
-        try:
-            nowy_projekt = Decyzja.objects.get(pk=pk)
-        except Decyzja.DoesNotExist:
-            return redirect('glosowania:index')
-        osoba_glosujaca = request.user
-        glos = KtoJuzGlosowal(projekt=nowy_projekt, ktory_uzytkownik_juz_zaglosowal=osoba_glosujaca)
-        nowy_projekt.za += 1
-        glos.save()
-        nowy_projekt.save()
+        with transaction.atomic():
+            try:
+                nowy_projekt = Decyzja.objects.select_for_update().get(pk=pk)
+            except Decyzja.DoesNotExist:
+                return redirect('glosowania:index')
+            osoba_glosujaca = request.user
+            glos = KtoJuzGlosowal(projekt=nowy_projekt, ktory_uzytkownik_juz_zaglosowal=osoba_glosujaca)
+            Decyzja.objects.filter(pk=pk).update(za=F('za') + 1)
+            glos.save()
 
         # TODO: Kod oddanego głosu
         # - wygeneruj kod
@@ -173,15 +174,15 @@ def details(request: HttpRequest, pk: int):
         return redirect('glosowania:details', pk)
 
     if request.GET.get('nie'):
-        try:
-            nowy_projekt = Decyzja.objects.get(pk=pk)
-        except Decyzja.DoesNotExist:
-            return redirect('glosowania:index')
-        osoba_glosujaca = request.user
-        glos = KtoJuzGlosowal(projekt=nowy_projekt, ktory_uzytkownik_juz_zaglosowal=osoba_glosujaca)
-        nowy_projekt.przeciw += 1
-        glos.save()
-        nowy_projekt.save()
+        with transaction.atomic():
+            try:
+                nowy_projekt = Decyzja.objects.select_for_update().get(pk=pk)
+            except Decyzja.DoesNotExist:
+                return redirect('glosowania:index')
+            osoba_glosujaca = request.user
+            glos = KtoJuzGlosowal(projekt=nowy_projekt, ktory_uzytkownik_juz_zaglosowal=osoba_glosujaca)
+            Decyzja.objects.filter(pk=pk).update(przeciw=F('przeciw') + 1)
+            glos.save()
 
         # TODO: Kod oddanego głosu
         # - wygeneruj kod
