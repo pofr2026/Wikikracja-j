@@ -71,10 +71,12 @@ def edit(request: HttpRequest, pk: int):
     except Decyzja.DoesNotExist:
         return redirect('glosowania:index')
 
+    if decision.author != request.user:
+        return redirect('glosowania:details', pk)
+
     if request.method == 'POST':
         form = DecyzjaForm(request.POST)
         if form.is_valid():
-            decision.author = request.user  # type: ignore
             decision.title = form.cleaned_data['title']
             decision.tresc = form.cleaned_data['tresc']
             decision.kara = form.cleaned_data['kara']
