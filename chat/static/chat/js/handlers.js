@@ -186,6 +186,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // collapse-all-btn: toggle all categories at once
+    document.getElementById('collapse-all-btn')?.addEventListener('click', () => {
+        const allOpen = [...document.querySelectorAll('.nav-cat-content')].every(c => c.classList.contains('open'));
+        document.querySelectorAll('.nav-cat-btn').forEach(btn => {
+            const contentId = btn.dataset.catContent;
+            const content = contentId ? document.getElementById(contentId) : null;
+            if (!content) return;
+            content.classList.toggle('open', !allOpen);
+            btn.setAttribute('aria-expanded', String(!allOpen));
+            if (contentId) localStorage.setItem(`chat-cat-${contentId}`, allOpen ? 'collapsed' : 'expanded');
+        });
+        const icon = document.querySelector('#collapse-all-btn i');
+        if (icon) icon.className = allOpen ? 'fas fa-angles-down' : 'fas fa-angles-up';
+    });
+
     document.addEventListener("click", (e) => {
         if (e.target.closest(".send-message")) {
             onSubmitMessage(DOM_API.getEnteredText(), DOM_API.getEditedMessageId());
