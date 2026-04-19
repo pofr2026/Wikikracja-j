@@ -1059,6 +1059,13 @@ body:has(.chat-rooms) {
     display: none !important;
 }
 
+.room-link.room-auto-muted {
+    opacity: .55;
+}
+.room-link.room-auto-muted:hover {
+    opacity: 1;
+}
+
 .room-link.room-tapping {
     background-color: var(--accent-muted);
     border-color: var(--accent);

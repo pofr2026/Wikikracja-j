@@ -84,9 +84,14 @@ class Uzytkownik(models.Model):
         verbose_name=_('Voting notifications')
     )
     email_notifications_chat = models.BooleanField(
-        default=True, 
+        default=True,
         help_text=_('Receive notifications about new chat messages'),
         verbose_name=_('Chat notifications')
+    )
+    email_notifications_chat_participated = models.BooleanField(
+        default=False,
+        help_text=_('Receive notifications only for chat rooms where I have participated'),
+        verbose_name=_('Chat notifications — participated only')
     )
 
     class Meta:

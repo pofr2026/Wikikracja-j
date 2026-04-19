@@ -21,7 +21,7 @@ from PIL import Image
 
 # First party imports
 from chat.forms import RoomForm
-from chat.models import Room
+from chat.models import Message, Room
 from chat.signals import user_accepted, user_deleted
 
 log = logging.getLogger(__name__)
@@ -121,6 +121,14 @@ def chat(request: HttpRequest):
         Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
     ).order_by('title')
 
+    # For "participated only" visual mute: get rooms where user has sent a message
+    participated_only = getattr(request.user.uzytkownik, 'email_notifications_chat_participated', False)
+    participated_room_ids = set()
+    if participated_only:
+        participated_room_ids = set(
+            Message.objects.filter(sender=request.user).values_list('room_id', flat=True).distinct()
+        )
+
     # Render that in the chat template
     return render(request, "chat/chat.html", {
         'translations': get_translations(),
@@ -133,6 +141,8 @@ def chat(request: HttpRequest):
         'private_active': private_active,
         'private_archived': private_archived,
         'user': request.user,
+        'participated_only': participated_only,
+        'participated_room_ids': participated_room_ids,
         'ARCHIVE_PUBLIC_CHAT_ROOM': td(days=settings.ARCHIVE_PUBLIC_CHAT_ROOM).days,
         'DELETE_PUBLIC_CHAT_ROOM': td(days=settings.DELETE_PUBLIC_CHAT_ROOM).days,
         'MESSAGE_MAX_LENGTH': settings.MESSAGE_MAX_LENGTH,

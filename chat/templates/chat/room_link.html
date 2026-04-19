@@ -1,10 +1,11 @@
 {% load i18n filters %}
 
 
-<div class="room-link {{ room|seen_by:user }}"
+<div class="room-link {{ room|seen_by:user }}{% if participated_only and room|not_participated:participated_room_ids %} room-auto-muted{% endif %}"
   data-room-type="{% if room.public %}public{% else %}private{% endif %}"
   data-room-id="{{ room.id }}"
-  data-room-archived="{{ room.archived }}">
+  data-room-archived="{{ room.archived }}"
+  data-auto-muted="{% if participated_only and room|not_participated:participated_room_ids %}true{% else %}false{% endif %}">
   {% if room.archived %}
     <i class="fas fa-lock nav-status nav-status--locked" aria-hidden="true"></i>
   {% elif room|is_seen_by:user == "false" %}
@@ -23,7 +24,7 @@
       data-seen="{{ room|is_seen_by:user }}"
       title="{% trans 'Mark as unread' %}"
       aria-label="{% blocktrans with room_name=room|name_for:user %}Mark room {{ room_name }} as unread{% endblocktrans %}">
-      <i class="fas fa-eye{% if room|is_seen_by:user == "true" %}{% else %}-slash{% endif %}"></i>
+      <i class="fas fa-eye{% if participated_only and room|not_participated:participated_room_ids %}-slash{% elif room|is_seen_by:user == "true" %}{% else %}-slash{% endif %}"></i>
     </button>
     <button type="button"
       class="btn btn-link btn-sm p-0 notif-switch"

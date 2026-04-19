@@ -702,8 +702,14 @@ def my_profile(request: HttpRequest):
         {
             'type': 'chat',
             'title': _('Chat'),
-            'description': _('New messages in chat rooms'),
+            'description': _('New messages in all chat rooms'),
             'enabled': profile.email_notifications_chat,
+        },
+        {
+            'type': 'chat_participated',
+            'title': _('Chat — my active discussions'),
+            'description': _('New messages only in rooms where I have sent at least one message'),
+            'enabled': profile.email_notifications_chat_participated,
         },
     ]
     
@@ -758,6 +764,7 @@ def toggle_notification(request: HttpRequest):
         'obywatele': 'email_notifications_obywatele',
         'glosowania': 'email_notifications_glosowania',
         'chat': 'email_notifications_chat',
+        'chat_participated': 'email_notifications_chat_participated',
     }
 
     try:

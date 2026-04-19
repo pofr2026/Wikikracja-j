@@ -21,11 +21,35 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (parts.length === 2) return parts.pop().split(';').shift();
 	}
 	
+	const MUTUALLY_EXCLUSIVE = [['toggle-chat', 'toggle-chat_participated']];
+
+	function disableToggle(toggleId) {
+		const toggle = document.getElementById(toggleId);
+		if (!toggle || !toggle.checked) return;
+		toggle.checked = false;
+		const type = toggle.dataset.url.split('type=')[1];
+		const badge = document.getElementById('status-' + type);
+		fetch(toggle.dataset.url, {
+			method: 'POST',
+			headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+			body: JSON.stringify({ enabled: false })
+		}).then(r => r.json()).then(data => { if (data.success) updateBadge(badge, false); });
+	}
+
 	toggles.forEach(toggle => {
 		toggle.addEventListener('change', function() {
 			const type = this.dataset.url.split('type=')[1];
 			const statusBadge = document.getElementById('status-' + type);
 			const isChecked = this.checked;
+
+			// Mutual exclusion
+			if (isChecked) {
+				MUTUALLY_EXCLUSIVE.forEach(group => {
+					if (group.includes(this.id)) {
+						group.filter(id => id !== this.id).forEach(disableToggle);
+					}
+				});
+			}
 			
 			statusBadge.className = 'badge bg-warning';
 			statusBadge.textContent = statusBadge.dataset.savingText;

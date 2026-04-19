@@ -47,6 +47,12 @@ def is_muted_by(room, user):
     return room.muted_by.filter(id=user.id).exists()
 
 
+@register.filter('not_participated')
+def not_participated(room, participated_room_ids):
+    """Returns True if user has not participated in this room (and participated_only mode is on)."""
+    return room.id not in participated_room_ids
+
+
 @register.filter("has_messages")
 def has_messages(user):
     rooms_with_new_messages = (Room.objects.filter(allowed=user.id, archived=False).exclude(seen_by=user.id).annotate(messages_count=Count('messages')).filter(messages_count__gt=0))

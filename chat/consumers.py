@@ -679,6 +679,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             if await self.user_has_muted_room(user.id, room_id):
                 return
 
+            # Check if user has "participated only" mode enabled
+            participated_only = await database_sync_to_async(
+                lambda: getattr(user.uzytkownik, 'email_notifications_chat_participated', False)
+            )()
+            if participated_only:
+                has_participated = await database_sync_to_async(
+                    lambda: Message.objects.filter(room_id=room_id, sender=user).exists()
+                )()
+                if not has_participated:
+                    return
+
             # Prepare notification data
             title = "Anonymous User" if message.anonymous else message.sender.username
             body = message.text[:100]
