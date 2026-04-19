@@ -114,7 +114,7 @@ def details(request: HttpRequest, pk: int):
 
     szczegoly = get_object_or_404(Decyzja, pk=pk)
 
-    if request.GET.get('sign'):
+    if request.POST.get('sign'):
         with transaction.atomic():
             try:
                 nowy_projekt = Decyzja.objects.select_for_update().get(pk=pk)
@@ -131,7 +131,7 @@ def details(request: HttpRequest, pk: int):
         messages.success(request, (message))
         return redirect('glosowania:details', pk)
 
-    if request.GET.get('withdraw'):
+    if request.POST.get('withdraw'):
         with transaction.atomic():
             try:
                 nowy_projekt = Decyzja.objects.select_for_update().get(pk=pk)
@@ -148,7 +148,7 @@ def details(request: HttpRequest, pk: int):
         messages.success(request, (message))
         return redirect('glosowania:details', pk)
 
-    if request.GET.get('tak'):
+    if request.POST.get('tak'):
         with transaction.atomic():
             try:
                 nowy_projekt = Decyzja.objects.select_for_update().get(pk=pk)
@@ -187,7 +187,7 @@ def details(request: HttpRequest, pk: int):
 
         return redirect('glosowania:details', pk)
 
-    if request.GET.get('nie'):
+    if request.POST.get('nie'):
         with transaction.atomic():
             try:
                 nowy_projekt = Decyzja.objects.select_for_update().get(pk=pk)
