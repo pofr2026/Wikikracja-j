@@ -44,6 +44,7 @@ MEDIA_ROOT = path.join(BASE_DIR, 'media')
 load_dotenv(path.join(BASE_DIR, '.env'))
 
 DEBUG = env_bool("DEBUG", False)
+DEBUG_TOOLBAR = env_bool("DEBUG_TOOLBAR", False)
 SITE_PROTOCOL = "http" if DEBUG else "https"
 SITE_NAME = getenv("SITE_NAME", "")
 SITE_NAME_MAX_12_CHARS = getenv("SITE_NAME_MAX_12_CHARS", SITE_NAME[:12])
@@ -235,16 +236,24 @@ INSTALLED_APPS = [
 if DEBUG:
     INSTALLED_APPS = [
         *INSTALLED_APPS,
-        'debug_toolbar',
         'django_extensions',
         'django_browser_reload',
         "django_watchfiles",
     ]
     MIDDLEWARE = [
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
         *MIDDLEWARE,
         'django_browser_reload.middleware.BrowserReloadMiddleware',
     ]
+
+    if DEBUG_TOOLBAR:
+        INSTALLED_APPS = [
+            *INSTALLED_APPS,
+            'debug_toolbar',
+        ]
+        MIDDLEWARE = [
+            'debug_toolbar.middleware.DebugToolbarMiddleware',
+            *MIDDLEWARE,
+        ]
 
 # LOGGING_DESTINATION: 'console' (default) or 'file'
 # When 'file', logs are written to LOG_FILE (default: /var/log/wiki.log)
