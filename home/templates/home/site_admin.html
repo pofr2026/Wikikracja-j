@@ -135,6 +135,21 @@
     </div>
   </div>
 
+  <style>
+  /* dark + civic: jasna ikonka */
+  :root #onboarding-accordion .accordion-button::after,
+  [data-theme="dark"] #onboarding-accordion .accordion-button::after,
+  [data-theme="civic"] #onboarding-accordion .accordion-button::after {
+    filter: brightness(0) invert(1);
+    opacity: .7;
+  }
+  /* official + light: ciemna ikonka */
+  [data-theme="official"] #onboarding-accordion .accordion-button::after,
+  [data-theme="light"] #onboarding-accordion .accordion-button::after {
+    filter: brightness(0);
+    opacity: .5;
+  }
+  </style>
   {# ── ONBOARDING ── #}
   <div class="card mb-4">
     <div class="card-header d-flex align-items-center gap-2">
@@ -147,77 +162,80 @@
         <input type="hidden" name="save_onboarding" value="1">
 
         <div class="mb-3">
-          <label class="fw-semibold mb-1 d-block" style="font-size:.875rem;">
-            <i class="fas fa-folder-open me-2" style="color:var(--accent);opacity:.7;"></i>
-            {% trans "Kategoria dokumentów" %}
-          </label>
-          <select name="onboarding_category" id="onboarding-category-select" class="form-select form-select-sm" style="max-width:320px;">
-            <option value="">— {% trans "wybierz kategorię" %} —</option>
-            {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if cat.id == ss.onboarding_category_id %}selected{% endif %}>{{ cat.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div id="onboarding-posts-container" class="mb-3">
-          {% if cat_posts %}
           <div class="fw-semibold mb-2" style="font-size:.875rem;">
             <i class="fas fa-file-circle-check me-2" style="color:var(--accent);opacity:.7;"></i>
             {% trans "Dokumenty obowiązkowe" %}
           </div>
-          <div class="d-flex flex-column gap-2" style="max-width:520px;">
-            {% for doc in cat_posts %}
-            <label class="d-flex align-items-center gap-2" style="font-size:.875rem;cursor:pointer;">
-              <input type="checkbox" name="onboarding_posts" value="{{ doc.id }}" style="width:15px;height:15px;flex-shrink:0;"
-                {% if doc.id in selected_onboarding_post_ids %}checked{% endif %}>
-              <span>{{ doc.title }}</span>
-            </label>
+          {% if categories_with_posts %}
+          <div class="accordion" id="onboarding-accordion" style="max-width:520px;">
+            {% for group in categories_with_posts %}
+            {% with cat_id=group.category.id total=group.posts|length %}
+            {% comment %}count pre-selected in this category{% endcomment %}
+            {% with checked_count=0 %}
+            <div class="accordion-item" style="border:1px solid var(--border-color);border-radius:6px;margin-bottom:4px;overflow:hidden;">
+              <h2 class="accordion-header" id="oh-{{ cat_id }}">
+                <button class="accordion-button {% if not group.has_selected %}collapsed{% endif %} d-flex align-items-center gap-2"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#oc-{{ cat_id }}"
+                        aria-expanded="{{ group.has_selected|yesno:'true,false' }}"
+                        aria-controls="oc-{{ cat_id }}"
+                        style="font-size:.82rem;padding:8px 12px;background:var(--card-bg);color:var(--text-primary);">
+                  <span class="flex-grow-1">{{ group.category.name }}</span>
+                  <span class="badge onboarding-cat-badge"
+                        data-cat="{{ cat_id }}"
+                        style="font-size:.72rem;background:var(--accent);opacity:.85;">
+                    {{ group.selected_count }}/{{ total }}
+                  </span>
+                </button>
+              </h2>
+              <div id="oc-{{ cat_id }}"
+                   class="accordion-collapse collapse {% if group.has_selected %}show{% endif %}"
+                   aria-labelledby="oh-{{ cat_id }}"
+                   data-bs-parent="">
+                <div class="accordion-body d-flex flex-column gap-1" style="padding:8px 12px;">
+                  {% for doc in group.posts %}
+                  <label class="d-flex align-items-center gap-2" style="font-size:.875rem;cursor:pointer;">
+                    <input type="checkbox"
+                           name="onboarding_posts"
+                           value="{{ doc.id }}"
+                           data-cat="{{ cat_id }}"
+                           data-total="{{ total }}"
+                           class="onboarding-post-cb"
+                           style="width:15px;height:15px;flex-shrink:0;"
+                           {% if doc.id in selected_onboarding_post_ids %}checked{% endif %}>
+                    <span>{{ doc.title }}</span>
+                  </label>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endwith %}
+            {% endwith %}
             {% endfor %}
           </div>
-          {% elif ss.onboarding_category_id %}
+          <script>
+          document.querySelectorAll('.onboarding-post-cb').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+              var cat = this.dataset.cat;
+              var total = parseInt(this.dataset.total);
+              var checked = document.querySelectorAll('.onboarding-post-cb[data-cat="' + cat + '"]:checked').length;
+              var badge = document.querySelector('.onboarding-cat-badge[data-cat="' + cat + '"]');
+              if (badge) badge.textContent = checked + '/' + total;
+            });
+          });
+          </script>
+          {% else %}
           <div style="font-size:.82rem;color:var(--text-muted);">
-            <i class="fas fa-circle-info me-1"></i>{% trans "Brak dokumentów w tej kategorii." %}
+            <i class="fas fa-circle-info me-1"></i>{% trans "Brak dokumentów w żadnej kategorii." %}
           </div>
           {% endif %}
         </div>
 
-        <button type="submit" class="btn btn-sm btn-primary" id="onboarding-save-btn"
-                {% if not ss.onboarding_category_id %}style="display:none;"{% endif %}>
+        <button type="submit" class="btn btn-sm btn-primary">
           {% trans "Zapisz" %}
         </button>
       </form>
-
-      <script>
-      document.getElementById('onboarding-category-select').addEventListener('change', function() {
-        var catId = this.value;
-        var container = document.getElementById('onboarding-posts-container');
-        var saveBtn = document.getElementById('onboarding-save-btn');
-        if (!catId) {
-          container.innerHTML = '';
-          saveBtn.style.display = 'none';
-          return;
-        }
-        fetch('{% url "onboarding_posts_for_category" %}?cat_id=' + catId)
-          .then(function(r) { return r.json(); })
-          .then(function(data) {
-            saveBtn.style.display = '';
-            if (!data.posts.length) {
-              container.innerHTML = '<div style="font-size:.82rem;color:var(--text-muted);"><i class="fas fa-circle-info me-1"></i>Brak dokumentów w tej kategorii.</div>';
-              return;
-            }
-            var html = '<div class="fw-semibold mb-2" style="font-size:.875rem;"><i class="fas fa-file-circle-check me-2" style="color:var(--accent);opacity:.7;"></i>Dokumenty obowiązkowe</div>';
-            html += '<div class="d-flex flex-column gap-2" style="max-width:520px;">';
-            data.posts.forEach(function(p) {
-              var checked = data.selected.includes(p.id) ? 'checked' : '';
-              html += '<label class="d-flex align-items-center gap-2" style="font-size:.875rem;cursor:pointer;">';
-              html += '<input type="checkbox" name="onboarding_posts" value="' + p.id + '" style="width:15px;height:15px;flex-shrink:0;" ' + checked + '>';
-              html += '<span>' + p.title + '</span></label>';
-            });
-            html += '</div>';
-            container.innerHTML = html;
-          });
-      });
-      </script>
     </div>
   </div>
 

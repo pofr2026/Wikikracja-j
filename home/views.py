@@ -957,19 +957,23 @@ def site_admin(request: HttpRequest) -> HttpResponse:
     ss = SiteSettings.get()
 
     if request.method == 'POST' and 'save_onboarding' in request.POST:
-        cat_id = request.POST.get('onboarding_category') or None
-        ss.onboarding_category_id = cat_id if cat_id else None
-        ss.save(update_fields=['onboarding_category'])
         post_ids = request.POST.getlist('onboarding_posts')
         ss.onboarding_posts.set(post_ids)
         messages.success(request, _('Onboarding zapisany.'))
         return redirect('site_admin')
 
-    selected_cat_id = ss.onboarding_category_id
-    if selected_cat_id:
-        cat_posts = BoardPost.objects.filter(category_id=selected_cat_id, is_archived=False).order_by('title')
-    else:
-        cat_posts = BoardPost.objects.none()
+    selected_ids = set(ss.onboarding_posts.values_list('id', flat=True))
+    categories_with_posts = []
+    for cat in PostCategory.objects.order_by('name'):
+        posts = list(BoardPost.objects.filter(category=cat, is_archived=False).order_by('title'))
+        if posts:
+            selected_count = sum(1 for p in posts if p.id in selected_ids)
+            categories_with_posts.append({
+                'category': cat,
+                'posts': posts,
+                'selected_count': selected_count,
+                'has_selected': selected_count > 0,
+            })
 
     return render(request, 'home/site_admin.html', {
         'signatures': settings.WYMAGANYCH_PODPISOW,
@@ -978,7 +982,6 @@ def site_admin(request: HttpRequest) -> HttpResponse:
         'referendum_span': settings.CZAS_TRWANIA_REFERENDUM,
         'documents': BoardPost.objects.filter(is_archived=False).order_by('title'),
         'ss': ss,
-        'categories': PostCategory.objects.order_by('name'),
-        'cat_posts': cat_posts,
-        'selected_onboarding_post_ids': set(ss.onboarding_posts.values_list('id', flat=True)),
+        'categories_with_posts': categories_with_posts,
+        'selected_onboarding_post_ids': selected_ids,
     })

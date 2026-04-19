@@ -200,13 +200,20 @@
 
   {# Pierwsze kroki (tylko dla nowych) #}
   {% if onboarding %}
+  <style>
+  #onboarding-scroll { scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+  #onboarding-scroll::-webkit-scrollbar { width: 3px; }
+  #onboarding-scroll::-webkit-scrollbar-track { background: transparent; }
+  #onboarding-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; opacity: .5; }
+  </style>
   <div class="col-12 col-lg-4">
-    <div class="card h-100" id="onboarding-card">
-      <div class="card-body d-flex flex-column gap-2">
-        <div class="d-flex align-items-center gap-2 mb-1">
+    <div class="card h-100" id="onboarding-card" style="overflow:hidden;">
+      <div class="card-body d-flex flex-column gap-2" style="overflow:hidden;min-height:0;">
+        <div class="d-flex align-items-center gap-2 mb-1 flex-shrink-0">
           <i class="fas fa-rocket" style="color:var(--accent);font-size:.85rem;"></i>
           <span class="section-heading" style="font-size:.85rem;">{% trans "Pierwsze kroki" %}</span>
         </div>
+        <div id="onboarding-scroll" style="overflow-x:hidden;overflow-y:auto;min-height:0;flex:1;padding-right:4px;max-height:calc(5 * 2rem);">
         <ul class="list-unstyled mb-0 d-flex flex-column gap-1" style="font-size:.82rem;">
 
           {# Dokumenty do przeczytania #}
@@ -258,6 +265,7 @@
           </li>
 
         </ul>
+        </div>{# /onboarding-scroll #}
       </div>
       {# Pasek postępu #}
       <div class="card-footer px-3 py-2">
