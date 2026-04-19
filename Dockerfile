@@ -8,7 +8,8 @@ WORKDIR /app
 # Build environment
 ENV PYTHONDONTWRITEBYTECODE=1 \
     DEBUG=True \
-    SECRET_KEY=build-time-insecure-secret-key
+    SECRET_KEY=build-time-insecure-secret-key \
+    EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 
 # Install build dependencies only once
 RUN apk add --no-cache gettext-dev
@@ -21,7 +22,7 @@ RUN pip install --no-cache-dir --no-compile --user -r requirements.txt
 COPY . /app/
 
 # Build-time operations
-RUN DEBUG=False python manage.py collectstatic --noinput -v 3 2>&1; exit $?
+RUN DEBUG=False python manage.py collectstatic --noinput
 
 # 2. Runtime stage - minimal Alpine image
 FROM python:3.14-alpine AS runtime
