@@ -1,0 +1,72 @@
+{% extends 'obywatele/menu.html' %}
+{% load i18n %}
+
+{% block citizens %}
+<div class="container section">
+  <div class="mb-3">
+    <a href="{% url 'obywatele:obywatele_szczegoly' pk=target_user.pk %}" class="btn btn-sm btn-outline-secondary">
+      ← {{ target_user.username }}
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="section-heading">
+        {% if is_own %}
+          {% trans "My tasks" %}
+        {% else %}
+          {% blocktrans with name=target_user.username %}Tasks of {{ name }}{% endblocktrans %}
+        {% endif %}
+      </span>
+    </div>
+    <div class="card-body p-0">
+      {% if tasks %}
+        <div class="table-responsive">
+          <table class="table table-sm table-striped mb-0">
+            <thead>
+              <tr>
+                <th>{% trans "Title" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Role" %}</th>
+                <th>{% trans "Date" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in tasks %}
+                <tr>
+                  <td>
+                    <a href="{% url 'tasks:detail' pk=task.pk %}">{{ task.title }}</a>
+                  </td>
+                  <td>
+                    {% if task.status == 'active' %}
+                      <span class="badge text-bg-success">{{ task.get_status_display }}</span>
+                    {% elif task.status == 'completed' %}
+                      <span class="badge text-bg-primary">{{ task.get_status_display }}</span>
+                    {% elif task.status == 'cancelled' %}
+                      <span class="badge text-bg-secondary">{{ task.get_status_display }}</span>
+                    {% else %}
+                      <span class="badge text-bg-danger">{{ task.get_status_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if task.created_by == target_user and task.assigned_to == target_user %}
+                      <span class="badge text-bg-info">{% trans "Author & assignee" %}</span>
+                    {% elif task.created_by == target_user %}
+                      <span class="badge text-bg-info">{% trans "Author" %}</span>
+                    {% elif task.assigned_to == target_user %}
+                      <span class="badge text-bg-warning">{% trans "Assignee" %}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-muted small">{{ task.created_at|date:"Y-m-d" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted p-3 mb-0">{% trans "No tasks found." %}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock citizens %}

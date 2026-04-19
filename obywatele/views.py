@@ -1,6 +1,7 @@
 # Standard library imports
 import logging
 import time
+from datetime import timedelta
 
 # Third party imports
 from allauth.account.models import EmailAddress
@@ -15,6 +16,8 @@ from django.db import DatabaseError
 from django.db.models import Case, Count, IntegerField, Q, Sum, Value, When
 from django.dispatch import receiver
 from django.http import HttpRequest, JsonResponse
+from django.utils import timezone, translation
+from django.utils.translation import check_for_language
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext_lazy as _
@@ -23,7 +26,7 @@ from django_tables2.views import SingleTableMixin
 
 # First party imports
 from obywatele.filters import UzytkownikFilter
-from obywatele.forms import EmailChangeForm, OnboardingDetailsForm, ProfileForm, SendEmailToAll, UserForm, UsernameChangeForm
+from obywatele.forms import AvatarForm, EmailChangeForm, OnboardingDetailsForm, ProfileForm, SendEmailToAll, UserForm, UsernameChangeForm
 from obywatele.models import CitizenActivity, Rate, Uzytkownik
 from obywatele.tables import UzytkownikTable
 from zzz.utils import build_site_url, get_site_domain
@@ -135,6 +138,169 @@ def parameters(request: HttpRequest):
         'population': population(),
         'acceptance': s.ACCEPTANCE,
         'delete_inactive_user_after': s.DELETE_INACTIVE_USER_AFTER,
+    })
+
+
+def _build_calendar_grid(year, month, events):
+    """
+    Returns a list of weeks; each week is a list of dicts:
+      {'day': int or None, 'events': [Event, ...], 'is_today': bool}
+    Days from adjacent months are represented as None.
+    """
+    import calendar as cal_mod
+    from datetime import date
+
+    today = timezone.localdate()
+    days_in_month = cal_mod.monthrange(year, month)[1]
+
+    # Build mapping: day_number -> [Event]
+    events_by_day = {}
+    for event in events:
+        freq = event.frequency
+        sd = timezone.localtime(event.start_date)
+
+        if freq == 'once':
+            if sd.year == year and sd.month == month:
+                events_by_day.setdefault(sd.day, []).append(event)
+
+        elif freq == 'daily':
+            for d in range(1, days_in_month + 1):
+                events_by_day.setdefault(d, []).append(event)
+
+        elif freq == 'weekly':
+            target_weekday = sd.weekday()  # 0=Mon
+            for d in range(1, days_in_month + 1):
+                if date(year, month, d).weekday() == target_weekday:
+                    events_by_day.setdefault(d, []).append(event)
+
+        elif freq == 'monthly':
+            if sd.day <= days_in_month:
+                events_by_day.setdefault(sd.day, []).append(event)
+
+        elif freq == 'monthly_ordinal':
+            occurrence = event._get_nth_weekday_of_month(
+                year, month, event.monthly_weekday, event.monthly_ordinal
+            )
+            if occurrence:
+                d = timezone.localtime(occurrence).day
+                events_by_day.setdefault(d, []).append(event)
+
+        elif freq == 'yearly':
+            if sd.month == month:
+                if sd.day <= days_in_month:
+                    events_by_day.setdefault(sd.day, []).append(event)
+
+    # Build weeks grid (Monday first, 0 = padding)
+    raw_weeks = cal_mod.monthcalendar(year, month)
+    weeks = []
+    for raw_week in raw_weeks:
+        week = []
+        for day_num in raw_week:
+            if day_num == 0:
+                week.append({'day': None, 'events': [], 'is_today': False})
+            else:
+                week.append({
+                    'day': day_num,
+                    'events': events_by_day.get(day_num, []),
+                    'is_today': date(year, month, day_num) == today,
+                })
+        weeks.append(week)
+    return weeks
+
+
+@login_required
+def wspolnota(request: HttpRequest):
+    import calendar as cal_mod
+    from bookkeeping.models import Transaction
+    from django.db.models import Sum
+    from events.models import Event
+
+    # --- stats ---
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    pop = population()
+    active_last_month = User.objects.filter(is_active=True, last_login__gte=thirty_days_ago).count()
+    active_pct = round(active_last_month / pop * 100) if pop else 0
+    pending_count = User.objects.filter(is_active=False).count()
+
+    # --- assets & skills ---
+    skills_count = Uzytkownik.objects.exclude(skills__isnull=True).exclude(skills='').count()
+    knowledge_count = Uzytkownik.objects.exclude(knowledge__isnull=True).exclude(knowledge='').count()
+    give_away_count = Uzytkownik.objects.exclude(to_give_away__isnull=True).exclude(to_give_away='').count()
+    borrow_count = Uzytkownik.objects.exclude(to_borrow__isnull=True).exclude(to_borrow='').count()
+    for_sale_count = Uzytkownik.objects.exclude(for_sale__isnull=True).exclude(for_sale='').count()
+
+    # --- recent members ---
+    recent_members = (
+        User.objects
+        .filter(is_active=True)
+        .select_related('uzytkownik')
+        .order_by('-uzytkownik__data_przyjecia')[:5]
+    )
+
+    # --- recent chat messages ---
+    from chat.models import Message
+    recent_chat_messages = (
+        Message.objects
+        .filter(room__public=True, room__allowed=request.user)
+        .select_related('sender', 'sender__uzytkownik', 'room')
+        .order_by('-time')[:4]
+    )
+
+    # --- finances ---
+    this_year = timezone.now().year
+    income = Transaction.objects.filter(
+        type=Transaction.INCOMING, created_date__year=this_year
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    expense = Transaction.objects.filter(
+        type=Transaction.OUTGOING, created_date__year=this_year
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    # --- calendar ---
+    now = timezone.localtime(timezone.now())
+    month_param = request.GET.get('month', '')
+    try:
+        cal_year, cal_month = (int(x) for x in month_param.split('-'))
+        if not (1 <= cal_month <= 12):
+            raise ValueError
+    except (ValueError, AttributeError):
+        cal_year, cal_month = now.year, now.month
+
+    events_qs = Event.objects.filter(is_active=True)
+    cal_weeks = _build_calendar_grid(cal_year, cal_month, events_qs)
+
+    # prev / next month strings
+    if cal_month == 1:
+        prev_month = f'{cal_year - 1}-12'
+    else:
+        prev_month = f'{cal_year}-{cal_month - 1:02d}'
+    if cal_month == 12:
+        next_month = f'{cal_year + 1}-01'
+    else:
+        next_month = f'{cal_year}-{cal_month + 1:02d}'
+
+    month_name = cal_mod.month_name[cal_month]
+
+    return render(request, 'obywatele/wspolnota.html', {
+        'member_count': pop,
+        'active_pct': active_pct,
+        'pending_count': pending_count,
+        'skills_count': skills_count,
+        'knowledge_count': knowledge_count,
+        'give_away_count': give_away_count,
+        'borrow_count': borrow_count,
+        'for_sale_count': for_sale_count,
+        'recent_members': recent_members,
+        'recent_chat_messages': recent_chat_messages,
+        'income': income,
+        'expense': expense,
+        'balance': income - expense,
+        'current_year': this_year,
+        'cal_weeks': cal_weeks,
+        'cal_year': cal_year,
+        'cal_month': cal_month,
+        'cal_month_name': month_name,
+        'prev_month': prev_month,
+        'next_month': next_month,
     })
 
 
@@ -541,6 +707,27 @@ def my_profile(request: HttpRequest):
         },
     ]
     
+    profile_form = ProfileForm(initial={
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'phone': profile.phone,
+        'responsibilities': profile.responsibilities,
+        'city': profile.city,
+        'hobby': profile.hobby,
+        'to_give_away': profile.to_give_away,
+        'to_borrow': profile.to_borrow,
+        'for_sale': profile.for_sale,
+        'i_need': profile.i_need,
+        'skills': profile.skills,
+        'knowledge': profile.knowledge,
+        'want_to_learn': profile.want_to_learn,
+        'business': profile.business,
+        'job': profile.job,
+        'gift': profile.gift,
+        'other': profile.other,
+        'why': profile.why,
+    })
+
     return render(request, 'obywatele/my_profile.html', {
         'profile': profile,
         'user': user,
@@ -548,36 +735,47 @@ def my_profile(request: HttpRequest):
         'required_reputation': required_reputation(),
         'asset_fields': asset_fields,
         'notifications': notifications,
+        'avatar_form': AvatarForm(),
+        'profile_form': profile_form,
     })
 
 
 @login_required
+def upload_avatar(request: HttpRequest):
+    profile = request.user.uzytkownik
+    if request.method == 'POST':
+        form = AvatarForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+    return redirect('obywatele:my_profile')
+
+
 @require_POST
 def toggle_notification(request: HttpRequest):
     import json
-    
+
     NOTIFICATION_FIELDS = {
         'obywatele': 'email_notifications_obywatele',
         'glosowania': 'email_notifications_glosowania',
         'chat': 'email_notifications_chat',
     }
-    
+
     try:
         data = json.loads(request.body)
         notification_type = request.GET.get('type')
         enabled = data.get('enabled', False)
-        
+
         field_name = NOTIFICATION_FIELDS.get(notification_type)
         if not field_name:
             return JsonResponse({'success': False, 'error': 'Invalid notification type'})
-        
+
         profile = request.user.uzytkownik
         setattr(profile, field_name, enabled)
         profile.save()
-        
+
         return JsonResponse({'success': True})
-        
-    except (json.JSONDecodeError, AttributeError) as e:
+
+    except (json.JSONDecodeError, AttributeError):
         return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 
@@ -611,20 +809,11 @@ def my_assets(request: HttpRequest):
             profile.why = form.cleaned_data['why']
             profile.save()
 
-            return render(request, 'obywatele/my_profile.html', {
-                'message': _('Changes was saved'),
-                'profile': profile,
-                'required_reputation': required_reputation(),
-            })
+            success(request, _('Changes was saved'))
+            return redirect('obywatele:my_profile')
         else:  # form.is_NOT_valid():
-            message = form.errors
-            error(request, (message))
-
-            return render(request, 'obywatele/my_profile.html', {
-                'message': _('Form is not valid!'),
-                'profile': profile,
-                'required_reputation': required_reputation(),
-            })
+            error(request, form.errors)
+            return redirect('obywatele:my_profile')
     else:  # request.method != 'POST':
         form = ProfileForm(initial={  # pre-populate fields from database
             'first_name': user.first_name,
@@ -705,13 +894,11 @@ def obywatele_szczegoly(request: HttpRequest, pk: int):
         return redirect(request.path)
 
     if rate.rate == 1:
-        r1 = _('positive')
-
-    if rate.rate == -1:
-        r1 = _('negative')
-
-    if rate.rate == 0:
-        r1 = _('neutral')
+        r1 = 'positive'
+    elif rate.rate == -1:
+        r1 = 'negative'
+    else:
+        r1 = 'neutral'
 
     total_rate_count = Rate.objects.filter(kandydat=candidate_profile).count()
 
@@ -779,3 +966,163 @@ def set_onboarding_email_confirmed(sender, request, email_address, **kwargs):
     #     log.info(f"count_citizens command completed successfully")
     # except Exception as e:
     #     log.error(f"Error running count_citizens after email confirmation: {e}", exc_info=True)
+
+
+@login_required
+@require_POST
+def set_user_language(request: HttpRequest):
+    lang = request.POST.get('language', '').strip()
+    next_url = request.POST.get('next', '/')
+
+    profile = request.user.uzytkownik
+    if lang and check_for_language(lang):
+        profile.language = lang
+        profile.save(update_fields=['language'])
+        translation.activate(lang)
+        response = redirect(next_url)
+        response.set_cookie(
+            s.LANGUAGE_COOKIE_NAME,
+            lang,
+            max_age=s.LANGUAGE_COOKIE_AGE,
+            path=s.LANGUAGE_COOKIE_PATH,
+            domain=s.LANGUAGE_COOKIE_DOMAIN,
+            secure=s.LANGUAGE_COOKIE_SECURE,
+            httponly=s.LANGUAGE_COOKIE_HTTPONLY,
+            samesite=s.LANGUAGE_COOKIE_SAMESITE,
+        )
+    elif lang == '':
+        # Reset to auto-detect
+        profile.language = ''
+        profile.save(update_fields=['language'])
+        response = redirect(next_url)
+        response.delete_cookie(s.LANGUAGE_COOKIE_NAME, path=s.LANGUAGE_COOKIE_PATH)
+    else:
+        response = redirect(next_url)
+
+    return response
+
+
+@login_required
+def citizen_czaty(request: HttpRequest, pk: int):
+    from chat.models import Room
+    target_user = get_object_or_404(User, pk=pk)
+    qs = Room.objects.filter(allowed=target_user).order_by('-last_activity')
+    if request.user.pk != pk:
+        qs = qs.filter(public=True)
+    rooms = [(room, room.displayed_name(request.user)) for room in qs]
+    return render(request, 'obywatele/citizen_czaty.html', {
+        'target_user': target_user,
+        'rooms': rooms,
+        'is_own': request.user.pk == pk,
+    })
+
+
+@login_required
+def citizen_zadania(request: HttpRequest, pk: int):
+    from tasks.models import Task
+    target_user = get_object_or_404(User, pk=pk)
+    tasks = (
+        Task.objects
+        .filter(Q(created_by=target_user) | Q(assigned_to=target_user))
+        .distinct()
+        .order_by('-created_at')
+    )
+    return render(request, 'obywatele/citizen_zadania.html', {
+        'target_user': target_user,
+        'tasks': tasks,
+        'is_own': request.user.pk == pk,
+    })
+
+
+@login_required
+def citizen_aktywnosc(request: HttpRequest, pk: int):
+    import datetime
+    from django.urls import reverse
+    from tasks.models import Task, TaskVote, TaskEvaluation
+    from glosowania.models import Argument, ZebranePodpisy, KtoJuzGlosowal
+
+    target_user = get_object_or_404(User, pk=pk)
+    target_profile = get_object_or_404(Uzytkownik, uid=target_user)
+    items = []
+
+    for t in Task.objects.filter(created_by=target_user).order_by('-created_at'):
+        items.append({
+            'type': 'task_created',
+            'title': t.title,
+            'ts': t.created_at,
+            'label': _('Created task'),
+            'url': reverse('tasks:detail', kwargs={'pk': t.pk}),
+        })
+
+    for t in Task.objects.filter(assigned_to=target_user).order_by('-updated_at'):
+        items.append({
+            'type': 'task_assigned',
+            'title': t.title,
+            'ts': t.updated_at,
+            'label': _('Assigned task'),
+            'url': reverse('tasks:detail', kwargs={'pk': t.pk}),
+        })
+
+    for tv in TaskVote.objects.filter(user=target_user).select_related('task').order_by('-updated_at'):
+        items.append({
+            'type': 'task_vote',
+            'title': tv.task.title,
+            'ts': tv.updated_at,
+            'label': _('Voted on task'),
+            'url': reverse('tasks:detail', kwargs={'pk': tv.task_id}),
+        })
+
+    for te in TaskEvaluation.objects.filter(user=target_user).select_related('task').order_by('-updated_at'):
+        items.append({
+            'type': 'task_eval',
+            'title': te.task.title,
+            'ts': te.updated_at,
+            'label': _('Evaluated task'),
+            'url': reverse('tasks:detail', kwargs={'pk': te.task_id}),
+        })
+
+    for arg in Argument.objects.filter(author=target_user).select_related('decyzja').order_by('-created_at'):
+        items.append({
+            'type': 'argument',
+            'title': arg.decyzja.title,
+            'ts': arg.created_at,
+            'label': _('Added argument'),
+            'url': reverse('glosowania:details', kwargs={'pk': arg.decyzja_id}),
+        })
+
+    for zp in ZebranePodpisy.objects.filter(podpis_uzytkownika=target_user).select_related('projekt'):
+        if zp.projekt:
+            items.append({
+                'type': 'signature',
+                'title': zp.projekt.title,
+                'ts': None,
+                'label': _('Signed proposal'),
+                'url': reverse('glosowania:details', kwargs={'pk': zp.projekt_id}),
+            })
+
+    for kg in KtoJuzGlosowal.objects.filter(ktory_uzytkownik_juz_zaglosowal=target_user).select_related('projekt'):
+        items.append({
+            'type': 'voted',
+            'title': kg.projekt.title,
+            'ts': None,
+            'label': _('Voted in referendum'),
+            'url': reverse('glosowania:details', kwargs={'pk': kg.projekt_id}),
+        })
+
+    for ca in CitizenActivity.objects.filter(uzytkownik=target_profile).order_by('-timestamp'):
+        items.append({
+            'type': 'citizen',
+            'title': ca.get_activity_type_display(),
+            'ts': ca.timestamp,
+            'label': _('Citizenship event'),
+            'url': None,
+        })
+
+    epoch = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+    items.sort(key=lambda x: x['ts'] or epoch, reverse=True)
+
+    return render(request, 'obywatele/citizen_aktywnosc.html', {
+        'target_user': target_user,
+        'items': items,
+        'is_own': request.user.pk == pk,
+    })

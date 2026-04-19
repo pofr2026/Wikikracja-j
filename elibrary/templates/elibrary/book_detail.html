@@ -3,44 +3,108 @@
 {% load i18n %}
 
 {% block content %}
+<div class="section">
 
-    <!--prev & next -->
-	<p>
-	{% if prev %} <a href="{% url 'elibrary:book-detail' pk=prev.id %}"> << </a> {% else %} << {% endif %} |
-  {% if next %} <a href="{% url 'elibrary:book-detail' pk=next.id %}"> >> </a> {% else %} >> {% endif %}
-	</p>
+  {# ── Wróć ── #}
+  <div class="mb-3">
+    <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i>{% trans "Wróć" %}
+    </a>
+  </div>
 
-<div class="container">
-  <div class="row">
+  <div class="row g-4">
 
-	  <div class="col-sm">
-		<h3>{{ object.author }}</h3>
-		<h1>{{ object.title }}</h1>
-		{% comment %} <a href="{% static object.tag %}">epub</a> {% endcomment %}
-		{% if object.file_epub != None %}
-		<a href="{% get_media_prefix %}{{ object.file_epub }}">epub</a>
-		{% endif %}
-		{% if object.file_mobi != None %}
-		<a href="{% get_media_prefix %}{{ object.file_mobi }}">mobi</a>
-		{% endif %}
-		{% if object.file_pdf != None %}
-		<a href="{% get_media_prefix %}{{ object.file_pdf }}">pdf</a>
-		{% endif %}
-		{% if object.abstract %}<p>{{ object.abstract }}</p>{% endif %}
+    {# ── Lewa kolumna: metadane + pliki + abstrakt ── #}
+    <div class="col-12 col-sm-7 col-md-8">
 
-		{% if object.uploader == request.user %}
-			<p>
-				<a href="{% url 'elibrary:book-delete' object.id %}" class="btn btn-danger">{% trans 'Delete' %}</a>
-				<a class="btn btn-success" href="{% url 'elibrary:book-update' object.id %}">{% trans "Edit" %}</a>
-			</p>
-	 	{% endif %}
-	</div>
+      {% if object.author %}
+      <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.25rem;">{{ object.author }}</div>
+      {% endif %}
 
-    <div class="col-sm">
-      <img class="img-fluid col-sm-8 offset-sm-1" src="{{ MEDIA_URL }}{{ object.cover }}">
+      {% if object.title %}
+      <h4 class="fw-bold mb-3" style="line-height:1.3;">{{ object.title }}</h4>
+      {% endif %}
+
+      {# ── Pliki ── #}
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span style="font-size:.82rem;color:var(--text-muted);white-space:nowrap;">{% trans "Download:" %}</span>
+
+        {% if object.file_epub %}
+          <a href="{% get_media_prefix %}{{ object.file_epub }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-file me-1"></i>epub
+          </a>
+        {% else %}
+          <span class="btn btn-sm btn-outline-secondary disabled" style="opacity:.35;cursor:default;">
+            <i class="fas fa-file me-1"></i>epub
+          </span>
+        {% endif %}
+
+        {% if object.file_mobi %}
+          <a href="{% get_media_prefix %}{{ object.file_mobi }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-file me-1"></i>mobi
+          </a>
+        {% else %}
+          <span class="btn btn-sm btn-outline-secondary disabled" style="opacity:.35;cursor:default;">
+            <i class="fas fa-file me-1"></i>mobi
+          </span>
+        {% endif %}
+
+        {% if object.file_pdf %}
+          <a href="{% get_media_prefix %}{{ object.file_pdf }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-file-pdf me-1"></i>pdf
+          </a>
+        {% else %}
+          <span class="btn btn-sm btn-outline-secondary disabled" style="opacity:.35;cursor:default;">
+            <i class="fas fa-file-pdf me-1"></i>pdf
+          </span>
+        {% endif %}
+      </div>
+
+      {% if object.abstract %}
+      <div style="font-size:.88rem;line-height:1.6;color:var(--text-secondary);">
+        {{ object.abstract }}
+      </div>
+      {% endif %}
+
+      {% if object.uploader == request.user %}
+      <div class="d-flex gap-2 mt-4">
+        <a href="{% url 'elibrary:book-update' object.id %}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-edit me-1"></i>{% trans "Edytuj" %}
+        </a>
+        <a href="{% url 'elibrary:book-delete' object.id %}" class="btn btn-sm btn-outline-danger">
+          <i class="fas fa-trash me-1"></i>{% trans "Usuń" %}
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+
+    {# ── Prawa kolumna: okładka ── #}
+    <div class="col-12 col-sm-5 col-md-4 text-center">
+      <img src="{{ MEDIA_URL }}{{ object.cover }}"
+           alt="{{ object.title }}"
+           class="img-fluid"
+           style="max-height:340px;border-radius:.5rem;box-shadow:0 4px 20px rgba(0,0,0,.4);">
     </div>
 
   </div>
-</div>
 
+  {# ── Nawigacja prev/next ── #}
+  <div class="d-flex justify-content-between mt-4" style="border-top:1px solid var(--border);padding-top:.75rem;">
+    {% if prev %}
+    <a href="{% url 'elibrary:book-detail' pk=prev.id %}" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-chevron-left me-1"></i>{% trans "Poprzednia" %}
+    </a>
+    {% else %}
+    <span></span>
+    {% endif %}
+
+    {% if next %}
+    <a href="{% url 'elibrary:book-detail' pk=next.id %}" class="btn btn-sm btn-outline-secondary">
+      {% trans "Następna" %}<i class="fas fa-chevron-right ms-1"></i>
+    </a>
+    {% endif %}
+  </div>
+
+</div>
 {% endblock %}

@@ -137,6 +137,25 @@ class ProfileForm(forms.ModelForm):
         self.fields['job'].error_messages['required'] = _('Job is required.')
 
 
+class AvatarForm(forms.ModelForm):
+    class Meta:
+        model = Uzytkownik
+        fields = ('avatar',)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Delete old avatar file if being replaced
+        if commit:
+            try:
+                old = Uzytkownik.objects.get(pk=instance.pk)
+                if old.avatar and old.avatar != instance.avatar:
+                    old.avatar.delete(save=False)
+            except Uzytkownik.DoesNotExist:
+                pass
+            instance.save()
+        return instance
+
+
 class OnboardingDetailsForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, label=_('First name'), required=True)
     last_name = forms.CharField(max_length=150, label=_('Last name'), required=True)

@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.db.models import Count, Exists, OuterRef, Prefetch
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.dispatch import receiver
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import redirect, render
@@ -75,34 +75,67 @@ def chat(request: HttpRequest):
     private_archived = allowed_rooms.filter(public=False, archived=True)
 
     # Split public rooms into categories based on database relations
-    # Get room IDs for tasks and votes
     from tasks.models import Task
     from glosowania.models import Decyzja
-    
+
     task_room_ids = Task.objects.filter(chat_room__isnull=False).values_list('chat_room_id', flat=True)
     vote_room_ids = Decyzja.objects.filter(chat_room__isnull=False).values_list('chat_room_id', flat=True)
-    
+
     public_rooms_active = public_active.exclude(id__in=task_room_ids).exclude(id__in=vote_room_ids)
     public_rooms_archived = public_archived.exclude(id__in=task_room_ids).exclude(id__in=vote_room_ids)
-    tasks_active = public_active.filter(id__in=task_room_ids)
-    tasks_archived = public_archived.filter(id__in=task_room_ids)
-    votes_active = public_active.filter(id__in=vote_room_ids)
-    votes_archived = public_archived.filter(id__in=vote_room_ids)
+
+    # ZMIANA 1: querysets drzewa — obiekty Task/Decyzja z chat_room
+    tasks_tree_active = Task.objects.filter(
+        chat_room__isnull=False,
+        chat_room__allowed=request.user,
+        chat_room__archived=False,
+    ).select_related('chat_room').prefetch_related(
+        Prefetch('chat_room__seen_by', queryset=User.objects.only('id')),
+        Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
+    ).order_by('title')
+
+    tasks_tree_archived = Task.objects.filter(
+        chat_room__isnull=False,
+        chat_room__allowed=request.user,
+        chat_room__archived=True,
+    ).select_related('chat_room').prefetch_related(
+        Prefetch('chat_room__seen_by', queryset=User.objects.only('id')),
+        Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
+    ).order_by('title')
+
+    votes_tree_active = Decyzja.objects.filter(
+        chat_room__isnull=False,
+        chat_room__allowed=request.user,
+        chat_room__archived=False,
+    ).select_related('chat_room').prefetch_related(
+        Prefetch('chat_room__seen_by', queryset=User.objects.only('id')),
+        Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
+    ).order_by('title')
+
+    votes_tree_archived = Decyzja.objects.filter(
+        chat_room__isnull=False,
+        chat_room__allowed=request.user,
+        chat_room__archived=True,
+    ).select_related('chat_room').prefetch_related(
+        Prefetch('chat_room__seen_by', queryset=User.objects.only('id')),
+        Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
+    ).order_by('title')
 
     # Render that in the chat template
     return render(request, "chat/chat.html", {
         'translations': get_translations(),
         'public_rooms_active': public_rooms_active,
         'public_rooms_archived': public_rooms_archived,
-        'tasks_active': tasks_active,
-        'tasks_archived': tasks_archived,
-        'votes_active': votes_active,
-        'votes_archived': votes_archived,
+        'tasks_tree_active': tasks_tree_active,
+        'tasks_tree_archived': tasks_tree_archived,
+        'votes_tree_active': votes_tree_active,
+        'votes_tree_archived': votes_tree_archived,
         'private_active': private_active,
         'private_archived': private_archived,
         'user': request.user,
         'ARCHIVE_PUBLIC_CHAT_ROOM': td(days=settings.ARCHIVE_PUBLIC_CHAT_ROOM).days,
         'DELETE_PUBLIC_CHAT_ROOM': td(days=settings.DELETE_PUBLIC_CHAT_ROOM).days,
+        'MESSAGE_MAX_LENGTH': settings.MESSAGE_MAX_LENGTH,
     })
 
 
@@ -241,6 +274,24 @@ def delete_one2one_rooms(sender, user, **kwargs):
         if user.username in room.title:  # TODO: If Public room have name of the user in it - it will be deleted
             log.info(f"Room {room} deleted.")
             room.delete()
+
+
+@login_required
+def room_data(request: HttpRequest, room_id: int):
+    """
+    JSON endpoint for embedded chat widget.
+    Returns room metadata and translations needed by chat-embedded.js.
+    """
+    try:
+        room = Room.objects.get(id=room_id, allowed=request.user)
+    except Room.DoesNotExist:
+        return JsonResponse({'error': 'Not found'}, status=404)
+
+    return JsonResponse({
+        'room_id': room.id,
+        'title': room.title,
+        'translations': get_translations(),
+    })
 
 
 @login_required

@@ -1,0 +1,182 @@
+{% load i18n %}
+{% comment %}
+  Partial: kafelek zadania (Agora-style).
+  Oczekiwana zmienna: task — obiekt Task (z with_metrics + chat_msg_count)
+{% endcomment %}
+
+<div class="proposal-card" id="card-{{ task.pk }}">
+
+  {# ── NAGŁÓWEK (klikalny → toggle) ── #}
+  <div class="proposal-card-header" onclick="toggleCard({{ task.pk }})" role="button" tabindex="0"
+       onkeydown="if(event.key==='Enter'||event.key===' ')toggleCard({{ task.pk }})">
+
+    <div class="proposal-card-title-row">
+      <span class="proposal-card-num">#{{ task.pk }}</span>
+      <span class="proposal-card-title">{{ task.title }}</span>
+      <i class="fas fa-chevron-down proposal-card-chevron" id="chevron-{{ task.pk }}"></i>
+    </div>
+
+    {# Badges: priorytet / status + chat #}
+    <div class="proposal-card-badges-row">
+      {% if task.priority_category == 'critical' %}
+        <span class="badge-status badge-critical">{% trans 'Critical' %}</span>
+      {% elif task.priority_category == 'important' %}
+        <span class="badge-status badge-important">{% trans 'Important' %}</span>
+      {% elif task.priority_category == 'beneficial' %}
+        <span class="badge-status badge-beneficial">{% trans 'Beneficial' %}</span>
+      {% elif task.priority_category == 'rejected' %}
+        <span class="badge-status badge-rejected">{% trans 'Rejected' %}</span>
+      {% endif %}
+
+      {% if task.status == 'completed' %}
+        <span class="badge-status badge-approved">{% trans 'Completed' %}</span>
+      {% elif task.status == 'cancelled' %}
+        <span class="badge-status badge-discussion">{% trans 'Cancelled' %}</span>
+      {% endif %}
+
+      {% if task.chat_room_url %}
+        <a href="{{ task.chat_room_url }}" 
+           class="proposal-chat-link {% if task.chat_room_pulse_class %}proposal-chat-link--pulse{% endif %}"
+           onclick="event.stopPropagation()">
+          <i class="fas fa-comment-dots"></i>
+          <span>{% trans 'Chat' %}</span>
+          {% with n=task.chat_room.messages.count %}
+            {% if n %}<span class="proposal-chat-count">{{ n }}</span>{% endif %}
+          {% endwith %}
+        </a>
+      {% endif %}
+    </div>
+
+    {# Podgląd opisu #}
+    {% if task.description %}
+    <p class="proposal-preview">{{ task.description }}</p>
+    {% endif %}
+
+    {# Meta strip #}
+    <div class="proposal-card-meta">
+      {% if task.created_by %}
+      <a href="{% url 'obywatele:obywatele_szczegoly' pk=task.created_by.pk %}"
+         class="proposal-author-link" onclick="event.stopPropagation()"
+         title="{{ task.created_by.username }}">
+        <span class="proposal-author-avatar">
+          {% if task.created_by.uzytkownik.avatar %}
+            <img src="{{ task.created_by.uzytkownik.avatar.url }}" alt="">
+          {% else %}
+            {{ task.created_by.username|slice:":2"|upper }}
+          {% endif %}
+        </span>
+        <span class="proposal-author-name">{{ task.created_by.username }}</span>
+      </a>
+      {% else %}
+      <span class="proposal-author-name">—</span>
+      {% endif %}
+
+      <span class="proposal-meta-sep">·</span>
+      <span class="proposal-date">{{ task.created_at|date:"d.m.Y" }}</span>
+
+      {% if task.votes_score %}
+        <span class="proposal-meta-sep">·</span>
+        <span class="proposal-signatures">
+          <i class="fas fa-thumbs-up fa-fw"></i> {{ task.votes_score }}
+        </span>
+      {% endif %}
+
+      <a href="{% url 'tasks:detail' pk=task.pk %}"
+         class="proposal-details-inline" onclick="event.stopPropagation()">
+        {% trans 'Details' %} <i class="fas fa-arrow-right fa-fw"></i>
+      </a>
+    </div>
+
+  </div>{# /.proposal-card-header #}
+
+  {# ── CIAŁO (rozwijalne, klikalne → szczegóły) ── #}
+  <div class="proposal-card-body" id="body-{{ task.pk }}" style="display:none;cursor:pointer;"
+       onclick="window.location.href='{% url 'tasks:detail' pk=task.pk %}'"
+       role="link">
+
+    <div class="proposal-body-topbar">
+      <a href="{% url 'tasks:detail' pk=task.pk %}" class="proposal-details-btn"
+         onclick="event.stopPropagation()">
+        <i class="fas fa-arrow-up-right-from-square fa-fw"></i> {% trans 'Details' %}
+      </a>
+    </div>
+
+    {# Pełny opis #}
+    {% if task.description %}
+    <div class="proposal-section">
+      <div class="proposal-section-label">
+        <i class="fas fa-file-lines fa-fw"></i> {% trans 'Description' %}
+      </div>
+      <div class="proposal-section-text">{{ task.description|linebreaksbr }}</div>
+    </div>
+    {% endif %}
+
+    {# Wykonawca #}
+    <div class="task-assignee-row">
+      <span class="task-assignee-label">{% trans 'Assigned to:' %}</span>
+      {% if task.assigned_to %}
+        <a href="{% url 'obywatele:obywatele_szczegoly' pk=task.assigned_to.pk %}"
+           onclick="event.stopPropagation()"
+           style="display:inline-flex;align-items:center;gap:.35rem;text-decoration:none;">
+          <span class="task-assignee-avatar">
+            {% if task.assigned_to.uzytkownik.avatar %}
+              <img src="{{ task.assigned_to.uzytkownik.avatar.url }}" alt="">
+            {% else %}
+              {{ task.assigned_to.username|slice:":2"|upper }}
+            {% endif %}
+          </span>
+          <span class="task-assignee-name">{{ task.assigned_to.username }}</span>
+        </a>
+      {% else %}
+        <span style="font-style:italic;">{% trans 'n/a' %}</span>
+      {% endif %}
+    </div>
+
+    {# Akcje: głosy + podejmij/zrezygnuj #}
+    {% if task.is_active %}
+    <div class="task-vote-row">
+      <form method="post" action="{% url 'tasks:vote' task.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="value" value="1">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit"
+                class="task-vote-btn up {% if task.user_vote_value == 1 %}active-vote{% endif %}"
+                onclick="event.stopPropagation()">
+          <i class="fas fa-plus"></i> {% trans 'I want to help' %}
+        </button>
+      </form>
+
+      <form method="post" action="{% url 'tasks:vote' task.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="value" value="-1">
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit"
+                class="task-vote-btn down {% if task.user_vote_value == -1 %}active-vote{% endif %}"
+                onclick="event.stopPropagation()">
+          <i class="fas fa-minus"></i> {% trans "Let's not do that" %}
+        </button>
+      </form>
+
+      {% if task.assigned_to == request.user %}
+        <form method="post" action="{% url 'tasks:resign' task.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="task-resign-btn" onclick="event.stopPropagation()">
+            <i class="fas fa-xmark"></i> {% trans 'Resign' %}
+          </button>
+        </form>
+      {% elif not task.assigned_to %}
+        <form method="post" action="{% url 'tasks:take' task.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="task-take-btn" onclick="event.stopPropagation()">
+            <i class="fas fa-hand"></i> {% trans 'Take task' %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>{# /.proposal-card-body #}
+
+</div>{# /.proposal-card #}

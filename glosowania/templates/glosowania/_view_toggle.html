@@ -1,0 +1,72 @@
+{% load i18n %}
+{% comment %}
+  Wymaga z kontekstu: current_sort, current_order
+{% endcomment %}
+
+{% with opp_order=current_order|yesno:"asc,desc,desc" %}
+<div class="proposals-toolbar">
+
+  {# ── Dodaj — całkiem po lewej ── #}
+  <a href="{% url 'glosowania:dodaj_nowy' %}" class="toolbar-add-btn">
+    <i class="fas fa-plus"></i> {% trans 'Dodaj' %}
+  </a>
+
+  <span class="toolbar-divider"></span>
+
+  {# ── Sortowanie ── #}
+  <div class="toolbar-sort">
+    <span class="toolbar-sort-label">{% trans 'Sortuj' %}:</span>
+
+    {# Najnowsze #}
+    {% if current_sort == 'date' %}
+      <a href="?sort=date&order={{ opp_order }}" class="sort-btn active">
+        <i class="fas fa-clock-rotate-left fa-fw"></i>
+        {% trans 'Najnowsze' %}
+        <i class="fas fa-arrow-{% if current_order == 'asc' %}up{% else %}down{% endif %} sort-arrow"></i>
+      </a>
+    {% else %}
+      <a href="?sort=date&order=desc" class="sort-btn">
+        <i class="fas fa-clock-rotate-left fa-fw"></i> {% trans 'Najnowsze' %}
+      </a>
+    {% endif %}
+
+    {# Podpisy #}
+    {% if current_sort == 'podpisy' %}
+      <a href="?sort=podpisy&order={{ opp_order }}" class="sort-btn active">
+        <i class="fas fa-pen-nib fa-fw"></i>
+        {% trans 'Podpisy' %}
+        <i class="fas fa-arrow-{% if current_order == 'asc' %}up{% else %}down{% endif %} sort-arrow"></i>
+      </a>
+    {% else %}
+      <a href="?sort=podpisy&order=desc" class="sort-btn">
+        <i class="fas fa-pen-nib fa-fw"></i> {% trans 'Podpisy' %}
+      </a>
+    {% endif %}
+
+    {# Buzz #}
+    {% if current_sort == 'buzz' %}
+      <a href="?sort=buzz&order={{ opp_order }}" class="sort-btn active">
+        <i class="fas fa-fire fa-fw"></i>
+        {% trans 'Buzz' %}
+        <i class="fas fa-arrow-{% if current_order == 'asc' %}up{% else %}down{% endif %} sort-arrow"></i>
+      </a>
+    {% else %}
+      <a href="?sort=buzz&order=desc" class="sort-btn">
+        <i class="fas fa-fire fa-fw"></i> {% trans 'Buzz' %}
+      </a>
+    {% endif %}
+
+  </div>
+
+  {# ── Widok lista/grid ── #}
+  <div class="toolbar-view">
+    <button class="view-toggle-btn" id="btn-list" onclick="setView('list')" title="{% trans 'Lista' %}">
+      <i class="fas fa-list"></i>
+    </button>
+    <button class="view-toggle-btn" id="btn-grid" onclick="setView('grid')" title="{% trans 'Siatka' %}">
+      <i class="fas fa-grip"></i>
+    </button>
+  </div>
+
+</div>
+{% endwith %}

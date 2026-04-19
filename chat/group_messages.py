@@ -2,10 +2,31 @@
 from datetime import datetime
 
 
-def format_chat_message(room_id: int, user_id: int, anonymous: bool, message: str, message_id: int, upvotes: int, downvotes: int, new: bool, edited: bool, date: datetime, latest_date: datetime, attachments: dict):
+def format_chat_message(
+    room_id: int,
+    user_id: int,
+    anonymous: bool,
+    message: str,
+    message_id: int,
+    upvotes: int,
+    downvotes: int,
+    new: bool,
+    edited: bool,
+    date: datetime,
+    latest_date: datetime,
+    attachments: dict,
+    reply_to: dict = None,
+    reactions: dict = None,
+    read_by: list = None,
+):
     """
     Return formatted dict with message data.
-    Used to format messages loaded from DB or messages sent by user to chat
+    Used to format messages loaded from DB or messages sent by user to chat.
+
+    Nowe pola (ZMIANA 2, 4):
+      reply_to  — {id, username, text_snippet} lub None
+      reactions — {bulb: int, question: int, your_reactions: list} lub None
+      read_by   — [{user_id, username, avatar_url}] lub None
     """
     return {
         "type": "chat.message",
@@ -18,7 +39,12 @@ def format_chat_message(room_id: int, user_id: int, anonymous: bool, message: st
         "downvotes": downvotes,
         "new": new,
         "edited": edited,
-        "timestamp": int(date.timestamp()) * 1000,  # unix to ms
-        "latest_timestamp": int(latest_date.timestamp()) * 1000,  # unix to ms
+        "timestamp": int(date.timestamp()) * 1000,       # unix to ms
+        "latest_timestamp": int(latest_date.timestamp()) * 1000,
         "attachments": attachments,
+        # ZMIANA 2 — cytowanie
+        "reply_to": reply_to,
+        # ZMIANA 4 — reakcje + przeczytane
+        "reactions": reactions or {"bulb": 0, "question": 0},
+        "read_by": read_by or [],
     }

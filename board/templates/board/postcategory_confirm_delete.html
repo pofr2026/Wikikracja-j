@@ -1,0 +1,79 @@
+{% extends 'home/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="section">
+
+  <div class="d-flex align-items-center justify-content-between gap-2 mb-3 flex-wrap">
+    <span class="section-heading" style="font-size:.9rem;">
+      <i class="fas fa-tags me-2" style="color:var(--accent);opacity:.8;"></i>{% trans "Usuń kategorię" %}
+    </span>
+    <a href="{% url 'board:category_list' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i>{% trans "Powrót" %}
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-header bg-danger text-white">
+      <h5 class="mb-0">{% trans "Usuń kategorię" %}: {{ object.name }}</h5>
+    </div>
+    <div class="card-body">
+
+      {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      {% if has_dependencies %}
+        <div class="alert alert-warning">
+          <p><strong>{% trans "Ta kategoria jest przypisana do następujących ogłoszeń:" %}</strong></p>
+          <table class="table table-striped table-sm">
+            <thead>
+              <tr>
+                <th>{% trans "Tytuł" %}</th>
+                <th>{% trans "Data" %}</th>
+                <th>{% trans "Akcje" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for post in related_posts %}
+                <tr>
+                  <td>{{ post.title }}</td>
+                  <td>{{ post.created|date:"d.m.Y" }}</td>
+                  <td>
+                    <a href="{% url 'board:edit_post' post.pk %}?next={% url 'board:category_delete' object.pk %}" class="btn btn-sm btn-info">
+                      <i class="fas fa-edit"></i> {% trans "Edytuj" %}
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <p class="mt-2">{% trans "Przed usunięciem kategorii odepnij ją od wszystkich ogłoszeń." %}</p>
+        </div>
+        <a href="{% url 'board:category_list' %}" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> {% trans "Powrót do kategorii" %}
+        </a>
+      {% else %}
+        <div class="alert alert-warning">
+          <p><strong>{% trans "Czy na pewno chcesz usunąć tę kategorię?" %}</strong></p>
+          <p><strong>{% trans "Nazwa" %}:</strong> {{ object.name }}</p>
+          <p><strong>{% trans "Priorytet" %}:</strong> {{ object.priority }}</p>
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-trash me-1"></i>{% trans "Tak, usuń kategorię" %}
+            </button>
+            <a href="{% url 'board:category_list' %}" class="btn btn-secondary">
+              <i class="fas fa-times me-1"></i>{% trans "Anuluj" %}
+            </a>
+          </div>
+        </form>
+      {% endif %}
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

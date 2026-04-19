@@ -4,16 +4,18 @@
 {% load filters %}
 
 <!DOCTYPE html>
-<html lang="{{ request.LANGUAGE_CODE }}">
+<html lang="{{ request.LANGUAGE_CODE }}" data-theme="dark">
 <head>
 	<meta charset="utf-8">
+	<!-- Anti-FOUC: restore theme before CSS loads -->
+	<script>(function(){var t=localStorage.getItem('app-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
 	<title>{{ request.site.name }}</title>
 	<meta name="description" content="{{ site_description|default:'' }}">
 
 	<!-- PWA Meta Tags -->
 	<link rel="manifest" href="{% url 'manifest' %}">
-	<meta name="theme-color" content="#375a7f">
+	<meta name="theme-color" content="#00d1b2">
 	<link rel="apple-touch-icon" href="{% static 'home/images/favicon.ico' %}">
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,9 +23,217 @@
 	<!-- https://fontawesome.com/ -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-	<!-- Chat rooms styling: -->
+	<link rel="stylesheet" type="text/css" href="{% static 'home/css/tokens.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'home/css/darkly.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'home/css/app.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'home/css/components.css' %}">
+
+	<style>
+	html, body { background: var(--bg-base) !important; color: var(--text-primary) !important; margin: 0; }
+	/* layout */
+	.layout-wrapper { display: flex !important; min-height: 100vh; }
+	/* sidebar */
+	.sidebar {
+	  width: max-content; background: var(--bg-sidebar);
+	  display: flex !important; flex-direction: column;
+	  position: sticky; top: 0; left: 0; height: 100vh; align-self: flex-start;
+	  z-index: 100; border-right: 1px solid var(--border); overflow: hidden;
+	  flex-shrink: 0;
+	}
+	.sidebar-logo { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+	.sidebar-version-link { font-size:.6rem; color:var(--text-muted); font-family:'Courier New',monospace; display:inline-block; margin-top:3px; text-align:right; text-decoration:none !important; border:1px solid transparent; border-radius:.35rem; padding:.15rem .4rem; transition:color .15s, border-color .15s; float:right; }
+	.sidebar-version-link:hover { color:var(--text-primary) !important; border-color:rgba(255,255,255,.2); }
+	.sidebar-logo .logo-title { color: var(--accent); font-weight: 700; font-size: 1.05rem; display: block; }
+	.sidebar-logo .logo-sub { color: var(--text-muted); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase; display: block; margin-top: 2px; }
+	.sidebar-nav { flex: 1; padding: .75rem 0; overflow-y: auto; }
+	.sidebar-nav .nav-item { list-style: none; }
+	.sidebar-nav .nav-item a {
+	  display: flex !important; align-items: center; gap: .75rem;
+	  padding: .6rem 1.1rem; color: var(--text-muted) !important; text-decoration: none !important;
+	  border-radius: .4rem; margin: .1rem .65rem; transition: background .15s, color .15s; font-size: .875rem;
+	}
+	.sidebar-nav .nav-item a:hover { background: var(--accent-muted); color: var(--text-primary) !important; }
+	.sidebar-nav .nav-item a.active { background: var(--accent-muted); color: var(--accent) !important; }
+	.sidebar-nav .nav-item a .nav-icon { width: 1.1rem; text-align: center; flex-shrink: 0; font-size: .9rem; }
+	.sidebar-nav .nav-item a .nav-badge { margin-left: auto; background: #3b82f6; color: #fff; font-size: .65rem; padding: 1px 7px; border-radius: 10px; font-weight: 600; }
+	.sidebar-bottom { flex-shrink: 0; border-top: 1px solid var(--border); padding: .5rem 0; }
+	.sidebar-bottom .nav-item { list-style: none; }
+	.sidebar-bottom .nav-item a {
+	  display: flex !important; align-items: center; gap: .75rem;
+	  padding: .55rem 1.1rem; color: var(--text-muted) !important; text-decoration: none !important;
+	  border-radius: .4rem; margin: .1rem .65rem; transition: background .15s, color .15s; font-size: .875rem;
+	}
+	.sidebar-bottom .nav-item a:hover { background: var(--accent-muted); color: var(--text-primary) !important; }
+	.sidebar-bottom .nav-icon { width: 1.1rem; text-align: center; flex-shrink: 0; font-size: .9rem; }
+	.sidebar-user { flex-shrink: 0; padding: .8rem 1.1rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: .75rem; }
+	.sidebar-user .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .8rem; color: #111; flex-shrink: 0; }
+	.sidebar-user img.user-avatar { background: none; overflow: hidden; }
+	.sidebar-user .user-info { overflow: hidden; }
+	.sidebar-user .user-name { font-size: .8rem; color: var(--text-primary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+	.sidebar-user .user-role { font-size: .68rem; color: var(--text-muted); display: block; }
+	/* main area */
+	.main-area { margin-left: 0; flex: 1; display: flex !important; flex-direction: column; min-height: 100vh; min-width: 0; }
+	/* topbar */
+	.topbar {
+	  height: var(--topbar-height); background: var(--bg-sidebar);
+	  border-bottom: 1px solid var(--border); display: flex !important;
+	  align-items: center; padding: 0 1.5rem; gap: 1rem;
+	  position: sticky; top: 0; z-index: 90; flex-shrink: 0;
+	}
+	.topbar .topbar-breadcrumb { flex: 1; display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; }
+	.topbar .topbar-breadcrumb a { color: var(--text-muted); text-decoration: none; }
+	.topbar .topbar-breadcrumb a:hover { color: var(--text-primary); }
+	.topbar .topbar-breadcrumb .sep { opacity: .4; }
+	.topbar .topbar-breadcrumb .current { color: var(--text-primary); font-weight: 500; }
+	.topbar .search-box { background: var(--bg-base); border: 1px solid var(--border); border-radius: .5rem; padding: .38rem .85rem; color: var(--text-primary); width: 220px; font-size: .85rem; }
+	.topbar .search-box::placeholder { color: var(--text-muted); }
+	.topbar .search-box:focus { outline: none; border-color: var(--accent); }
+	.topbar .notif-bell { color: var(--text-muted); font-size: 1rem; position: relative; text-decoration: none; padding: .25rem; transition: color .15s; }
+	.topbar .notif-bell:hover { color: var(--text-primary); }
+	.topbar .notif-bell .notif-dot { position: absolute; top: 0; right: 0; width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; border: 1px solid var(--bg-sidebar); }
+	.topbar .btn-cta { background: var(--accent); color: #111; border: none; border-radius: .5rem; padding: .38rem 1rem; font-size: .82rem; font-weight: 600; white-space: nowrap; text-decoration: none !important; transition: background .15s; display: inline-flex; align-items: center; gap: .35rem; }
+	.topbar .btn-cta:hover { background: var(--accent-hover); color: #111; }
+	/* main content */
+	.main-content { flex: 1; padding: 1.5rem; }
+	/* cards */
+	.card {
+	  background: var(--bg-card) !important;
+	  border: 1px solid var(--border) !important;
+	  border-radius: .6rem !important;
+	  transition: border-color .2s, box-shadow .2s;
+	}
+	.card:hover {
+	  border-color: var(--accent) !important;
+	  box-shadow:
+	    0 0 0 1px rgba(0,209,178,.25),
+	    0 0 12px rgba(0,209,178,.2),
+	    0 0 32px rgba(0,209,178,.08),
+	    0 4px 20px rgba(0,0,0,.35) !important;
+	}
+	/* karty będące linkami — cursor pointer zamiast domyślnego */
+	a.card:hover { text-decoration: none !important; }
+	.card-header { background: transparent !important; border-bottom: 1px solid var(--border) !important; }
+	.card-footer { background: transparent !important; border-top: 1px solid var(--border) !important; }
+
+	/* Globalne style interakcji */
+	/* badge statusu (używane w glosowania i innych modułach) */
+	.badge-status {
+	  display: inline-block;
+	  font-size: .68rem;
+	  font-weight: 600;
+	  padding: 2px 8px;
+	  border-radius: 2rem;
+	  white-space: nowrap;
+	}
+	.badge-proposition { background: rgba(59,130,246,.15);  color: #60a5fa; }
+	.badge-discussion  { background: rgba(168,85,247,.15);  color: #c084fc; }
+	.badge-referendum  { background: rgba(249,115,22,.15);  color: #fb923c; }
+	.badge-approved    { background: rgba(0,188,140,.15);   color: #00bc8c; }
+	.badge-rejected    { background: rgba(239,68,68,.15);   color: #f87171; }
+
+	/* chat link — globalna pigułka czatu */
+	.proposal-chat-link {
+	  display: inline-flex;
+	  align-items: center;
+	  gap: .3rem;
+	  color: var(--accent);
+	  text-decoration: none !important;
+	  font-size: .78rem;
+	  font-weight: 500;
+	  padding: 2px 7px 2px 5px;
+	  border-radius: 2rem;
+	  border: 1px solid rgba(0,209,178,.3);
+	  background: rgba(0,209,178,.07);
+	  transition: background .15s, border-color .15s, box-shadow .15s;
+	}
+	.proposal-chat-link:hover {
+	  background: rgba(0,209,178,.18);
+	  border-color: var(--accent);
+	  box-shadow: 0 0 8px rgba(0,209,178,.3);
+	}
+
+	/* linki — globalne */
+	a { color: var(--accent); transition: opacity .15s; }
+	a:hover { opacity: .85; }
+	/* responsive */
+	@media (max-width: 768px) {
+	  .sidebar { position: fixed; width: var(--sidebar-width); transform: translateX(-100%); transition: transform .25s ease; }
+	  .sidebar.sidebar-open { transform: translateX(0); }
+	  .main-area { margin-left: 0; }
+	  .topbar .search-box { width: 130px; }
+	  .topbar .btn-cta span { display: none; }
+	}
+	/* ===== SIDEBAR COLLAPSE ===== */
+	.sidebar {
+	  transition: width .2s ease;
+	  overflow: hidden;
+	}
+	.sidebar.collapsed {
+	  width: var(--sidebar-collapsed-width);
+	}
+	/* hide text labels and badges when collapsed */
+	.sidebar.collapsed .nav-text,
+	.sidebar.collapsed .nav-badge,
+	.sidebar.collapsed .logo-sub,
+	.sidebar.collapsed .logo-label,
+	.sidebar.collapsed .user-info {
+	  display: none !important;
+	}
+	/* logo: center icon only */
+	.sidebar.collapsed .sidebar-logo {
+	  padding: 1.1rem 0;
+	  display: flex;
+	  justify-content: center;
+	  align-items: center;
+	}
+	/* nav links: icon centered */
+	.sidebar.collapsed .sidebar-nav .nav-item a,
+	.sidebar.collapsed .sidebar-bottom .nav-item a {
+	  justify-content: center;
+	  padding: .6rem 0;
+	  margin: .1rem 4px;
+	  gap: 0;
+	}
+	.sidebar.collapsed .nav-icon {
+	  width: auto;
+	  margin: 0;
+	}
+	/* user area: avatar only */
+	.sidebar.collapsed .sidebar-user {
+	  justify-content: center;
+	  padding: .75rem 0;
+	}
+	/* sidebar toggle arrow button */
+	.sidebar-toggle-btn {
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  width: 100%;
+	  padding: .55rem 0;
+	  background: transparent;
+	  border: none;
+	  border-top: 1px solid var(--border);
+	  color: var(--text-muted);
+	  cursor: pointer;
+	  font-size: .85rem;
+	  transition: color .15s, background .15s;
+	  flex-shrink: 0;
+	}
+	.sidebar-toggle-btn:hover {
+	  color: var(--accent);
+	  background: var(--accent-muted);
+	}
+	.sidebar.collapsed .sidebar-toggle-label {
+	  display: none !important;
+	}
+	.main-area {
+	  transition: none;
+	}
+	.main-area.sidebar-collapsed {
+	  margin-left: 0;
+	}
+	.sidebar.collapsed .sidebar-version-link { display: none !important; }
+	</style>
 
   <!-- Main app script with config data -->
   <script src="{% static 'home/js/app.js' %}"></script>
@@ -31,150 +241,446 @@
 	<!-- Chat rooms engine: -->
 	<script src="{% static 'chat/js/reconnecting-websocket.js' %}"></script>
 
-	<!-- Firebase SDK (for FCM on Android) -->
-  {% comment %} <script type="module" src="https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/12.10.0/firebase-messaging.js"></script> {% endcomment %}
-
   <!-- Push notifications manager -->
   <script src="{% static 'chat/js/push-notifications.js' %}" type="module"></script>
 
   <script>
-    // Firebase configuration for FCM (Android)
-    // window.FIREBASE_CONFIG = {{ firebase_config|safe }};
-
-    // VAPID public key for WebPush
     window.VAPID_PUBLIC_KEY = "{{ vapid_public_key|default:'' }}";
   </script>
   {% block extra_css %}{% endblock %}
-  {% bootstrap_messages %}
   {% bootstrap_javascript %}
 </head>
 
 <body>
-	<div class="page-main">
-		<nav class="navbar navbar-expand-md navbar-dark bg-primary justify-content-end">
-			<button class="navbar-toggler mx-2 px-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-			{{ request.site.name }}
-				<span class="navbar-toggler-icon"></span>
-			</button>
+<div class="layout-wrapper">
 
-			<div class="collapse navbar-collapse justify-content-center" id="navbarNavAltMarkup">
-				<div class="navbar-nav text-end">
+  {% if user.is_authenticated %}
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar" id="sidebar">
 
-					<a {% if request.resolver_match.url_name == 'home' %} class="nav-item nav-link active mx-1 px-2"
-					{% else %} class="nav-item nav-link mx-1 px-2"
-					{% endif %} href="{% url 'home' %}">{% trans 'Start' %}</a>
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <a href="{% url 'home' %}" style="text-decoration:none;">
+        <span class="logo-title"><i class="fas fa-fw fa-building-columns"></i><span class="logo-label ms-1">{% trans "W Lobby" %}</span></span>
+        <span class="logo-sub">{% trans "Obywatelskie" %}</span>
+      </a>
+      <a href="{% url 'site_admin' %}" class="sidebar-version-link">Wikikracja v.{{ app_version }}</a>
+    </div>
 
-					<a {% if request.resolver_match.namespace == 'board' %} class="nav-item nav-link active mx-1 px-2"
-					{% else %} class="nav-item nav-link mx-1 px-2"
-					{% endif %} href="{% url 'board:start' %}">{% trans "Board" %}</a>
+    <!-- Main navigation -->
+    <nav class="sidebar-nav">
+      <ul class="list-unstyled mb-0">
 
-					<a {% if request.resolver_match.namespace == 'events' %} class="nav-item nav-link active mx-1 px-2"
-					{% else %} class="nav-item nav-link mx-1 px-2"
-					{% endif %} href="{% url 'events:list' %}">{% trans "Calendar" %}</a>
+        <li class="nav-item">
+          <a href="{% url 'home' %}"
+             title="{% trans 'Pulpit' %}"
+             class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="fas fa-fw fa-house nav-icon"></i>
+            <span class="nav-text">{% trans "Pulpit" %}</span>
+            {% if unread_items %}
+              <span class="nav-badge">{{ unread_items|length }}</span>
+            {% endif %}
+          </a>
+        </li>
 
-					{% if user.is_authenticated %}
-					<a {% if request.resolver_match.namespace == 'tasks' %} class="nav-item nav-link active mx-1 px-2"
-					{% else %} class="nav-item nav-link mx-1 px-2"
-					{% endif %} href="{% url 'tasks:list' %}">{% trans "Tasks" %}</a>
-					{% endif %}
+        <li class="nav-item">
+          <a href="{% url 'glosowania:proposition' %}"
+             title="{% trans 'Agora / Demokracja' %}"
+             class="{% if request.resolver_match.namespace == 'glosowania' or request.resolver_match.namespace == 'board' %}active{% endif %}">
+            <i class="fas fa-fw fa-landmark nav-icon"></i>
+            <span class="nav-text">{% trans "Agora / Demokracja" %}</span>
+          </a>
+        </li>
 
-					{% if not user.is_authenticated %}
-						<a {% if request.resolver_match.url_name == 'login' %} class="nav-item nav-link active mx-1 px-2"
-						{% else %} class="nav-item nav-link mx-1 px-2"
-						{% endif %} href="{% url 'login' %}">{% trans "Login" %}</a>
+        <li class="nav-item">
+          <a href="{% url 'tasks:list' %}"
+             title="{% trans 'Działanie' %}"
+             class="{% if request.resolver_match.namespace == 'tasks' or request.resolver_match.namespace == 'events' %}active{% endif %}">
+            <i class="fas fa-fw fa-bolt nav-icon"></i>
+            <span class="nav-text">{% trans "Działanie" %}</span>
+          </a>
+        </li>
 
-						<a {% if request.resolver_match.url_name == 'account_signup' %} class="nav-item nav-link active mx-1 px-2"
-						{% else %} class="nav-item nav-link mx-1 px-2"
-						{% endif %} href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
-					{% endif %}
+        <li class="nav-item">
+          <a href="{% url 'elibrary:book_list' %}"
+             title="{% trans 'Baza Wiedzy' %}"
+             class="{% if request.resolver_match.namespace == 'elibrary' %}active{% endif %}">
+            <i class="fas fa-fw fa-book nav-icon"></i>
+            <span class="nav-text">{% trans "Baza Wiedzy" %}</span>
+          </a>
+        </li>
 
-					{% if user.is_authenticated %}
-						{% comment %} OBYWATELE: Has to be one by one because User Profile is Obywatele too: {% endcomment %}
-						<a {% if request.resolver_match.namespace == 'obywatele' %} class="nav-item nav-link active mx-1 px-2"
-						{% else %} class="nav-item nav-link mx-1 px-2"
-						{% endif %} href="{% url 'obywatele:obywatele' %}">{% trans "Citizens" %}</a>
+        <li class="nav-item">
+          <a href="{% url 'obywatele:wspolnota' %}"
+             title="{% trans 'Wspólnota' %}"
+             class="{% if request.resolver_match.namespace == 'obywatele' and request.resolver_match.url_name != 'my_profile' and request.resolver_match.url_name != 'haslo' and request.resolver_match.url_name != 'my_assets' and request.resolver_match.url_name != 'change_email' and request.resolver_match.url_name != 'change_username' %}active{% endif %}">
+            <i class="fas fa-fw fa-users nav-icon"></i>
+            <span class="nav-text">{% trans "Wspólnota" %}</span>
+          </a>
+        </li>
 
-						{% comment %} GŁOSOWANIA: {% endcomment %}
-						<a {% if request.resolver_match.namespace == 'glosowania' %} class="nav-item nav-link active mx-1 px-2"
-						{% else %} class="nav-item nav-link mx-1 px-2"
-						{% endif %} href="{% url 'glosowania:approved' %}">{% trans "Voting" %}</a>
+      </ul>
+    </nav>
 
-						<a {% if request.resolver_match.namespace == 'bookkeeping' %} class="nav-item nav-link active mx-1 px-2"
-						{% else %} class="nav-item nav-link mx-1 px-2"
-						{% endif %} href="{% url 'bookkeeping:transaction_list' %}">{% trans 'Bookkeeping' %}</a>
+    <!-- Bottom links: settings + logout -->
+    <div class="sidebar-bottom">
+      <ul class="list-unstyled mb-0">
+        <li class="nav-item">
+          <a href="{% url 'obywatele:my_profile' %}"
+             title="{% trans 'Ustawienia' %}"
+             class="{% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'haslo' or request.resolver_match.url_name == 'my_assets' or request.resolver_match.url_name == 'change_email' or request.resolver_match.url_name == 'change_username' %}active{% endif %}">
+            <i class="fas fa-fw fa-gear nav-icon"></i>
+            <span class="nav-text">{% trans "Ustawienia" %}</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'account_logout' %}" title="{% trans 'Wyloguj' %}">
+            <i class="fas fa-fw fa-right-from-bracket nav-icon"></i>
+            <span class="nav-text">{% trans "Wyloguj" %}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
 
-						<a {% if request.resolver_match.namespace == 'elibrary' %} class="nav-item nav-link active mx-1 px-2"
-						{% else %} class="nav-item nav-link mx-1 px-2"
-						{% endif %} href="{% url 'elibrary:book_list' %}">{% trans "Library" %}</a>
+    <!-- User card -->
+    <a href="{% url 'obywatele:obywatele_szczegoly' pk=user.pk %}" class="sidebar-user"
+       style="text-decoration:none;transition:background .15s;"
+       onmouseover="this.style.background='var(--accent-muted)'"
+       onmouseout="this.style.background=''">
+      {% if user.uzytkownik.avatar %}
+      <img class="user-avatar" src="{{ user.uzytkownik.avatar.url }}" alt="avatar" style="object-fit:cover;">
+      {% else %}
+      <div class="user-avatar">{{ user.username|slice:":2"|upper }}</div>
+      {% endif %}
+      <div class="user-info">
+        <span class="user-name">{{ user.username }}</span>
+        <span class="user-role">{% trans "Obywatel" %}</span>
+      </div>
+    </a>
+
+    <!-- Collapse toggle -->
+    <button class="sidebar-toggle-btn d-none d-md-flex" id="sidebar-collapse-btn"
+            title="{% trans 'Zwiń/rozwiń menu' %}">
+      <i class="fas fa-angles-left" id="sidebar-collapse-icon"></i>
+      <span class="sidebar-toggle-label ms-2">{% trans "Zwiń" %}</span>
+    </button>
+
+  </aside>
+  <!-- ==================== END SIDEBAR ==================== -->
+  {% endif %}
+
+  <!-- ==================== MAIN AREA ==================== -->
+  <div class="main-area">
+
+    {% if user.is_authenticated %}
+    <!-- ---- TOPBAR ---- -->
+    <header class="topbar">
+
+      <!-- Breadcrumb -->
+      <div class="topbar-breadcrumb">
+        <button class="btn btn-sm d-md-none me-2 p-1" id="sidebar-toggle"
+                style="background:transparent;border:1px solid var(--border);color:var(--text-muted);">
+          <i class="fas fa-bars"></i>
+        </button>
+        <a href="{% url 'home' %}">{% trans "Lobby Obywatelskie" %}</a>
+        <span class="sep">›</span>
+        <span class="current">
+          {% if request.resolver_match.url_name == 'home' %}{% trans "Pulpit" %}
+          {% elif request.resolver_match.namespace == 'glosowania' %}{% trans "Głosowania" %}
+          {% elif request.resolver_match.namespace == 'board' %}{% trans "Board" %}
+          {% elif request.resolver_match.namespace == 'tasks' %}{% trans "Zadania" %}
+          {% elif request.resolver_match.namespace == 'events' %}{% trans "Kalendarz" %}
+          {% elif request.resolver_match.namespace == 'elibrary' %}{% trans "Biblioteka" %}
+          {% elif request.resolver_match.namespace == 'obywatele' %}{% trans "Obywatele" %}
+          {% elif request.resolver_match.namespace == 'bookkeeping' %}{% trans "Księgowość" %}
+          {% elif request.resolver_match.namespace == 'chat' %}{% trans "Chat" %}
+          {% else %}…{% endif %}
+        </span>
+      </div>
+
+      <!-- Search + Filter -->
+      <div class="d-none d-sm-block" style="position:relative;" id="topbar-search-wrapper">
+        <form method="get" action="{% url 'search' %}" id="topbar-search-form" autocomplete="off">
+
+          <!-- Filter dropdown (inside form so checkboxes are submitted) -->
+          <div id="topbar-filter-panel" style="display:none;position:absolute;top:calc(100% + 6px);right:0;
+               background:var(--bg-sidebar);border:1px solid var(--border);border-radius:.6rem;
+               padding:.85rem 1rem;z-index:300;min-width:340px;
+               box-shadow:0 8px 32px rgba(0,0,0,.45);">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span style="font-size:.75rem;color:var(--text-muted);">
+                <i class="fas fa-filter me-1"></i>{% trans "Szukaj w kategoriach" %}
+              </span>
+              <button type="button" id="topbar-select-all"
+                      style="font-size:.72rem;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;">
+                {% trans "Wszędzie" %}
+              </button>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <label class="tb-chip" data-color="primary">
+                <input type="checkbox" name="cat" value="post" class="d-none tb-cb">
+                <i class="fas fa-chalkboard me-1"></i>{% trans "Board" %}
+              </label>
+              <label class="tb-chip" data-color="warning">
+                <input type="checkbox" name="cat" value="task" class="d-none tb-cb">
+                <i class="fas fa-list-check me-1"></i>{% trans "Zadania" %}
+              </label>
+              <label class="tb-chip" data-color="danger">
+                <input type="checkbox" name="cat" value="decision" class="d-none tb-cb">
+                <i class="fas fa-landmark me-1"></i>{% trans "Głosowania" %}
+              </label>
+              <label class="tb-chip" data-color="success">
+                <input type="checkbox" name="cat" value="event" class="d-none tb-cb">
+                <i class="fas fa-calendar me-1"></i>{% trans "Wydarzenie" %}
+              </label>
+              <label class="tb-chip" data-color="info">
+                <input type="checkbox" name="cat" value="book" class="d-none tb-cb">
+                <i class="fas fa-book me-1"></i>{% trans "Biblioteka" %}
+              </label>
+              <label class="tb-chip" data-color="secondary">
+                <input type="checkbox" name="cat" value="citizen" class="d-none tb-cb">
+                <i class="fas fa-users me-1"></i>{% trans "Obywatele" %}
+              </label>
+              <label class="tb-chip" data-color="primary">
+                <input type="checkbox" name="cat" value="chat" class="d-none tb-cb">
+                <i class="fas fa-comments me-1"></i>{% trans "Chat" %}
+              </label>
+            </div>
+          </div>
+
+          <!-- Input row -->
+          <div style="display:flex;gap:.35rem;align-items:center;">
+            <input type="search" name="q" id="topbar-q" class="search-box"
+                   value="{{ request.GET.q|default:'' }}"
+                   placeholder="{% trans 'Szukaj…' %}" aria-label="{% trans 'Szukaj' %}">
+            <button type="button" id="topbar-filter-btn"
+                    title="{% trans 'Filtry wyszukiwania' %}"
+                    style="background:transparent;border:1px solid var(--border);border-radius:.4rem;
+                           padding:.36rem .55rem;cursor:pointer;color:var(--text-muted);
+                           transition:color .15s,border-color .15s;flex-shrink:0;">
+              <i class="fas fa-sliders"></i>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <style>
+      .tb-chip {
+        display:inline-flex;align-items:center;padding:.28rem .65rem;
+        border-radius:2rem;font-size:.75rem;cursor:pointer;
+        border:1px solid var(--border);color:var(--text-muted);
+        background:transparent;transition:all .15s;user-select:none;opacity:.4;
+      }
+      .tb-chip.on { opacity:1; }
+      .tb-chip.on[data-color="primary"]  { background:rgba(59,130,246,.15);color:#60a5fa;border-color:rgba(59,130,246,.35); }
+      .tb-chip.on[data-color="warning"]  { background:rgba(243,156,18,.12);color:#f39c12;border-color:rgba(243,156,18,.35); }
+      .tb-chip.on[data-color="danger"]   { background:rgba(231,76,60,.12); color:#e74c3c;border-color:rgba(231,76,60,.35); }
+      .tb-chip.on[data-color="success"]  { background:rgba(0,188,140,.12); color:#00bc8c;border-color:rgba(0,188,140,.35); }
+      .tb-chip.on[data-color="info"]     { background:rgba(52,152,219,.12);color:#3498db;border-color:rgba(52,152,219,.35); }
+      .tb-chip.on[data-color="secondary"]{ background:rgba(120,120,140,.15);color:#aaa;  border-color:rgba(255,255,255,.15); }
+      </style>
+
+      <script>
+      (function () {
+        var form   = document.getElementById('topbar-search-form');
+        var btn    = document.getElementById('topbar-filter-btn');
+        var panel  = document.getElementById('topbar-filter-panel');
+        var allBtn = document.getElementById('topbar-select-all');
+        var qInput = document.getElementById('topbar-q');
+        var cbs    = document.querySelectorAll('.tb-cb');
+        if (!form || !btn) return;
+
+        var urlCats = new URLSearchParams(window.location.search).getAll('cat');
+
+        function setChip(cb, on) {
+          cb.checked = on;
+          var chip = cb.closest('.tb-chip');
+          if (on) chip.classList.add('on'); else chip.classList.remove('on');
+        }
+        function syncBtn() {
+          var n = document.querySelectorAll('.tb-cb:checked').length;
+          var partial = n < cbs.length;
+          btn.style.color       = partial ? 'var(--accent)'  : 'var(--text-muted)';
+          btn.style.borderColor = partial ? 'var(--accent)'  : 'var(--border)';
+        }
+
+        cbs.forEach(function (cb) {
+          setChip(cb, urlCats.length === 0 || urlCats.indexOf(cb.value) !== -1);
+        });
+        syncBtn();
+
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        });
+        document.addEventListener('click', function (e) {
+          if (!panel.contains(e.target) && e.target !== btn)
+            panel.style.display = 'none';
+        });
+        cbs.forEach(function (cb) {
+          cb.addEventListener('change', function () {
+            setChip(cb, cb.checked);
+            syncBtn();
+            if (qInput && qInput.value.trim())
+              setTimeout(function () { form.submit(); }, 80);
+          });
+        });
+        allBtn.addEventListener('click', function () {
+          cbs.forEach(function (cb) { setChip(cb, true); });
+          syncBtn();
+          if (qInput && qInput.value.trim()) form.submit();
+        });
+      })();
+      </script>
+
+      <!-- Theme toggle -->
+      <button id="theme-toggle-btn" class="notif-bell"
+              title="{% trans 'Toggle light / dark mode' %}"
+              style="background:none;border:none;cursor:pointer;">
+        <i id="theme-toggle-icon" class="fas fa-circle-half-stroke"></i>
+      </button>
+
+      <!-- Notification bell -->
+      <a href="{% url 'activity' %}" class="notif-bell" title="{% trans 'Aktywność' %}">
+        <i class="far fa-bell"></i>
+        {% if unread_items %}<span class="notif-dot"></span>{% endif %}
+      </a>
 
 
-						<a class="nav-item nav-link rounded mx-1 px-2
-						{% if request.resolver_match.namespace == 'chat' %}
-							active
-						{% else %}
-							{{ request.user|has_messages }}
-						{% endif %}"
-						data-route="chat" href="/chat/">{% trans "Chat" %}</a>
+    </header>
+    {% endif %}
 
-						<a {% if request.resolver_match.url_name == 'my_profile' or request.resolver_match.url_name == 'haslo' or request.resolver_match.url_name == 'my_assets' or request.resolver_match.url_name == 'change_email' or request.resolver_match.url_name == 'change_username' %}
-							class="nav-item nav-link mx-1 px-2 fas fa-user active fs-3"
-						{% else %}
-							class="nav-item nav-link mx-1 px-2 fas fa-user fs-3"
-						{% endif %}
-						href="{% url 'obywatele:my_profile' %}"></a>
+    {% if not user.is_authenticated %}
+    <!-- Minimal top bar for unauthenticated users -->
+    <nav class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="{% url 'home' %}" style="color:var(--accent);font-weight:700;font-size:1rem;">
+          <i class="fas fa-building-columns me-1"></i>{% trans "W Lobby" %}
+        </a>
+      </div>
+      <a href="{% url 'login' %}" class="btn btn-sm btn-outline-secondary me-1">{% trans "Login" %}</a>
+      <a href="{% url 'account_signup' %}" class="btn-cta">{% trans "Zarejestruj się" %}</a>
+    </nav>
+    {% endif %}
 
-						<a class="nav-item nav-link mx-1 px-2" href="{% url 'account_logout' %}">
-							<i class="fas fa-right-from-bracket fs-3"></i>
-						</a>
+    <!-- Global notification permission banner -->
+    {% if user.is_authenticated %}
+    <div id="notification-permission-banner" class="alert alert-info m-0 text-center" style="border-radius:0;">
+      <i class="far fa-bell-slash"></i>
+      <span id="notification-banner-message">{% trans "Enable notifications to stay updated with new messages and activities" %}</span>
+      <button type="button" class="btn btn-sm btn-primary mx-2" id="enable-notifications-global">
+        {% trans "Enable Notifications" %}
+      </button>
+      <button type="button" class="btn btn-sm btn-secondary" id="dismiss-notifications-banner">
+        {% trans "Not now" %}
+      </button>
+    </div>
+    <div id="notification-blocked-banner" class="alert alert-warning m-0 text-center" style="border-radius:0;">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>{% trans "Notifications are blocked. Please enable them in your browser settings" %}</span>
+      <button type="button" class="btn btn-sm btn-secondary mx-2" id="dismiss-blocked-banner">
+        {% trans "Dismiss" %}
+      </button>
+    </div>
+    {% endif %}
 
-					{% endif %}
-				</div>
-			</div>
-		</nav>
+    <!-- ---- CONTENT ---- -->
+    <main class="main-content">
+      {% bootstrap_messages %}
+      {% block content_fullscreen %}{% endblock content_fullscreen %}
+      {% block content %}{% endblock content %}
+    </main>
 
-		<!-- Global notification permission banner -->
-		{% if user.is_authenticated %}
-		<div id="notification-permission-banner" class="alert alert-info m-0 text-center">
-			<i class="far fa-bell-slash"></i>
-			<span id="notification-banner-message">{% trans "Enable notifications to stay updated with new messages and activities" %}</span>
-			<button type="button" class="btn btn-sm btn-primary mx-2" id="enable-notifications-global">
-				{% trans "Enable Notifications" %}
-			</button>
-			<button type="button" class="btn btn-sm btn-secondary" id="dismiss-notifications-banner">
-				{% trans "Not now" %}
-			</button>
-		</div>
-		<div id="notification-blocked-banner" class="alert alert-warning m-0 text-center">
-			<i class="fas fa-exclamation-triangle"></i>
-			<span>{% trans "Notifications are blocked. Please enable them in your browser settings" %}</span>
-			<button type="button" class="btn btn-sm btn-secondary mx-2" id="dismiss-blocked-banner">
-				{% trans "Dismiss" %}
-			</button>
-		</div>
-		{% endif %}
+    {% if request.resolver_match.namespace != 'chat' %}
+    <footer class="px-4 pb-3 mt-auto" style="color:var(--text-muted);font-size:0.78rem;">
+      {{ footer.text|safe }}
+    </footer>
+    {% endif %}
 
-		<div class="container-fluid">
-			{% block content_fullscreen %}{% endblock content_fullscreen%}
-		</div>
+  </div>
+  <!-- ==================== END MAIN AREA ==================== -->
 
-		<div class="container body-content">
-			<p>{% block content %}{% endblock content %}</p>
-		</div>
+</div><!-- /.layout-wrapper -->
 
-	</div>
+<!-- Mobile sidebar overlay -->
+<div id="sidebar-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;"
+     onclick="document.getElementById('sidebar').classList.remove('sidebar-open');this.style.display='none';"></div>
 
-{% if request.resolver_match.namespace != 'chat' %}
-	<div class="container page-footer">
-		{{ footer.text|safe }}
-	</div>
-{% endif %}
+<script>
+  (function() {
+    var toggle = document.getElementById('sidebar-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('sidebar-open');
+        var overlay = document.getElementById('sidebar-overlay');
+        overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+  })();
+</script>
+
+<script>
+(function() {
+  var sidebar  = document.getElementById('sidebar');
+  var mainArea = document.querySelector('.main-area');
+  var btn      = document.getElementById('sidebar-collapse-btn');
+  var icon     = document.getElementById('sidebar-collapse-icon');
+  if (!sidebar || !btn) return;
+
+  var STORAGE_KEY = 'sidebar_collapsed';
+
+  function applyState(collapsed) {
+    if (collapsed) {
+      sidebar.classList.add('collapsed');
+      mainArea.classList.add('sidebar-collapsed');
+      icon.classList.replace('fa-angles-left', 'fa-angles-right');
+    } else {
+      sidebar.classList.remove('collapsed');
+      mainArea.classList.remove('sidebar-collapsed');
+      icon.classList.replace('fa-angles-right', 'fa-angles-left');
+    }
+  }
+
+  applyState(localStorage.getItem(STORAGE_KEY) === 'true');
+
+  btn.addEventListener('click', function() {
+    var isCollapsed = sidebar.classList.contains('collapsed');
+    applyState(!isCollapsed);
+    localStorage.setItem(STORAGE_KEY, String(!isCollapsed));
+  });
+})();
+</script>
+
+<!-- Theme toggle logic -->
+<script>
+(function() {
+  var STORAGE_KEY = 'app-theme';
+  var html = document.documentElement;
+  var btn  = document.getElementById('theme-toggle-btn');
+
+  function applyTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+  }
+
+  window.applyTheme = applyTheme;
+
+  applyTheme(localStorage.getItem(STORAGE_KEY) || 'dark');
+
+  if (btn) {
+    btn.addEventListener('click', function() {
+      applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  }
+})();
+</script>
 
 {% comment %} Needed for chat {% endcomment %}
 {% block extra_body %}{% endblock %}
 
 {% block notifications_script %}
-	<script src="{% static 'chat/js/notifications.js' %}" type="module"></script>
+  <script src="{% static 'chat/js/notifications.js' %}" type="module"></script>
 {% endblock notifications_script %}
 
 {% block extra_js %}{% endblock %}

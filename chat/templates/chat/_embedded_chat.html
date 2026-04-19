@@ -1,0 +1,45 @@
+{% load static %}
+{% load i18n %}
+{% comment %}
+Partial: embedded chat widget.
+Wymagane zmienne z kontekstu:
+  chat_room  — obiekt chat.Room (lub None)
+  request    — standardowy request Django (do csrf_token)
+
+Użycie:
+  {% include 'chat/_embedded_chat.html' %}
+{% endcomment %}
+
+{% if chat_room %}
+<section class="ec-section">
+  <h2 class="ec-section-title">
+    <i class="fas fa-comments fa-fw"></i> {% trans 'Czat' %}
+    <a href="{% url 'chat:chat' %}#room_id={{ chat_room.pk }}"
+       class="ec-open-full" title="{% trans 'Otwórz w czacie' %}">
+      <i class="fas fa-arrow-up-right-from-square fa-fw"></i>
+    </a>
+  </h2>
+
+  <!-- ZMIANA 3: breadcrumb skrócony dla embedded -->
+  <div class="ec-breadcrumb">💬 {% trans 'Dyskusja do:' %} {{ chat_room.title }}</div>
+
+  <div class="embedded-chat"
+       data-room-id="{{ chat_room.pk }}"
+       data-csrf="{{ csrf_token }}">
+    {# chat-embedded.js wypełni ten div #}
+    <div class="ec-loading">{% trans 'Łączenie…' %}</div>
+  </div>
+</section>
+
+
+{% now "U" as v %}
+<link rel="stylesheet" href="{% static 'chat/css/chat.css' %}?v={{ v }}">
+<script>
+  // var (not const/let) goes to global scope accessible by name from ES modules
+  if (typeof TRANSLATIONS === 'undefined') var TRANSLATIONS = {};
+  if (typeof SITE_SETTINGS === 'undefined') var SITE_SETTINGS = { messageMaxLength: {{ MESSAGE_MAX_LENGTH|default:500 }} };
+</script>
+<script src="{% static 'chat/js/dompurify.min.js' %}?v={{ v }}"></script>
+<script src="{% static 'chat/js/ejs.min.js' %}?v={{ v }}"></script>
+<script src="{% static 'chat/js/chat-embedded.js' %}?v={{ v }}" type="module"></script>
+{% endif %}
