@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timedelta
 
 # Third party imports (additional)
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Count, F
 
 # Third party imports
@@ -119,9 +119,12 @@ def details(request: HttpRequest, pk: int):
             except Decyzja.DoesNotExist:
                 return redirect('glosowania:index')
             osoba_podpisujaca = request.user
-            podpis = ZebranePodpisy(projekt=nowy_projekt, podpis_uzytkownika=osoba_podpisujaca)
-            Decyzja.objects.filter(pk=pk).update(ile_osob_podpisalo=F('ile_osob_podpisalo') + 1)
-            podpis.save()
+            _, created = ZebranePodpisy.objects.get_or_create(
+                projekt=nowy_projekt,
+                podpis_uzytkownika=osoba_podpisujaca,
+            )
+            if created:
+                Decyzja.objects.filter(pk=pk).update(ile_osob_podpisalo=F('ile_osob_podpisalo') + 1)
         message = _('You signed this motion for a referendum.')
         messages.success(request, (message))
         return redirect('glosowania:details', pk)
@@ -133,9 +136,12 @@ def details(request: HttpRequest, pk: int):
             except Decyzja.DoesNotExist:
                 return redirect('glosowania:index')
             osoba_podpisujaca = request.user
-            podpis = ZebranePodpisy.objects.get(projekt=nowy_projekt, podpis_uzytkownika=osoba_podpisujaca)
-            podpis.delete()
-            Decyzja.objects.filter(pk=pk).update(ile_osob_podpisalo=F('ile_osob_podpisalo') - 1)
+            deleted, _ = ZebranePodpisy.objects.filter(
+                projekt=nowy_projekt,
+                podpis_uzytkownika=osoba_podpisujaca,
+            ).delete()
+            if deleted:
+                Decyzja.objects.filter(pk=pk).update(ile_osob_podpisalo=F('ile_osob_podpisalo') - 1)
         message = _('Not signed.')
         messages.success(request, (message))
         return redirect('glosowania:details', pk)
@@ -147,6 +153,12 @@ def details(request: HttpRequest, pk: int):
             except Decyzja.DoesNotExist:
                 return redirect('glosowania:index')
             osoba_glosujaca = request.user
+            already_voted = KtoJuzGlosowal.objects.filter(
+                projekt=nowy_projekt,
+                ktory_uzytkownik_juz_zaglosowal=osoba_glosujaca,
+            ).exists()
+            if already_voted:
+                return redirect('glosowania:details', pk)
             glos = KtoJuzGlosowal(projekt=nowy_projekt, ktory_uzytkownik_juz_zaglosowal=osoba_glosujaca)
             Decyzja.objects.filter(pk=pk).update(za=F('za') + 1)
             glos.save()
@@ -180,6 +192,12 @@ def details(request: HttpRequest, pk: int):
             except Decyzja.DoesNotExist:
                 return redirect('glosowania:index')
             osoba_glosujaca = request.user
+            already_voted = KtoJuzGlosowal.objects.filter(
+                projekt=nowy_projekt,
+                ktory_uzytkownik_juz_zaglosowal=osoba_glosujaca,
+            ).exists()
+            if already_voted:
+                return redirect('glosowania:details', pk)
             glos = KtoJuzGlosowal(projekt=nowy_projekt, ktory_uzytkownik_juz_zaglosowal=osoba_glosujaca)
             Decyzja.objects.filter(pk=pk).update(przeciw=F('przeciw') + 1)
             glos.save()
