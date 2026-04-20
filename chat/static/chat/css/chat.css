@@ -680,6 +680,70 @@ body:has(.chat-rooms) {
 }
 
 /* ============================================================ */
+/* Chat sort toolbar — sortowanie + filtr popularne             */
+/* ============================================================ */
+.chat-breadcrumb-row {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: .25rem .75rem;
+    flex-shrink: 0;
+}
+
+.chat-breadcrumb-row .chat-breadcrumb {
+    position: static;
+    border-bottom: none;
+    padding: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+}
+
+.chat-sort-toolbar {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    flex-shrink: 0;
+}
+
+.chat-sort-toolbar .sort-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .25rem .6rem;
+    border-radius: .4rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted, var(--color-text-muted));
+    font-size: .75rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+}
+
+.chat-sort-toolbar .sort-btn:hover {
+    color: var(--text-primary, var(--color-text));
+    border-color: rgba(255, 255, 255, .2);
+}
+
+.chat-sort-toolbar .sort-btn.active {
+    color: var(--accent);
+    border-color: rgba(0, 209, 178, .45);
+    background: var(--accent-muted);
+    font-weight: 500;
+}
+
+.chat-sort-toolbar .sort-btn .sort-arrow {
+    font-size: .65rem;
+    opacity: .8;
+}
+
+/* ============================================================ */
 /* ZMIANA 4 — MESSAGE META ROW (reactions + read-by)           */
 /* ============================================================ */
 

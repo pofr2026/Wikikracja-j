@@ -45,6 +45,65 @@ let currentReplyId = null;
  */
 let ScrollToMessageId = null;
 
+/**
+ * Current sort/filter state for messages in the active room.
+ * Always reset to defaults on room change — not persisted.
+ */
+let SortState = { sort_by: 'date', order: 'desc', popular_only: false };
+
+function resetSortState() {
+    SortState = { sort_by: 'date', order: 'desc', popular_only: false };
+}
+
+function bindSortToolbar() {
+    const dateBtn = $('#chat-sort-date');
+    const likesBtn = $('#chat-sort-likes');
+    const popularBtn = $('#chat-filter-popular');
+    if (!dateBtn || !likesBtn || !popularBtn) return;
+
+    const applyActiveStyles = () => {
+        dateBtn.classList.toggle('active', SortState.sort_by === 'date');
+        likesBtn.classList.toggle('active', SortState.sort_by === 'likes');
+        popularBtn.classList.toggle('active', SortState.popular_only);
+
+        const setArrow = (btn, active) => {
+            const arrow = btn.querySelector('.sort-arrow');
+            if (!arrow) return;
+            if (!active) { arrow.className = 'fas fa-arrow-down sort-arrow'; arrow.style.visibility = 'hidden'; return; }
+            arrow.style.visibility = '';
+            arrow.className = 'fas fa-arrow-' + (SortState.order === 'asc' ? 'up' : 'down') + ' sort-arrow';
+        };
+        setArrow(dateBtn, SortState.sort_by === 'date');
+        setArrow(likesBtn, SortState.sort_by === 'likes');
+    };
+
+    const refetch = () => {
+        if (CurrentRoomId == null) return;
+        WS_API.fetchMessages(CurrentRoomId, SortState.sort_by, SortState.order, SortState.popular_only);
+    };
+
+    const toggleSort = (key) => {
+        if (SortState.sort_by === key) {
+            SortState.order = SortState.order === 'desc' ? 'asc' : 'desc';
+        } else {
+            SortState.sort_by = key;
+            SortState.order = 'desc';
+        }
+        applyActiveStyles();
+        refetch();
+    };
+
+    dateBtn.addEventListener('click', () => toggleSort('date'));
+    likesBtn.addEventListener('click', () => toggleSort('likes'));
+    popularBtn.addEventListener('click', () => {
+        SortState.popular_only = !SortState.popular_only;
+        applyActiveStyles();
+        refetch();
+    });
+
+    applyActiveStyles();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     WS_API = new WsApi();
     DOM_API = new DomApi();
@@ -164,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 export async function onSocketMessage(data) {
     if (data.join || data.leave) console.warn("deprecated");
+    else if (data.replace_messages) onReplaceMessages(data.messages, data.room_id);
     else if (data.messages) onReceiveMessages(data.messages);
     else if (data.unsee_room) onRoomUnsee(data.unsee_room);
     else if (data.room_seen) onRoomSeen(data.room_seen);
@@ -292,6 +352,8 @@ export async function onRoomTryJoin(room_id) {
     WS_API.seenRoom(room_id);
     DOM_API.setRoomNotifications(response.notifications);
     DOM_API.createRoomDiv(CurrentRoomId, response.title, response.public, response.notifications);
+    resetSortState();
+    bindSortToolbar();
     DOM_API.updateBreadcrumb(deriveBreadcrumb(room_id));
     DOM_API.setFoldedRoomTitle(response.title);
     DOM_API.showFoldedRoomHeader();
@@ -322,6 +384,7 @@ export async function onRoomTryLeave(sync_with_server) {
     DOM_API.getRoomLinkDiv(CurrentRoomId)?.classList.remove("joined");
     DOM_API.clearRoomData();
     DOM_API.hideFoldedRoomHeader();
+    resetSortState();
     CurrentRoomId = null;
 }
 
@@ -383,6 +446,44 @@ export async function onReceiveMessages(messages) {
         }
     }
     if (shouldStickToBottom && msgdiv) msgdiv.scrollTop = msgdiv.scrollHeight;
+}
+
+/**
+ * Replace all rendered messages after a sort/filter fetch.
+ * Clears existing messages and re-renders them in the order returned by server.
+ */
+export async function onReplaceMessages(messages, room_id) {
+    if (room_id != CurrentRoomId) {
+        console.warn("replace_messages for wrong room", room_id, CurrentRoomId);
+        return;
+    }
+
+    const msgdiv = DOM_API.getMessagesDiv();
+    if (!msgdiv) return;
+    msgdiv.innerHTML = '';
+
+    if (!messages || !messages.length) {
+        DOM_API.removeNoMessagesBanner();
+        msgdiv.insertAdjacentHTML('beforeend', `<div class='empty-chat-message'>${_("No messages match the current filter.")}</div>`);
+        return;
+    }
+
+    for (const message of messages) {
+        DOM_API.addMessage(
+            message.room_id, message.message_id, message.username, message.message,
+            message.upvotes, message.downvotes, message.your_vote, message.own, message.edited,
+            message.attachments, message.timestamp, message.latest_timestamp,
+            message.reply_to ?? null,
+            message.reactions ?? { bulb: 0, question: 0 },
+            message.your_reactions ?? [],
+            message.read_by ?? []
+        );
+        if (message.your_vote) {
+            DOM_API.getVoteDiv(message.message_id, message.your_vote)?.classList.add('active');
+        }
+    }
+
+    msgdiv.scrollTop = 0;
 }
 
 /**

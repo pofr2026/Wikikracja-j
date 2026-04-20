@@ -272,6 +272,60 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             "leave": str(room.id)
         })
 
+    @handlers.register("fetch-messages")
+    async def fetch_messages(self, proxy: HandledMessage, room_id, sort_by='date', order='desc', popular_only=False):
+        """
+        Re-fetches messages for the current room with given sort/filter parameters.
+        Server-side sorting and filtering since client only has last 100 messages in DOM.
+        """
+        room = await self.get_room_or_error(room_id, self.scope["user"])
+        if not room.public:
+            is_allowed = await self.allowed_in_room(room)
+            if not is_allowed:
+                raise ClientError("ACCESS_DENIED")
+
+        if sort_by not in ('date', 'likes'):
+            sort_by = 'date'
+        if order not in ('asc', 'desc'):
+            order = 'desc'
+        popular_only = bool(popular_only)
+
+        batch_data = await self.get_recent_messages_batch(
+            room_id, self.scope['user'].id, limit=100,
+            sort_by=sort_by, order=order, popular_only=popular_only,
+        )
+        messages_list = batch_data['messages']
+        users_dict = batch_data['users']
+        user_votes_dict = batch_data['user_votes']
+
+        to_send = []
+        for msg_data in messages_list:
+            try:
+                data = format_chat_message(
+                    room_id=room_id,
+                    user_id=msg_data["sender_id"],
+                    anonymous=msg_data['anonymous'],
+                    message=msg_data['text'],
+                    message_id=msg_data['id'],
+                    new=False,
+                    upvotes=msg_data['upvotes'],
+                    downvotes=msg_data['downvotes'],
+                    edited=msg_data['edited'],
+                    date=msg_data['time'],
+                    latest_date=msg_data['time'],
+                    attachments=msg_data['attachments'],
+                    reply_to=msg_data.get('reply_to'),
+                )
+            except TypeError:
+                continue
+            to_send.append(self.format_chat_message_data_batch(data, users_dict, user_votes_dict))
+
+        proxy.send_json({
+            'replace_messages': True,
+            'room_id': str(room_id),
+            'messages': to_send,
+        })
+
     @handlers.register("send")
     async def send_message_to_room(self, proxy: HandledMessage, room_id, message, is_anonymous, attachments, reply_to_id=None):
         """
@@ -963,14 +1017,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         return result
 
     @database_sync_to_async
-    def get_recent_messages_batch(self, room_id, user_id, limit=100):
+    def get_recent_messages_batch(self, room_id, user_id, limit=100, sort_by='date', order='desc', popular_only=False):
         """
         Optimized version that batch-fetches messages, users, and user's votes in one go.
         Eliminates N+1 query problem by pre-fetching all users and votes upfront.
         Returns dict with 'messages' list, 'users' dict {user_id: user_obj}, and 'user_votes' dict {message_id: vote_str}.
+
+        sort_by: 'date' (default) or 'likes'
+        order: 'asc' or 'desc'
+        popular_only: if True, only return messages with >= 1 upvote
         """
-        # Fetch messages with related data (same as original)
-        messages = Message.objects.filter(room=room_id) \
+        qs = Message.objects.filter(room=room_id) \
             .select_related('sender', 'reply_to__sender') \
             .prefetch_related(
                 Prefetch('attachments', queryset=MessageAttachment.objects.all()),
@@ -979,9 +1036,25 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             .annotate(
                 upvotes=Count('votes', filter=Q(votes__vote='upvote')),
                 downvotes=Count('votes', filter=Q(votes__vote='downvote'))
-            ).order_by('-time')[:limit]
+            )
 
-        messages = list(reversed(messages))
+        if popular_only:
+            qs = qs.filter(upvotes__gte=1)
+
+        if sort_by == 'likes':
+            order_field = 'upvotes' if order == 'asc' else '-upvotes'
+            qs = qs.order_by(order_field, '-time')
+        else:
+            order_field = 'time' if order == 'asc' else '-time'
+            qs = qs.order_by(order_field)
+
+        messages = qs[:limit]
+
+        # Always display chronologically in UI (oldest first) when sorting by date desc
+        if sort_by == 'date' and order == 'desc':
+            messages = list(reversed(messages))
+        else:
+            messages = list(messages)
         if not messages:
             return {
                 'messages': [],

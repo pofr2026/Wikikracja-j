@@ -196,6 +196,23 @@ export default class WsApi {
     }
 
     /**
+     * Re-fetches messages with given sort/filter parameters (server-side).
+     * @param {number} room_id
+     * @param {string} sort_by - 'date' | 'likes'
+     * @param {string} order - 'asc' | 'desc'
+     * @param {boolean} popular_only
+     */
+    fetchMessages(room_id, sort_by = 'date', order = 'desc', popular_only = false) {
+        this.sendJson({
+            command: 'fetch-messages',
+            room_id,
+            sort_by,
+            order,
+            popular_only,
+        });
+    }
+
+    /**
      * Leaves the current chat room
      * @param {number} room_id - ID of room to leave
      * @returns {Promise<Object>} - Server response
