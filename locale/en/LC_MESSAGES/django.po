@@ -1561,7 +1561,7 @@ msgstr ""
 #: .\glosowania\signals.py:48
 #, python-brace-format
 msgid ""
-"This chat room has been created for project #{id}.\n"
+"This chat room has been created for project #{id} \"{title}\".\n"
 "View details: {details_url}\n"
 "Discuss the proposal, share your thoughts, and ask questions here."
 msgstr ""
@@ -3712,7 +3712,7 @@ msgstr ""
 
 #: .\tasks\signals.py:54
 #, python-format
-msgid "Discussion room for task: %(task_url)s"
+msgid "Discussion room for task \"%(task_title)s\": %(task_url)s"
 msgstr ""
 
 #: .\tasks\templates\tasks\_task_card.html:22 .\tasks\views.py:46
