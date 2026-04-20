@@ -161,8 +161,7 @@ def home(request: HttpRequest):
         if request.user.is_staff else None
     )
 
-    # Kafelek aktywność — 3 najnowsze pozycje (tylko non-event)
-    last_feed_items = [i for i in feed_items if i['content_type'] != 'event'][:3]
+    last_feed_items = [i for i in feed_items if i['content_type'] != 'event'][:6]
 
     # Licznik nieprzeczytanych pokoi czatu
     chat_unread_count = Room.objects.filter(allowed=request.user).exclude(seen_by=request.user).count()

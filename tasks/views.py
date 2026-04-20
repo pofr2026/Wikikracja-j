@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy
 from django.views.decorators.http import require_POST
-from django.views.generic import CreateView, DetailView, TemplateView, UpdateView
+from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
 
 # Local folder imports
 from .forms import TaskForm, TaskStatusForm
@@ -34,7 +34,7 @@ def _task_sort_context(request):
 def _apply_task_sort(tasks, sort, order):
     reverse = (order == 'desc')
     if sort == 'date':
-        return sorted(tasks, key=lambda t: t.updated_at, reverse=reverse)
+        return sorted(tasks, key=lambda t: t.created_at, reverse=reverse)
     elif sort == 'score':
         return sorted(tasks, key=lambda t: t.votes_score or 0, reverse=reverse)
     elif sort == 'buzz':
@@ -159,6 +159,10 @@ class TaskListView(LoginRequiredMixin, TemplateView):
             "current_order": order,
         })
         return context
+
+
+class TaskHelpView(LoginRequiredMixin, TemplateView):
+    template_name = "tasks/task_help.html"
 
 
 class TaskCreateView(LoginRequiredMixin, CreateView):

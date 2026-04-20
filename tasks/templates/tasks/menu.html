@@ -5,6 +5,10 @@
 
 
 <nav class="stepper-nav">
+    <a href="{% url 'tasks:help' %}" class="stepper-info-btn" title="{% trans 'Jak działają zadania?' %}">
+      <i class="fas fa-circle-info"></i>
+    </a>
+
     {% with t=current_tab s=current_sort o=current_order %}
 
     <div class="stepper-step-wrap {% if t == 'mine' %}active{% endif %}">
@@ -37,3 +41,4 @@
   {% block tasks %}{% endblock %}
 
 {% endblock %}
+

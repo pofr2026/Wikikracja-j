@@ -82,12 +82,10 @@
       <span class="proposal-meta-sep">·</span>
       <span class="proposal-date">{{ i.data_powstania|date:"d.m.Y" }}</span>
 
-      {% if i.ile_osob_podpisalo %}
-        <span class="proposal-meta-sep">·</span>
-        <span class="proposal-signatures">
-          <i class="fas fa-pen-nib fa-fw"></i> {{ i.ile_osob_podpisalo }}
-        </span>
-      {% endif %}
+      <span class="proposal-meta-sep">·</span>
+      <span class="proposal-signatures">
+        <i class="fas fa-pen-nib fa-fw"></i> {{ i.ile_osob_podpisalo|default:0 }}
+      </span>
 
       {# Szczegóły — prawy dolny róg, widoczny na zwiniętym kafelku #}
       <a href="{% url 'glosowania:details' pk=i.pk %}"

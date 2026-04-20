@@ -1,0 +1,55 @@
+{% extends 'tasks/menu.html' %}
+{% load i18n %}
+
+{% block tasks %}
+<div class="container mt-4" style="max-width:680px;">
+
+  <h5 class="mb-4">{% trans "Jak działają zadania?" %}</h5>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="mb-2"><i class="fas fa-user me-2" style="color:var(--accent);"></i>{% trans "Moje" %}</h6>
+      <p class="mb-0" style="font-size:.88rem;">
+        {% blocktrans %}Zakładka zbiera zadania, które Cię bezpośrednio dotyczą: zadania które podjąłeś (jesteś właścicielem) oraz zadania, w których zadeklarowałeś pomoc (kliknąłeś „Chcę pomóc").{% endblocktrans %}
+      </p>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="mb-2"><i class="fas fa-inbox me-2" style="color:var(--accent);"></i>{% trans "Oczekujące" %}</h6>
+      <p class="mb-0" style="font-size:.88rem;">
+        {% blocktrans %}Zadania aktywne, które jeszcze nie mają właściciela lub mają właściciela, ale nie zebrały wystarczającego poparcia (różnica głosów „chcę pomóc" minus „nie robimy tego" wynosi mniej niż 2). Każdy może podjąć takie zadanie przyciskiem „Podejmij".{% endblocktrans %}
+      </p>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="mb-2"><i class="fas fa-spinner me-2" style="color:var(--accent);"></i>{% trans "W realizacji" %}</h6>
+      <p class="mb-0" style="font-size:.88rem;">
+        {% blocktrans %}Zadania, które mają właściciela i zebrały co najmniej 2 netto deklaracji pomocy (głosy „chcę pomóc" minus głosy przeciw ≥ 2). Właściciel może zrezygnować — zadanie wraca wtedy do oczekujących. Głosy ≤ −2 automatycznie odrzucają zadanie.{% endblocktrans %}
+      </p>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="mb-2"><i class="fas fa-check-circle me-2" style="color:var(--accent);"></i>{% trans "Zakończone" %}</h6>
+      <p class="mb-0" style="font-size:.88rem;">
+        {% blocktrans %}Zadania zamknięte przez właściciela (ukończone lub anulowane) oraz zadania odrzucone przez społeczność (suma głosów ≤ −2). Zakończone zadanie można ponownie otworzyć.{% endblocktrans %}
+      </p>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h6 class="mb-2"><i class="fas fa-hand-holding-heart me-2" style="color:var(--accent);"></i>{% trans "Deklaracja pomocy" %}</h6>
+      <p class="mb-0" style="font-size:.88rem;">
+        {% blocktrans %}Przycisk „Chcę pomóc" to deklaracja zaangażowania — nie lajk. Liczba osób które go kliknęły widoczna jest na kafelku zadania. Wystarczające poparcie (≥ 2 netto) jest warunkiem przejścia zadania do realizacji.{% endblocktrans %}
+      </p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
