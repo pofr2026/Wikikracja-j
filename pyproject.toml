@@ -171,3 +171,10 @@ ignore_patterns = [
   "temp/**/*.py",
   "legacy/*.py"
 ]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+branch = "main"
+upload_to_pypi = false
+upload_to_release = true
+build_command = false
