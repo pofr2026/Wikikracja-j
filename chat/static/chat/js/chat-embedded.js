@@ -34,7 +34,20 @@ async function initEmbeddedChat(container) {
                     <span class="reply-preview-text" id="ec-reply-preview-text-${roomId}"></span>
                     <button class="reply-preview-close ec-reply-cancel" type="button" title="Anuluj odpowiedź">✕</button>
                 </div>
+                <div class="image-preview-container ec-image-preview-container" id="ec-image-preview-${roomId}" style="display:none">
+                    <div class="preview-images ec-preview-images" id="ec-preview-images-${roomId}"></div>
+                    <div class="delete-images-preview ec-delete-images-preview" id="ec-delete-images-${roomId}">
+                        <i class="fas fa fa-times"></i>
+                    </div>
+                </div>
                 <div class="chat-controls-row ec-form-row" id="ec-form-row-${roomId}">
+                    <input type="file" id="ec-file-input-${roomId}" class="file-input ec-file-input" multiple="multiple" style="display:none;"/>
+                    <label class="btn btn-primary chat-control" for="ec-file-input-${roomId}">
+                        <i class="fas fa-image"></i>
+                    </label>
+                    <button class="btn chat-control anonymous-toggle ec-anonymous-toggle" id="ec-anonymous-${roomId}" type="button" title="${_('Anonymous')}">
+                        <i class="fas fa-user-secret"></i>
+                    </button>
                     <div id="ec-input-${roomId}" class="message-input-rich" role="textbox"
                          contenteditable="true" aria-multiline="true"
                          data-placeholder="${_('Divide the message into several parts...')}"></div>
@@ -61,9 +74,15 @@ async function initEmbeddedChat(container) {
     const counterVal = container.querySelector(`#ec-counter-val-${roomId}`);
     const replyPreview     = container.querySelector(`#ec-reply-preview-${roomId}`);
     const replyPreviewText = container.querySelector(`#ec-reply-preview-text-${roomId}`);
+    const fileInput  = container.querySelector(`#ec-file-input-${roomId}`);
+    const previewContainer = container.querySelector(`#ec-image-preview-${roomId}`);
+    const previewImagesDiv = container.querySelector(`#ec-preview-images-${roomId}`);
+    const deleteImagesBtn = container.querySelector(`#ec-delete-images-${roomId}`);
 
     let currentReplyId = null;
     let lastDateBanner = null;
+    let isAnonymous = false;
+    let selectedFiles = [];
 
     // ── 2. Helpers ────────────────────────────────────────────────────────────
 
@@ -174,22 +193,86 @@ async function initEmbeddedChat(container) {
         if (replyPreview) replyPreview.style.display = 'none';
     }
 
+    async function uploadFiles(files) {
+        if (!files || files.length === 0) {
+            return { filenames: [] };
+        }
+
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.size > 10000000) {
+                    alert('File is too big');
+                    continue;
+                }
+                formData.append('files', file);
+            }
+
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        resolve(response);
+                    } catch (e) {
+                        reject(e);
+                    }
+                }
+            };
+
+            xhr.onerror = () => {
+                reject(new Error('Upload failed'));
+            };
+
+            xhr.open('POST', '/chat/upload/', true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.send(formData);
+        });
+    }
+
     function sendMessage() {
         const html = getInputHtml();
         const text = (inputEl.textContent || '').trim();
-        if (!text || !joined) return;
+        if (!text && selectedFiles.length === 0) return;
+        if (!joined) return;
         if (text.length > EC_MAX) return;
-        ws.sendJson({
-            command: 'send',
-            room_id: roomId,
-            message: html,
-            is_anonymous: false,
-            attachments: {},
-            ...(currentReplyId ? { reply_to_id: currentReplyId } : {}),
-        });
-        inputEl.innerHTML = '';
-        clearReplyTarget();
-        updateCounter();
+
+        // Upload files if any selected
+        if (selectedFiles.length > 0) {
+            uploadFiles(selectedFiles).then((uploadResp) => {
+                ws.sendJson({
+                    command: 'send',
+                    room_id: roomId,
+                    message: html,
+                    is_anonymous: isAnonymous,
+                    attachments: { images: uploadResp.filenames || [] },
+                    ...(currentReplyId ? { reply_to_id: currentReplyId } : {}),
+                });
+                inputEl.innerHTML = '';
+                clearReplyTarget();
+                selectedFiles = [];
+                fileInput.value = '';
+                if (previewContainer) previewContainer.style.display = 'none';
+                if (previewImagesDiv) previewImagesDiv.innerHTML = '';
+                updateCounter();
+            }).catch((err) => {
+                console.error('Upload error:', err);
+            });
+        } else {
+            ws.sendJson({
+                command: 'send',
+                room_id: roomId,
+                message: html,
+                is_anonymous: isAnonymous,
+                attachments: {},
+                ...(currentReplyId ? { reply_to_id: currentReplyId } : {}),
+            });
+            inputEl.innerHTML = '';
+            clearReplyTarget();
+            updateCounter();
+        }
     }
 
     // ── 3. WebSocket ──────────────────────────────────────────────────────────
@@ -277,6 +360,69 @@ async function initEmbeddedChat(container) {
     }
 
     // ── 4. Eventy UI ──────────────────────────────────────────────────────────
+
+    // File input handler
+    fileInput?.addEventListener('change', (e) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        selectedFiles = Array.from(files);
+        if (previewContainer) previewContainer.style.display = '';
+        if (previewImagesDiv) previewImagesDiv.innerHTML = '';
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const fr = new FileReader();
+            const previewId = `ec-preview-${i}-${Date.now()}`;
+
+            if (previewImagesDiv) {
+                previewImagesDiv.insertAdjacentHTML('beforeend', `
+                    <div class="image-preview-wrapper" style="position: relative; display: inline-block;">
+                        <img class="image-preview new-attachment" id="${previewId}" style="max-width: 100px; max-height: 100px; margin: 5px;">
+                        <button class="btn btn-sm btn-danger ec-remove-preview" data-preview-id="${previewId}" type="button" style="position: absolute; top: 2px; right: 2px; padding: 0 4px; font-size: 12px;">×</button>
+                    </div>
+                `);
+            }
+
+            fr.onload = (event) => {
+                const img = document.getElementById(previewId);
+                if (img) img.src = event.target.result;
+            };
+            fr.readAsDataURL(file);
+        }
+    });
+
+    // Delete images preview
+    deleteImagesBtn?.addEventListener('click', () => {
+        selectedFiles = [];
+        fileInput.value = '';
+        if (previewContainer) previewContainer.style.display = 'none';
+        if (previewImagesDiv) previewImagesDiv.innerHTML = '';
+    });
+
+    // Remove single preview
+    container.addEventListener('click', (e) => {
+        const removeBtn = e.target.closest('.ec-remove-preview');
+        if (removeBtn) {
+            const previewId = removeBtn.dataset.previewId;
+            removeBtn.closest('.image-preview-wrapper')?.remove();
+            // Update selectedFiles by reading from input again
+            if (previewImagesDiv && previewImagesDiv.children.length === 0) {
+                selectedFiles = [];
+                fileInput.value = '';
+                if (previewContainer) previewContainer.style.display = 'none';
+            }
+        }
+    });
+
+    // Toggle anonymous
+    const anonBtn = container.querySelector(`#ec-anonymous-${roomId}`);
+    if (anonBtn) {
+        anonBtn.addEventListener('click', () => {
+            isAnonymous = !isAnonymous;
+            anonBtn.classList.toggle('active', isAnonymous);
+        });
+    }
 
     inputEl.addEventListener('input', updateCounter);
 
