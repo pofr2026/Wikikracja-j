@@ -8,6 +8,7 @@ from allauth.account.models import EmailAddress
 from allauth.account.signals import email_confirmed, user_signed_up
 from django.conf import settings as s
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.messages import error, success
 from django.core.mail import send_mail
@@ -750,6 +751,7 @@ def upload_avatar(request: HttpRequest):
     return redirect('obywatele:my_profile')
 
 
+@login_required
 @require_POST
 def toggle_notification(request: HttpRequest):
     import json
@@ -842,10 +844,7 @@ def my_assets(request: HttpRequest):
         })
 
 
-# @login_required  # for some reason this decorator breaks urls.py
-class AssetListView(SingleTableMixin, FilterView):
-    # https://stackoverflow.com/questions/59094917/employeefilterset-resolved-field-emp-photo-with-exact-lookup-to-an-unrecogni
-
+class AssetListView(LoginRequiredMixin, SingleTableMixin, FilterView):
     table_class = UzytkownikTable
     model = Uzytkownik
     template_name = 'obywatele/assets.html'

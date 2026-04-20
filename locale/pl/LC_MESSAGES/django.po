@@ -1555,7 +1555,7 @@ msgstr "Argumenty"
 #: .\glosowania\signals.py:46
 #, python-brace-format
 msgid ""
-"This chat room has been created for project #{id}.\n"
+"This chat room has been created for project #{id} \"{title}\".\n"
 "View details: {details_url}\n"
 "Discuss the proposal, share your thoughts, and ask questions here."
 msgstr ""
@@ -1892,7 +1892,7 @@ msgid ""
 "{user} added new law proposal: \"{title}\"\n"
 "You can read it here: {url}"
 msgstr ""
-"{user} dodał/a nową propozycję przepisu\n"
+"{user} dodał/a nową propozycję przepisu: \"{title}\"\n"
 "Możesz ją zobaczyć tutaj: {url}"
 
 #: .\glosowania\views.py:83
@@ -1913,7 +1913,7 @@ msgid ""
 "{user} modified proposal: \"{title}\"\n"
 "You can read new version here: {url}"
 msgstr ""
-"{user} zmodyfikował/a propozycję przepisu\n"
+"{user} zmodyfikował/a propozycję przepisu: \"{title}\"\n"
 "Możesz zobaczyć nową wersję tutaj: {url}"
 
 #: .\glosowania\views.py:124
@@ -3743,8 +3743,8 @@ msgstr "Porażka"
 
 #: .\tasks\signals.py:52
 #, python-format
-msgid "Discussion room for task: %(task_url)s"
-msgstr "Pokój dyskusyjny dla zadania: %(task_url)s"
+msgid "Discussion room for task \"%(task_title)s\": %(task_url)s"
+msgstr "Pokój dyskusji do zadania \"%(task_title)s\": %(task_url)s"
 
 #: .\tasks\templates\tasks\_task_card.html:22 .\tasks\views.py:46
 msgid "Critical"

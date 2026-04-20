@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+      - ui
     tags:
       - 'v*'
   pull_request:
     branches:
       - main
+      - ui
   workflow_dispatch:
 
 env:

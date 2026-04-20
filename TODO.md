@@ -1,5 +1,11 @@
 # OGÓLNE
-
+- Pokoje w czacie nie rozwijają się jeśli klinie się 2 razy
+- Zadania: termin zakończenia
+- Zadania: co blokuje wykonanie
+- Domyślnie czaty wyciszone, powiadomienia włączają się dopiero jak ktoś się odezwie.
+- Chat: Mniej powiadomień - tylko tam gdzie się wypowiedziałem.
+- Czat: powiadomienia przychodzą wielokrotnie na Windows - trzeba to jakoś ograniczyć.
+- W Zadaniach suma punktów Sukces/Porażka jest podwojona.
 - Do formularza wstępnego: Czy jesteś zwolennikiem DB? Czy zgadzasz się na przestrzeganie naszych zasad?
 - Do emaila powitalnego dodać https://lobbyobywatelskie.wikikracja.pl/board/view/25/
 - Zalogowanie się w systemie oznacza zgodę na warunki. Będąc członkiem grupy masz wpływ na przepisy w takim samym stopniu jak każdy inny obywatel.
@@ -11,11 +17,11 @@
 - Wszędzie: Ograniczyć możliwość dodawania treść po to żeby uniknąć manipulacji polegającej na tym, że zły aktor zarzuca grupę dużą ilością głosowań i przemyca w ten sposób niekorzystne dla grupy rozwiązania.
 - Mobile: ? swipe left right żeby przejść do różnych działów
 - Mapa ze społecznościami. Zlinkować otwarte grupy.
-
-## Mam wątpliwości, zapytać grupę
-- Dodaj Wszędzie: jedno zdanie gdzie jesteś i co tu jest
-- Board: zmienić na dokumenty i może zrobić katalogi
-- Chat: Mniej powiadomień - tylko tam gdzie się wypowiedziałem.
+- Pakiet ustaw - powinno dać się zaznaczyć w przepisie, że ten przepis wchodzi w życie razem z innymi przepisami. Może np. dopiero jak wszystkie zbiorą wymagane podpisy.
+- Data ostatniej modyfikacji to 2026-04-17.
+  Musi minąć 2 dni od tej daty,
+  A ja muszę dodać datę modyfikacji i opis do interfejsu...
+- Nie da się usunąć obrazka podczas edycji wiadomości.
 
 # ZADANIA (TASKS)
 

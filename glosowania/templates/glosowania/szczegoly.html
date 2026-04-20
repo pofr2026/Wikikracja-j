@@ -292,7 +292,8 @@
         <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;">
           {% trans 'Czy popierasz skierowanie tej propozycji pod referendum?' %}
         </p>
-        <form action="#" method="get">
+        <form method="post">
+          {% csrf_token %}
           <button type="submit" name="sign" value="1" class="action-btn action-btn-sign">
             <i class="fas fa-pen-nib"></i> {% trans 'Podpisuję' %}
           </button>
@@ -301,7 +302,8 @@
         <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;">
           {% trans 'Podpisałeś tę propozycję.' %}
         </p>
-        <form action="#" method="get">
+        <form method="post">
+          {% csrf_token %}
           <button type="submit" name="withdraw" value="1" class="action-btn action-btn-withdraw">
             <i class="fas fa-xmark"></i> {% trans 'Wycofaj podpis' %}
           </button>
@@ -324,7 +326,8 @@
         <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;">
           {% trans 'Czy chcesz wprowadzić ten przepis?' %}
         </p>
-        <form action="#" method="get">
+        <form method="post">
+          {% csrf_token %}
           <button type="submit" name="tak" value="1" class="action-btn action-btn-yes">
             <i class="fas fa-check"></i> {% trans 'Tak' %}
           </button>

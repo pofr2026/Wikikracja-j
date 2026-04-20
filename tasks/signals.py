@@ -51,7 +51,8 @@ def create_or_update_task_chat_room(sender, instance, created, **kwargs):
             })
             protocol = getattr(settings, 'SITE_PROTOCOL', 'http')
             task_url = f"{protocol}://{domain}{task_path}"
-            message_text = _('Discussion room for task: %(task_url)s') % {
+            message_text = _('Discussion room for task "%(task_title)s": %(task_url)s') % {
+                'task_title': instance.title,
                 'task_url': task_url
             }
 
