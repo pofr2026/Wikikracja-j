@@ -21,6 +21,7 @@
           <thead>
             <tr>
               <th scope="col">{% trans 'Nick' %}</th>
+              <th scope="col">{% trans 'Email' %}</th>
               <th scope="col">{% trans 'Ratings' %}</th>
               <th scope="col">{% trans 'Email confirmed' %}</th>
               <th scope="col">{% trans 'Form completed' %}</th>
@@ -44,6 +45,12 @@
                   {% endif %}
                   {{ i.username }}
                 </span>
+              </td>
+              <td class="email-cell">
+                <a href="mailto:{{ i.email }}"><i class="fas fa-envelope me-1"></i>{{ i.email }}</a>
+                <button class="btn btn-outline-light btn-sm copy-btn table-action" data-email="{{ i.email }}" title="{% trans 'Copy email' %}">
+                  <i class="fas fa-copy"></i>
+                </button>
               </td>
               <td class="text-center">{{ i.ratings_count }}</td>
               <td>{% if i.email_confirmed %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</td>

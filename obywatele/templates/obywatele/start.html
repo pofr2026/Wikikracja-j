@@ -102,13 +102,18 @@
                         			<td>
                         				<div class="username-container">
                         					{{ i.username }}
+                        					{% if i.pk != request.user.pk %}
+                        					<a href="{% url 'chat:open_dm' pk=i.pk %}" class="proposal-chat-link ms-1" style="font-size:.78rem;">
+                        						<i class="fas fa-comment-dots"></i>
+                        					</a>
+                        					{% endif %}
                         					{% if i.near_threshold %}
                         					<span class="badge text-bg-warning ms-1" title="{% trans 'This person has low reputation points' %}">!</span>
                         					{% endif %}
                         				</div>
                         			</td>
                         			<td class="email-cell">
-                        				{{ i.email }}
+                        				<a href="mailto:{{ i.email }}"><i class="fas fa-envelope me-1"></i>{{ i.email }}</a>
                         				<button class="btn btn-outline-light btn-sm copy-btn table-action" data-email="{{ i.email }}" title="{% trans 'Copy email' %}">
                         					<i class="fas fa-copy"></i>
                         				</button>

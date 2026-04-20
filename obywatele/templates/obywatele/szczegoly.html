@@ -40,6 +40,12 @@
         </div>
       {% endif %}
       <h5 class="mb-0">{{ b.uid.first_name|default:b.uid }} {{ b.uid.last_name }}</h5>
+      {% if active %}
+      <a href="{% url 'chat:open_dm' pk=b.uid.pk %}" class="proposal-chat-link ms-2" style="font-size:.78rem;">
+        <i class="fas fa-comment-dots"></i>
+        <span>{% trans 'Wyślij prywatną wiadomość' %}</span>
+      </a>
+      {% endif %}
     </div>
     <div class="card-body" style="font-size:.875rem;">
       <div class="row">
@@ -47,7 +53,7 @@
           <strong>{% trans 'Login' %}:</strong> {{ b.uid }}
         </div>
         <div class="col-md-6 mb-2">
-          <strong>{% trans 'Email' %}:</strong> {{ b.uid.email }}
+          <strong>{% trans 'Email' %}:</strong> <a href="mailto:{{ b.uid.email }}"><i class="fas fa-envelope me-1"></i>{{ b.uid.email }}</a>
         </div>
         <div class="col-md-6 mb-2">
           <strong>{% trans 'Recommended by' %}:</strong> {{ b.polecajacy|default:"-" }}
@@ -105,15 +111,6 @@
         </form>
       </div>
     </div>
-    {% if active %}
-    <div class="card mb-3">
-      <div class="card-body">
-        <a href="{% url 'chat:open_dm' pk=b.uid.pk %}" class="btn btn-outline-primary w-100">
-          <i class="fas fa-envelope me-2"></i>{% trans 'Wyślij prywatną wiadomość' %}
-        </a>
-      </div>
-    </div>
-    {% endif %}
   {% endif %}
 
   {% if active %}

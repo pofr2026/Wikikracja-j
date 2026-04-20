@@ -121,7 +121,7 @@ def details(request: HttpRequest, pk: int):
             except Decyzja.DoesNotExist:
                 return redirect('glosowania:index')
             osoba_podpisujaca = request.user
-            _, created = ZebranePodpisy.objects.get_or_create(
+            __, created = ZebranePodpisy.objects.get_or_create(
                 projekt=nowy_projekt,
                 podpis_uzytkownika=osoba_podpisujaca,
             )
@@ -138,7 +138,7 @@ def details(request: HttpRequest, pk: int):
             except Decyzja.DoesNotExist:
                 return redirect('glosowania:index')
             osoba_podpisujaca = request.user
-            deleted, _ = ZebranePodpisy.objects.filter(
+            deleted, __ = ZebranePodpisy.objects.filter(
                 projekt=nowy_projekt,
                 podpis_uzytkownika=osoba_podpisujaca,
             ).delete()
