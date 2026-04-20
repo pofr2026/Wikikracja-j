@@ -8,6 +8,7 @@ app_name = 'chat'
 
 urlpatterns = [
     path('', views.chat, name='chat'),
+    path('dm/<int:pk>/', views.open_dm, name='open_dm'),
     path('add_room/', views.add_room, name='add_room'),
     path('upload/', views.upload_image),
     path('translations/', views.get_translations),

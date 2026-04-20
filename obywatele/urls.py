@@ -17,6 +17,7 @@ urlpatterns = (
     path('<int:pk>/czaty/', v.citizen_czaty, name='citizen_czaty'),
     path('<int:pk>/zadania/', v.citizen_zadania, name='citizen_zadania'),
     path('<int:pk>/aktywnosc/', v.citizen_aktywnosc, name='citizen_aktywnosc'),
+    path('<int:pk>/zalozono/', v.citizen_zalozono, name='citizen_zalozono'),
     path('settings/', v.my_profile, name='my_profile'),
     path('settings/avatar/', v.upload_avatar, name='upload_avatar'),
     path('settings/language/', v.set_user_language, name='set_language'),
@@ -28,4 +29,5 @@ urlpatterns = (
     path("assets/", login_required(v.AssetListView.as_view()), name='assets'),
     path('parameters/', v.parameters, name='parameters'),
     path('wspolnota/', v.wspolnota, name='wspolnota'),
+    path('wspolnota/calendar/', v.wspolnota_calendar, name='wspolnota_calendar'),
 )

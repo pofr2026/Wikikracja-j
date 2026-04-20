@@ -209,6 +209,38 @@ def _build_calendar_grid(year, month, events):
 
 
 @login_required
+@login_required
+def wspolnota_calendar(request: HttpRequest):
+    import calendar as cal_mod
+    from events.models import Event
+    now = timezone.localtime(timezone.now())
+    month_param = request.GET.get('month', '')
+    try:
+        cal_year, cal_month = (int(x) for x in month_param.split('-'))
+        if not (1 <= cal_month <= 12):
+            raise ValueError
+    except (ValueError, AttributeError):
+        cal_year, cal_month = now.year, now.month
+    events_qs = Event.objects.filter(is_active=True)
+    cal_weeks = _build_calendar_grid(cal_year, cal_month, events_qs)
+    if cal_month == 1:
+        prev_month = f'{cal_year - 1}-12'
+    else:
+        prev_month = f'{cal_year}-{cal_month - 1:02d}'
+    if cal_month == 12:
+        next_month = f'{cal_year + 1}-01'
+    else:
+        next_month = f'{cal_year}-{cal_month + 1:02d}'
+    return render(request, 'obywatele/_calendar_partial.html', {
+        'cal_weeks': cal_weeks,
+        'cal_year': cal_year,
+        'cal_month': cal_month,
+        'cal_month_name': cal_mod.month_name[cal_month],
+        'prev_month': prev_month,
+        'next_month': next_month,
+    })
+
+
 def wspolnota(request: HttpRequest):
     import calendar as cal_mod
     from bookkeeping.models import Transaction
@@ -1011,15 +1043,21 @@ def set_user_language(request: HttpRequest):
 
 @login_required
 def citizen_czaty(request: HttpRequest, pk: int):
-    from chat.models import Room
+    from chat.models import Room, Message
     target_user = get_object_or_404(User, pk=pk)
-    qs = Room.objects.filter(allowed=target_user).order_by('-last_activity')
-    if request.user.pk != pk:
-        qs = qs.filter(public=True)
-    rooms = [(room, room.displayed_name(request.user)) for room in qs]
-    return render(request, 'obywatele/citizen_czaty.html', {
+    qs = Room.objects.filter(allowed=target_user, public=True).order_by('-last_activity')
+    rows = []
+    for room in qs:
+        last_msg = Message.objects.filter(room=room).order_by('-time').first()
+        rows.append({
+            'room': room,
+            'room_name': room.displayed_name(request.user),
+            'last_msg': last_msg,
+        })
+    template = 'obywatele/_citizen_czaty_partial.html' if request.headers.get('X-Requested-With') == 'XMLHttpRequest' else 'obywatele/citizen_czaty.html'
+    return render(request, template, {
         'target_user': target_user,
-        'rooms': rooms,
+        'rows': rows,
         'is_own': request.user.pk == pk,
     })
 
@@ -1034,7 +1072,8 @@ def citizen_zadania(request: HttpRequest, pk: int):
         .distinct()
         .order_by('-created_at')
     )
-    return render(request, 'obywatele/citizen_zadania.html', {
+    template = 'obywatele/_citizen_zadania_partial.html' if request.headers.get('X-Requested-With') == 'XMLHttpRequest' else 'obywatele/citizen_zadania.html'
+    return render(request, template, {
         'target_user': target_user,
         'tasks': tasks,
         'is_own': request.user.pk == pk,
@@ -1128,7 +1167,54 @@ def citizen_aktywnosc(request: HttpRequest, pk: int):
     epoch = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
     items.sort(key=lambda x: x['ts'] or epoch, reverse=True)
 
-    return render(request, 'obywatele/citizen_aktywnosc.html', {
+    template = 'obywatele/_citizen_aktywnosc_partial.html' if request.headers.get('X-Requested-With') == 'XMLHttpRequest' else 'obywatele/citizen_aktywnosc.html'
+    return render(request, template, {
+        'target_user': target_user,
+        'items': items,
+        'is_own': request.user.pk == pk,
+    })
+
+
+@login_required
+def citizen_zalozono(request: HttpRequest, pk: int):
+    import datetime
+    from django.urls import reverse
+    from tasks.models import Task
+    from glosowania.models import Decyzja
+    from elibrary.models import Book
+
+    target_user = get_object_or_404(User, pk=pk)
+    items = []
+
+    for t in Task.objects.filter(created_by=target_user).order_by('-created_at'):
+        items.append({
+            'title': t.title,
+            'ts': t.created_at,
+            'label': _('Zadanie'),
+            'url': reverse('tasks:detail', kwargs={'pk': t.pk}),
+        })
+
+    for d in Decyzja.objects.filter(author=target_user).order_by('-data_powstania'):
+        items.append({
+            'title': d.title or '—',
+            'ts': datetime.datetime(d.data_powstania.year, d.data_powstania.month, d.data_powstania.day, tzinfo=datetime.timezone.utc) if d.data_powstania else None,
+            'label': _('Propozycja głosowania'),
+            'url': reverse('glosowania:details', kwargs={'pk': d.pk}),
+        })
+
+    for b in Book.objects.filter(uploader=target_user).order_by('-uploaded'):
+        items.append({
+            'title': b.title or '—',
+            'ts': b.uploaded,
+            'label': _('Dokument (biblioteka)'),
+            'url': reverse('elibrary:book-detail', kwargs={'pk': b.pk}),
+        })
+
+    epoch = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+    items.sort(key=lambda x: x['ts'] or epoch, reverse=True)
+
+    template = 'obywatele/_citizen_zalozono_partial.html' if request.headers.get('X-Requested-With') == 'XMLHttpRequest' else 'obywatele/_citizen_zalozono_partial.html'
+    return render(request, template, {
         'target_user': target_user,
         'items': items,
         'is_own': request.user.pk == pk,

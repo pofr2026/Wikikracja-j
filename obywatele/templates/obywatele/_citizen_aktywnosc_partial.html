@@ -1,0 +1,40 @@
+{% load i18n %}
+{% if items %}
+  <div class="table-responsive">
+    <table class="table table-sm table-striped table-hover-rows mb-0" style="font-size:.875rem;">
+      <thead>
+        <tr>
+          <th>{% trans "Title" %}</th>
+          <th class="text-end text-nowrap">{% trans "Type" %}</th>
+          <th class="text-end text-nowrap">{% trans "Date" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+          <tr {% if item.url %}data-href="{{ item.url }}"{% endif %}>
+            <td {% if item.url %}class="td-link"{% endif %}>
+              {% if item.url %}
+                <a href="{{ item.url }}">{{ item.title }}</a>
+              {% else %}
+                {{ item.title }}
+              {% endif %}
+            </td>
+            <td class="text-end text-nowrap">
+              <span class="badge text-bg-secondary">{{ item.label }}</span>
+            </td>
+            <td class="text-muted text-nowrap text-end">{% if item.ts %}{{ item.ts|date:"d.m.Y" }}{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <script>
+  document.querySelectorAll('.table-hover-rows tbody tr[data-href]').forEach(function(tr){
+    tr.addEventListener('click', function(e){
+      if (!e.target.closest('a')) window.location = tr.dataset.href;
+    });
+  });
+  </script>
+{% else %}
+  <p class="text-muted p-3 mb-0" style="font-size:.875rem;">{% trans "No activity found." %}</p>
+{% endif %}

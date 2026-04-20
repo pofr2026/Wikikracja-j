@@ -132,9 +132,33 @@ tr.user-row:hover .copy-btn {
 
 /* Make table rows clickable */
 td a {
-  display: block;
   text-decoration: none;
-  color: var(--bs-white);
+  color: var(--text-primary);
+  transition: color .15s;
+}
+td a:hover {
+  color: var(--accent);
+}
+.table-hover-rows tbody tr {
+  cursor: default;
+  transition: background var(--transition-fast);
+}
+.table-hover-rows tbody tr:hover {
+  background: var(--accent-muted) !important;
+}
+.table-hover-rows tbody tr:hover td a {
+  color: var(--accent);
+}
+.table-hover-rows tbody tr td a {
+  cursor: pointer;
+}
+.table-hover-rows td.td-link {
+  padding: 0;
+}
+.table-hover-rows td.td-link a {
+  display: block;
+  padding: .25rem .5rem;
+  height: 100%;
 }
 
 /* Overwrite bootstrap - borders */

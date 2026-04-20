@@ -29,6 +29,17 @@ log = logging.getLogger(__name__)
 
 
 @login_required
+def open_dm(request: HttpRequest, pk: int):
+    target = get_object_or_404(User, pk=pk, is_active=True)
+    if target == request.user:
+        return redirect('chat:chat')
+    room = Room.find_with_users(request.user, target)
+    if room:
+        return redirect(f"{reverse('chat:chat')}#room_id={room.id}")
+    return redirect('chat:chat')
+
+
+@login_required
 def add_room(request: HttpRequest):
     """
     Add public chat room

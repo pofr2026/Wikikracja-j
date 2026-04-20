@@ -108,14 +108,11 @@
   </div>
 
   <div class="col-lg-4">
-    <div class="card h-100">
+    <div class="card h-100" style="position:relative;">
       <div class="card-header d-flex justify-content-between align-items-center">
         <span class="wspol-section-title mb-0">
           <i class="fas fa-wallet"></i>{% trans "Finanse" %} {{ current_year }}
         </span>
-        <a href="{% url 'bookkeeping:report_list' %}" class="btn btn-sm btn-outline-primary">
-          {% trans "Raport" %} &rarr;
-        </a>
       </div>
       <div class="card-body">
         <div class="finance-row">
@@ -131,6 +128,7 @@
           <span class="finance-value bal {% if balance >= 0 %}inc{% else %}exp{% endif %}">{{ balance|floatformat:2 }}</span>
         </div>
       </div>
+      <a href="{% url 'bookkeeping:report_list' %}" class="stretched-link"></a>
     </div>
   </div>
 
@@ -138,58 +136,31 @@
 
 {# ── Calendar ── #}
 <div class="card" id="calendar">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <span class="wspol-section-title mb-0">
-      <i class="fas fa-calendar-days"></i>{{ cal_month_name }} {{ cal_year }}
-    </span>
-    <div class="d-flex align-items-center gap-2">
-      <a href="?month={{ prev_month }}#calendar" class="btn btn-sm btn-outline-secondary" title="{% trans 'Poprzedni miesiąc' %}">
-        <i class="fas fa-chevron-left"></i>
-      </a>
-      <a href="?month={{ next_month }}#calendar" class="btn btn-sm btn-outline-secondary" title="{% trans 'Następny miesiąc' %}">
-        <i class="fas fa-chevron-right"></i>
-      </a>
-      <a href="{% url 'events:list' %}" class="btn btn-sm btn-outline-primary ms-1">
-        {% trans "Pełny kalendarz" %} &rarr;
-      </a>
-    </div>
-  </div>
-  <div class="card-body p-2">
-    <table class="cal-table">
-      <thead>
-        <tr>
-          <th>{% trans "Pn" %}</th>
-          <th>{% trans "Wt" %}</th>
-          <th>{% trans "Śr" %}</th>
-          <th>{% trans "Cz" %}</th>
-          <th>{% trans "Pt" %}</th>
-          <th>{% trans "So" %}</th>
-          <th>{% trans "Nd" %}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for week in cal_weeks %}
-        <tr>
-          {% for cell in week %}
-          <td>
-            {% if cell.day %}
-              {% if cell.events %}
-                <a href="{% url 'events:list' %}" class="text-decoration-none d-flex flex-column align-items-center"
-                   title="{% for e in cell.events %}{{ e.title }}{% if not forloop.last %}, {% endif %}{% endfor %}">
-                  <span class="cal-day has-event {% if cell.is_today %}today{% endif %}">{{ cell.day }}</span>
-                  <span class="cal-dot"></span>
-                </a>
-              {% else %}
-                <span class="cal-day {% if cell.is_today %}today{% endif %}">{{ cell.day }}</span>
-              {% endif %}
-            {% endif %}
-          </td>
-          {% endfor %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  {% include 'obywatele/_calendar_partial.html' %}
 </div>
+<script>
+(function(){
+  var calendarEl = document.getElementById('calendar');
+  var calendarUrl = '{% url "obywatele:wspolnota_calendar" %}';
+  function loadMonth(month) {
+    fetch(calendarUrl + '?month=' + month, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.text(); })
+      .then(function(html){
+        calendarEl.innerHTML = html;
+        bindNav();
+        history.replaceState(null, '', '?month=' + month + '#calendar');
+      });
+  }
+  function bindNav() {
+    calendarEl.querySelectorAll('.cal-nav').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+        loadMonth(btn.dataset.month);
+      });
+    });
+  }
+  bindNav();
+})();
+</script>
 
 {% endblock %}
