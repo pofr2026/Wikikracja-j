@@ -28,6 +28,8 @@
 				</div>
 			</div>
 		</div>
+		<script src="{% static 'board/tinymce/tinymce.min.js' %}"></script>
+		<script src="{% static 'js/uploader.js' %}"></script>
 		<button type='file' class="btn btn-primary btn-sm">{% trans 'Save' %}</button>
 		<a href="{% url 'elibrary:book_list' %}" class="btn btn-warning btn-sm">{% trans 'Cancel' %}</a>
 	</form>

@@ -22,7 +22,8 @@
         </div>
         {{ form.text|as_crispy_field }}
 
-        <script src="{% static 'tinymce/tinymce.min.js' %}" referrerpolicy="origin"></script>
+        <script src="{% static 'board/tinymce/tinymce.min.js' %}"></script>
+        <script src="{% static 'js/uploader.js' %}"></script>
 
         <div class="mb-3 d-flex gap-2">
           <button type="submit" class="btn btn-primary" onclick="this.disabled=true;this.form.submit();">{% trans 'Save' %}</button>
