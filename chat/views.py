@@ -12,7 +12,8 @@ from django.db import IntegrityError
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.dispatch import receiver
 from django.http import HttpRequest, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -67,7 +68,7 @@ def chat(request: HttpRequest):
     # 1. Prefetch allowed users for private rooms (needed for displayed_name)
     # 2. Annotate with message count (for seen_by filter)
     # 3. Annotate with is_seen status (for seen_by filter)
-    allowed_rooms = Room.objects.filter(allowed=request.user.id).prefetch_related(Prefetch('allowed', queryset=User.objects.only('id', 'username')), 'muted_by').annotate(messages_count=Count('messages'), is_seen=Exists(Room.seen_by.through.objects.filter(room_id=OuterRef('pk'), user_id=request.user.id))).order_by("title")
+    allowed_rooms = Room.objects.filter(allowed=request.user.id).prefetch_related(Prefetch('allowed', queryset=User.objects.only('id', 'username')), 'muted_by', 'tracked_by').annotate(messages_count=Count('messages'), is_seen=Exists(Room.seen_by.through.objects.filter(room_id=OuterRef('pk'), user_id=request.user.id))).order_by("title")
 
     public_active = allowed_rooms.filter(public=True, archived=False)
     public_archived = allowed_rooms.filter(public=True, archived=True)
@@ -92,6 +93,7 @@ def chat(request: HttpRequest):
     ).select_related('chat_room').prefetch_related(
         Prefetch('chat_room__seen_by', queryset=User.objects.only('id')),
         Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
+        Prefetch('chat_room__tracked_by', queryset=User.objects.only('id')),
     ).order_by('title')
 
     tasks_tree_archived = Task.objects.filter(
@@ -101,6 +103,7 @@ def chat(request: HttpRequest):
     ).select_related('chat_room').prefetch_related(
         Prefetch('chat_room__seen_by', queryset=User.objects.only('id')),
         Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
+        Prefetch('chat_room__tracked_by', queryset=User.objects.only('id')),
     ).order_by('title')
 
     votes_tree_active = Decyzja.objects.filter(
@@ -110,6 +113,7 @@ def chat(request: HttpRequest):
     ).select_related('chat_room').prefetch_related(
         Prefetch('chat_room__seen_by', queryset=User.objects.only('id')),
         Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
+        Prefetch('chat_room__tracked_by', queryset=User.objects.only('id')),
     ).order_by('title')
 
     votes_tree_archived = Decyzja.objects.filter(
@@ -119,6 +123,7 @@ def chat(request: HttpRequest):
     ).select_related('chat_room').prefetch_related(
         Prefetch('chat_room__seen_by', queryset=User.objects.only('id')),
         Prefetch('chat_room__muted_by', queryset=User.objects.only('id')),
+        Prefetch('chat_room__tracked_by', queryset=User.objects.only('id')),
     ).order_by('title')
 
     # For "participated only" visual mute: get rooms where user has sent a message
@@ -354,15 +359,29 @@ def toggle_notifications(request: HttpRequest):
         })
 
     except json.JSONDecodeError:
-        return JsonResponse({
-            'error': 'Invalid JSON'
-        }, status=400)
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
     except Room.DoesNotExist:
-        return JsonResponse({
-            'error': 'Room not found'
-        }, status=404)
+        return JsonResponse({'error': 'Room not found'}, status=404)
     except Exception as e:
         log.error(f"Error toggling notifications: {e}")
-        return JsonResponse({
-            'error': str(e)
-        }, status=500)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def toggle_track(request: HttpRequest):
+    """Toggle tracking of a room for the current user."""
+    try:
+        data = json.loads(request.body)
+        room_id = data.get('room_id')
+        tracked = data.get('tracked')
+        if room_id is None or tracked is None:
+            return JsonResponse({'error': 'Missing room_id or tracked'}, status=400)
+        room = get_object_or_404(Room, id=room_id, allowed=request.user)
+        if tracked:
+            room.tracked_by.add(request.user)
+        else:
+            room.tracked_by.remove(request.user)
+        return JsonResponse({'success': True, 'tracked': tracked})
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)

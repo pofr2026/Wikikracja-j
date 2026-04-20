@@ -83,9 +83,11 @@ const message_template = `
 
     <div class='msg-body'>
       <% if (reply_to) { %>
-      <div class="msg-quote" data-reply-id="<%-reply_to.id%>">
+      <div class="msg-quote" data-reply-id="<%-reply_to.id%>" data-target-id="<%-reply_to.id%>" role="button" title="Przejdź do oryginału">
+        <span class="msg-quote-mark">"</span>
         <span class="msg-quote-author">@<%-reply_to.username%>:</span>
         <span class="msg-quote-text"><%-reply_to.text_snippet%></span>
+        <span class="msg-quote-mark">"</span>
         <button class="msg-quote-jump" data-target-id="<%-reply_to.id%>" type="button" title="Przejdź do oryginału">↗</button>
       </div>
       <% } %>

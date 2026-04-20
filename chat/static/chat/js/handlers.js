@@ -320,6 +320,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.track-switch');
+        if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isTracked = btn.dataset.tracked === 'true';
+            const newTracked = !isTracked;
+            btn.dataset.tracked = newTracked;
+            btn.classList.toggle('active', newTracked);
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.className = newTracked ? 'fas fa-bookmark' : 'far fa-bookmark';
+            }
+            const roomDiv = btn.closest('.room-link');
+            if (roomDiv) {
+                roomDiv.classList.toggle('room-auto-muted', !newTracked && roomDiv.dataset.autoMuted !== 'false');
+            }
+            fetch('/chat/api/toggle-track/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ room_id: btn.dataset.roomId, tracked: newTracked }),
+            });
+        }
+    });
+
+    document.addEventListener('click', (e) => {
         const btn = e.target.closest('.anonymous-toggle');
         if (btn) {
             btn.classList.toggle('active');
@@ -462,9 +490,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('click', (e) => {
         // Quote jump — scroll to original message
-        const jumpBtn = e.target.closest('.msg-quote-jump');
+        const jumpBtn = e.target.closest('.msg-quote-jump') || e.target.closest('.msg-quote');
         if (jumpBtn) {
-            const targetId = jumpBtn.dataset.targetId;
+            const targetId = jumpBtn.dataset.targetId || jumpBtn.dataset.replyId
+                          || jumpBtn.closest('.msg-quote')?.dataset.replyId;
             const currentMsg = jumpBtn.closest('.message');
             if (currentMsg) _replySourceMessageId = currentMsg.dataset.messageId;
 
@@ -472,35 +501,51 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetMsg) {
                 targetMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 targetMsg.classList.remove('msg-highlighted');
-                // Force reflow to restart animation
                 void targetMsg.offsetWidth;
                 targetMsg.classList.add('msg-highlighted');
                 setTimeout(() => targetMsg.classList.remove('msg-highlighted'), 2000);
 
-                // Show floating return button
-                showReturnToReplyButton();
+                showReturnBtn(targetMsg);
             }
         }
     });
 
-    function showReturnToReplyButton() {
-        const existing = document.getElementById('return-to-reply');
-        if (existing) { clearTimeout(existing._timeout); existing.remove(); }
+    function showReturnBtn(targetMsg) {
+        // Remove any existing return button
+        document.getElementById('msg-return-btn')?.remove();
+
         const btn = document.createElement('button');
-        btn.id = 'return-to-reply';
+        btn.id = 'msg-return-btn';
         btn.type = 'button';
-        btn.textContent = '↓ Wróć';
-        document.body.appendChild(btn);
+        btn.innerHTML = '↙';
+        btn.title = 'Wróć do odpowiedzi';
+        const content = targetMsg.querySelector('.message-content') || targetMsg;
+        content.appendChild(btn);
         requestAnimationFrame(() => btn.classList.add('visible'));
-        btn._timeout = setTimeout(() => {
-            btn.classList.remove('visible');
-            setTimeout(() => btn.remove(), 300);
-        }, 3000);
+
+        // Hide only when user manually scrolls to the bottom (ignore scroll from scrollIntoView)
+        const messagesContainer = document.querySelector('#room .messages');
+        if (messagesContainer) {
+            let listenActive = false;
+            // Wait for scrollIntoView animation to finish before attaching listener
+            setTimeout(() => { listenActive = true; }, 800);
+            const onScroll = () => {
+                if (!listenActive) return;
+                const atBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 60;
+                if (atBottom) {
+                    btn.remove();
+                    messagesContainer.removeEventListener('scroll', onScroll);
+                }
+            };
+            messagesContainer.addEventListener('scroll', onScroll);
+            btn._removeScroll = () => messagesContainer.removeEventListener('scroll', onScroll);
+        }
     }
 
     document.addEventListener('click', (e) => {
-        const btn = e.target.closest('#return-to-reply');
+        const btn = e.target.closest('#msg-return-btn');
         if (btn) {
+            btn._removeScroll?.();
             btn.remove();
             if (_replySourceMessageId) {
                 const src = document.querySelector(`.message[data-message-id="${_replySourceMessageId}"]`);

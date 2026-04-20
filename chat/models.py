@@ -28,6 +28,9 @@ class Room(models.Model):
     # List of users who disabled notifications
     muted_by = models.ManyToManyField(User, related_name='muted_rooms')
 
+    # List of users who explicitly track this room (overrides auto-mute in participated-only mode)
+    tracked_by = models.ManyToManyField(User, related_name='tracked_rooms', blank=True)
+
     # Last activity timestamp
     last_activity = models.DateTimeField(auto_now=True)
 

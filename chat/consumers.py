@@ -318,6 +318,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         message_id = await self.save_message(msg)
         msg.id = message_id
 
+        # Auto-track room for sender if they have participated-only mode enabled
+        participated_only = await database_sync_to_async(
+            lambda: getattr(user.uzytkownik, 'email_notifications_chat_participated', False)
+        )()
+        if participated_only:
+            already_tracked = await database_sync_to_async(
+                lambda: room.tracked_by.filter(id=user.id).exists()
+            )()
+            if not already_tracked:
+                await database_sync_to_async(room.tracked_by.add)(user)
+                await self.send(text_data=json.dumps({
+                    'type': 'room-tracked',
+                    'room_id': room.id,
+                    'tracked': True,
+                }))
+
         await self.save_attachments(message_id, attachments)
 
         # Pobierz dane cytowanej wiadomości (ZMIANA 2)

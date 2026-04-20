@@ -53,6 +53,20 @@ def not_participated(room, participated_room_ids):
     return room.id not in participated_room_ids
 
 
+@register.filter('is_tracked_by')
+def is_tracked_by(room, user):
+    """Returns True if user explicitly tracks this room."""
+    if hasattr(room, '_prefetched_objects_cache') and 'tracked_by' in room._prefetched_objects_cache:
+        return any(u.id == user.id for u in room.tracked_by.all())
+    return room.tracked_by.filter(id=user.id).exists()
+
+
+@register.simple_tag
+def is_auto_muted(participated_only, is_not_participated, is_tracked):
+    """Returns True if room should be visually auto-muted."""
+    return participated_only and is_not_participated and not is_tracked
+
+
 @register.filter("has_messages")
 def has_messages(user):
     rooms_with_new_messages = (Room.objects.filter(allowed=user.id, archived=False).exclude(seen_by=user.id).annotate(messages_count=Count('messages')).filter(messages_count__gt=0))

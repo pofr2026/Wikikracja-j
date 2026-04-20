@@ -186,6 +186,7 @@ body:has(.chat-rooms) {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: .5rem;
+    position: relative;
 }
 
 .message.own .message-content {
@@ -305,15 +306,40 @@ body:has(.chat-rooms) {
 
 .msg-quote {
     background: var(--color-surface-offset);
-    border-radius: .3rem;
-    padding: .2rem .5rem;
-    margin-bottom: .25rem;
+    border-left: 3px solid var(--color-primary);
+    border-radius: 0 .3rem .3rem 0;
+    padding: .3rem .5rem .3rem .6rem;
+    margin-bottom: .3rem;
     display: flex;
     align-items: center;
-    gap: .5rem;
+    gap: .4rem;
     font-size: var(--text-sm);
     max-width: 100%;
     overflow: hidden;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+
+.msg-quote:hover {
+    background: var(--color-primary-highlight, color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-offset)));
+    border-left-color: var(--accent-hover, var(--color-primary));
+}
+
+.msg-quote > * {
+    pointer-events: none;
+}
+
+.msg-quote-jump {
+    pointer-events: auto;
+}
+
+.msg-quote-mark {
+    color: var(--color-primary);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: .7;
 }
 
 .msg-quote-text {
@@ -322,12 +348,12 @@ body:has(.chat-rooms) {
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--color-text-muted);
-    pointer-events: none;
+    font-style: italic;
 }
 
 .msg-quote-jump {
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 32px;
+    min-height: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -335,13 +361,15 @@ body:has(.chat-rooms) {
     border: none;
     color: var(--color-primary);
     cursor: pointer;
-    font-size: 1rem;
+    font-size: .9rem;
     flex-shrink: 0;
     transition: color .15s;
+    opacity: .6;
 }
 
-.msg-quote-jump:hover {
-    color: var(--accent-hover);
+.msg-quote:hover .msg-quote-jump {
+    opacity: 1;
+    color: var(--accent-hover, var(--color-primary));
 }
 
 /* Highlight flash on jump target */
@@ -399,32 +427,33 @@ body:has(.chat-rooms) {
 /* ZMIANA 2 — FLOAT RETURN BUTTON                              */
 /* ============================================================ */
 
-#return-to-reply {
-    position: fixed;
-    bottom: 5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    color: var(--color-text);
-    padding: .5rem 1.25rem;
-    border-radius: var(--radius-full);
+#msg-return-btn {
+    position: absolute;
+    bottom: .3rem;
+    right: .3rem;
+    background: var(--color-primary);
+    border: none;
+    color: #fff;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
     cursor: pointer;
-    z-index: 50;
-    font-size: var(--text-sm);
-    transition: opacity .3s, box-shadow .15s;
-    white-space: nowrap;
-    box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    font-size: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
     opacity: 0;
     pointer-events: none;
+    transition: opacity .2s, background .15s;
+    box-shadow: 0 1px 6px rgba(0,0,0,.3);
 }
-#return-to-reply.visible {
+#msg-return-btn.visible {
     opacity: 1;
     pointer-events: auto;
 }
-
-#return-to-reply:hover {
-    box-shadow: 0 2px 16px rgba(0,0,0,.5);
+#msg-return-btn:hover {
+    background: var(--accent-hover, var(--color-primary));
 }
 
 /* ============================================================ */
