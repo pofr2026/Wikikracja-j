@@ -13,6 +13,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.contrib.staticfiles import finders
+from django.core.cache import cache
 from django.db.models import Count, Q, Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -20,6 +21,13 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
+
+FEED_CACHE_KEY = "feed_raw_v1"
+FEED_CACHE_TTL = 3600
+
+
+def invalidate_feed_cache():
+    cache.delete(FEED_CACHE_KEY)
 
 # First party imports
 from board.models import Post
@@ -213,16 +221,22 @@ def home(request: HttpRequest):
     })
 
 
-def generate_feed_items(user):
-    """Generate unified chronological feed for a user"""
-    feed_items = []
-    read_status_map = build_read_status_map(user)
+def _generate_feed_raw():
+    """
+    Fetch all feed data WITHOUT user-specific is_read flags.
+    Result is cached globally in Redis (TTL 1h). Each item stores
+    content_type + object_id so is_read can be attached per-request.
+    Invalidated by signals on Post/Task/Book/Decyzja/CitizenActivity/Event/Message.
+    """
+    cached = cache.get(FEED_CACHE_KEY)
+    if cached is not None:
+        return cached
 
-    # Get recent posts
+    feed_items = []
+
     posts = Post.objects.filter(
         updated__gte=timezone.now() - td(days=30)
     ).select_related('author').order_by('-updated')
-    
     for post in posts:
         clean_text = strip_tags(post.text)
         feed_items.append({
@@ -232,15 +246,12 @@ def generate_feed_items(user):
             'author': post.author,
             'timestamp': post.updated,
             'url': f"/board/view/{post.pk}/",
-            'is_read': post.pk in read_status_map[ReadStatus.ContentType.POST],
             'object_id': post.pk,
         })
-    
-    # Get recent tasks
+
     tasks = Task.objects.filter(
         updated_at__gte=timezone.now() - td(days=30)
     ).select_related('created_by', 'assigned_to').order_by('-updated_at')
-    
     for task in tasks:
         clean_description = strip_tags(task.description)
         feed_items.append({
@@ -250,15 +261,12 @@ def generate_feed_items(user):
             'author': task.created_by or task.assigned_to,
             'timestamp': task.updated_at,
             'url': f"/tasks/{task.pk}/",
-            'is_read': task.pk in read_status_map[ReadStatus.ContentType.TASK],
             'object_id': task.pk,
         })
-    
-    # Get recent books
+
     books = Book.objects.filter(
         uploaded__gte=timezone.now() - td(days=30)
     ).select_related('uploader').order_by('-uploaded')
-    
     for book in books:
         clean_abstract = strip_tags(book.abstract) if book.abstract else ''
         feed_items.append({
@@ -268,23 +276,16 @@ def generate_feed_items(user):
             'author': book.uploader,
             'timestamp': book.uploaded,
             'url': f"/elibrary/{book.pk}/detail/",
-            'is_read': book.pk in read_status_map[ReadStatus.ContentType.BOOK],
             'object_id': book.pk,
         })
-    
-    # Get upcoming events (including periodic events)
+
     events = Event.objects.filter(is_active=True).select_related()
-    
-    # Filter events that have upcoming occurrences and get their next occurrence
     upcoming_events = []
     for event in events:
         next_occurrence = event.get_next_occurrence()
         if next_occurrence and next_occurrence >= timezone.now() - td(days=1):
             upcoming_events.append((event, next_occurrence))
-    
-    # Sort by next occurrence date (nearest first)
     upcoming_events.sort(key=lambda x: x[1])
-    
     for event, next_occurrence in upcoming_events:
         clean_description = strip_tags(event.description) if event.description else ''
         feed_items.append({
@@ -294,61 +295,48 @@ def generate_feed_items(user):
             'author': None,
             'timestamp': next_occurrence,
             'url': f"/events/{event.pk}/",
-            'is_read': event.pk in read_status_map[ReadStatus.ContentType.EVENT],
             'object_id': event.pk,
         })
 
-    # Get recent messages from rooms user has access to, grouped by room
-    rooms = Room.objects.filter(allowed=user).prefetch_related('messages', 'messages__sender')
-    # Use ReadStatus for room messages consistency
-    seen_room_ids = set(ReadStatus.objects.filter(
-        user=user, 
-        content_type=ReadStatus.ContentType.MESSAGE
-    ).values_list('object_id', flat=True))
-    
-    for room in rooms:
-        messages = room.messages.filter(
-            time__gte=timezone.now() - td(days=30)
-        ).order_by('-time')[:5]  # Get newest messages first
-        
-        if messages:  # Only add room if it has recent messages
-            # Use first message (newest) for timestamp and author
-            latest_message = messages[0]
-            
-            # Reverse messages for chronological display (oldest to newest)
-            messages_reversed = list(reversed(messages))
-            
-            # Create description showing all messages with authors
+    # Rooms: per-user (allowed=user) so we keep room items global but mark room_id;
+    # is_read attached later per-request from ReadStatus
+    from chat.models import Room as ChatRoom
+    all_rooms = ChatRoom.objects.prefetch_related(
+        'allowed',
+        'messages',
+        'messages__sender',
+    )
+    cutoff = timezone.now() - td(days=30)
+    for room in all_rooms:
+        recent_msgs = sorted(
+            [m for m in room.messages.all() if m.time >= cutoff],
+            key=lambda m: m.time,
+            reverse=True,
+        )[:5]
+        if recent_msgs:
+            latest_message = recent_msgs[0]
             message_list = []
-            for message in messages_reversed:
-                clean_text = strip_tags(message.text)
-                if message.sender:
-                    author_name = message.sender.username
-                else:
-                    author_name = 'System'
+            for msg in reversed(recent_msgs):
+                clean_text = strip_tags(msg.text)
+                author_name = msg.sender.username if msg.sender else 'System'
                 message_list.append(f"- <strong>{author_name}:</strong> {clean_text}")
-            
-            # Join messages with newlines for better readability
-            description = '\n'.join(message_list)
-            
             feed_items.append({
                 'content_type': 'room_messages',
                 'title': _("Messages in %(room_title)s") % {'room_title': room.title},
-                'description': description,
+                'description': '\n'.join(message_list),
                 'author': latest_message.sender,
                 'timestamp': latest_message.time,
                 'url': f"/chat/#room_id={room.id}",
-                'is_read': room.id in seen_room_ids,  # Room is read if marked as read in ReadStatus
-                'object_id': room.id,  # Use room ID as object_id for grouping
+                'object_id': room.id,
                 'room_id': room.id,
-                'message_count': len(messages),
+                'message_count': len(recent_msgs),
+                # store allowed user IDs so activity_page can filter per-user
+                '_allowed_user_ids': set(room.allowed.values_list('id', flat=True)),
             })
-    
-    # Get recent decisions
+
     decisions = Decyzja.objects.filter(
         data_ostatniej_modyfikacji__gte=timezone.now() - td(days=30)
     ).order_by('-data_ostatniej_modyfikacji')
-    
     for decision in decisions:
         clean_tresc = strip_tags(decision.tresc) if decision.tresc else ''
         feed_items.append({
@@ -358,15 +346,12 @@ def generate_feed_items(user):
             'author': decision.author,
             'timestamp': decision.data_ostatniej_modyfikacji,
             'url': f"/glosowania/details/{decision.pk}/",
-            'is_read': decision.pk in read_status_map[ReadStatus.ContentType.DECISION],
             'object_id': decision.pk,
         })
-    
-    # Get recent citizen activities
+
     citizen_activities = CitizenActivity.objects.filter(
         timestamp__gte=timezone.now() - td(days=30)
     ).select_related('uzytkownik', 'uzytkownik__uid').order_by('-timestamp')
-    
     for activity in citizen_activities:
         feed_items.append({
             'content_type': 'citizen',
@@ -375,22 +360,54 @@ def generate_feed_items(user):
             'author': activity.uzytkownik.uid,
             'timestamp': activity.timestamp,
             'url': f"/obywatele/{activity.uzytkownik.uid.id}/",
-            'is_read': activity.pk in read_status_map[ReadStatus.ContentType.CITIZEN],
             'object_id': activity.pk,
         })
-    
-    # Sort all items by timestamp, but events should be in ascending order (nearest first)
-    events_items = [item for item in feed_items if item['content_type'] == 'event']
-    other_items = [item for item in feed_items if item['content_type'] != 'event']
-    
-    # Sort events by timestamp ascending (nearest first)
+
+    events_items = [i for i in feed_items if i['content_type'] == 'event']
+    other_items = [i for i in feed_items if i['content_type'] != 'event']
     events_items.sort(key=lambda x: x['timestamp'])
-    # Sort other items by timestamp descending (newest first)
     other_items.sort(key=lambda x: x['timestamp'], reverse=True)
-    
-    # Combine: events first (nearest to most distant), then other items (newest to oldest)
     feed_items = events_items + other_items
-    
+
+    cache.set(FEED_CACHE_KEY, feed_items, FEED_CACHE_TTL)
+    return feed_items
+
+
+def generate_feed_items(user):
+    """Generate unified chronological feed for a user, with is_read attached per-request."""
+    raw_items = _generate_feed_raw()
+    read_status_map = build_read_status_map(user)
+
+    ct_map = {
+        'post': ReadStatus.ContentType.POST,
+        'task': ReadStatus.ContentType.TASK,
+        'book': ReadStatus.ContentType.BOOK,
+        'event': ReadStatus.ContentType.EVENT,
+        'decision': ReadStatus.ContentType.DECISION,
+        'citizen': ReadStatus.ContentType.CITIZEN,
+    }
+    seen_room_ids = set(ReadStatus.objects.filter(
+        user=user,
+        content_type=ReadStatus.ContentType.MESSAGE,
+    ).values_list('object_id', flat=True))
+
+    feed_items = []
+    for item in raw_items:
+        ct = item['content_type']
+        # rooms: filter to rooms the user has access to
+        if ct == 'room_messages':
+            if user.id not in item.get('_allowed_user_ids', set()):
+                continue
+            item = {**item, 'is_read': item['object_id'] in seen_room_ids}
+        else:
+            rs_ct = ct_map.get(ct)
+            is_read = (item['object_id'] in read_status_map[rs_ct]) if rs_ct else False
+            item = {**item, 'is_read': is_read}
+        feed_items.append(item)
+
+    return feed_items
+
+
     return feed_items
 
 

@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 
 # import os
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
+from django.db.models import Prefetch
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -14,6 +16,55 @@ from PIL import Image
 from board.models import Post, PostCategory
 from elibrary.forms import UpdateBookForm
 from elibrary.models import Book
+
+ELIBRARY_CACHE_KEY = "elibrary_data_v1"
+ELIBRARY_CACHE_TTL = 3600
+
+
+def invalidate_elibrary_cache():
+    cache.delete(ELIBRARY_CACHE_KEY)
+
+
+def _load_elibrary_data():
+    """
+    Fetch posts (grouped by category) and books. Cached globally in Redis (TTL 1h).
+    Returns dict: {'category_groups': [...], 'books': [...]}
+    Sorting is applied per-request in get_context_data after cache retrieval.
+    """
+    cached = cache.get(ELIBRARY_CACHE_KEY)
+    if cached is not None:
+        return cached
+
+    # Single query: all non-archived posts with their categories — eliminates N+1
+    all_posts = list(
+        Post.objects.filter(is_archived=False)
+        .select_related('category', 'author')
+        .order_by('category__priority', 'category__name', '-updated')
+    )
+    categories = list(PostCategory.objects.all())
+
+    # Group in Python — no extra queries per category
+    posts_by_cat = {}
+    uncategorized = []
+    for post in all_posts:
+        if post.category_id:
+            posts_by_cat.setdefault(post.category_id, []).append(post)
+        else:
+            uncategorized.append(post)
+
+    category_groups_raw = []
+    for cat in categories:
+        cat_posts = posts_by_cat.get(cat.pk, [])
+        if cat_posts:
+            category_groups_raw.append({'category': cat, 'posts': cat_posts})
+    if uncategorized:
+        category_groups_raw.append({'category': None, 'posts': uncategorized})
+
+    books = list(Book.objects.select_related('uploader').order_by('-id'))
+
+    result = {'category_groups_raw': category_groups_raw, 'books': books}
+    cache.set(ELIBRARY_CACHE_KEY, result, ELIBRARY_CACHE_TTL)
+    return result
 
 
 @login_required
@@ -54,37 +105,22 @@ class BookList(LoginRequiredMixin, ListView):
         context['current_sort'] = sort
         context['current_order'] = order
 
-        # Posts sorted by category priority, then by date within each category
-        if sort == 'date':
-            post_order = 'updated' if order == 'asc' else '-updated'
-        else:
-            post_order = 'updated' if order == 'asc' else '-updated'
+        data = _load_elibrary_data()
+        reverse_order = (order == 'desc')
 
-        # Build category groups for posts
-        categories = list(PostCategory.objects.all())  # already ordered by priority, name
+        # Sort posts within each category group in Python
         category_groups = []
-        for cat in categories:
-            posts = Post.objects.filter(
-                category=cat, is_archived=False
-            ).order_by(post_order)
-            if posts.exists():
-                category_groups.append({'category': cat, 'posts': posts})
-
-        # Posts without category → "Różne" group at the end
-        uncategorized = Post.objects.filter(
-            category__isnull=True, is_archived=False
-        ).order_by(post_order)
-        if uncategorized.exists():
-            category_groups.append({'category': None, 'posts': uncategorized})
-
+        for group in data['category_groups_raw']:
+            sorted_posts = sorted(
+                group['posts'],
+                key=lambda p: p.updated,
+                reverse=reverse_order,
+            )
+            category_groups.append({'category': group['category'], 'posts': sorted_posts})
         context['category_groups'] = category_groups
 
-        # Books sorted
-        if sort == 'date':
-            book_qs = Book.objects.all().order_by('id' if order == 'asc' else '-id')
-        else:
-            book_qs = Book.objects.all().order_by('id' if order == 'asc' else '-id')
-        context['books'] = book_qs
+        # Sort books in Python
+        context['books'] = sorted(data['books'], key=lambda b: b.id, reverse=reverse_order)
 
         return context
 

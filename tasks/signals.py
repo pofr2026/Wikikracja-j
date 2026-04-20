@@ -4,7 +4,7 @@ import logging
 # Third party imports
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import m2m_changed, post_save, post_delete, pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
@@ -16,7 +16,7 @@ from django.conf import settings
 from zzz.utils import get_site_domain
 
 # Local folder imports
-from .models import Task
+from .models import Task, TaskVote
 
 log = logging.getLogger(__name__)
 
@@ -68,6 +68,37 @@ def create_or_update_task_chat_room(sender, instance, created, **kwargs):
                 instance.chat_room.title = new_title
                 instance.chat_room.save(update_fields=['title'])
                 log.info(f"Updated chat room title to '{new_title}' for task #{instance.id}")
+
+
+@receiver(post_save, sender=Task)
+@receiver(post_delete, sender=Task)
+def invalidate_task_list_on_task_change(sender, instance, **kwargs):
+    from .views import invalidate_task_list_cache
+    invalidate_task_list_cache()
+
+
+@receiver(post_save, sender=TaskVote)
+@receiver(post_delete, sender=TaskVote)
+def invalidate_task_list_on_vote_change(sender, instance, **kwargs):
+    from .views import invalidate_task_list_cache
+    invalidate_task_list_cache(user_id=instance.user_id)
+
+
+@receiver(m2m_changed, sender=Room.seen_by.through)
+def invalidate_task_list_on_seen_by_change(sender, instance, action, pk_set, **kwargs):
+    # instance is Room, pk_set is set of user IDs being added/removed
+    if action not in ("post_add", "post_remove", "post_clear"):
+        return
+    # Only invalidate users whose seen_by changed, and only if room is linked to a task
+    if not hasattr(instance, 'task') or not instance.task.exists():
+        return
+    from .views import invalidate_task_list_cache
+    if pk_set:
+        for user_id in pk_set:
+            invalidate_task_list_cache(user_id=user_id)
+    else:
+        # post_clear has no pk_set — invalidate all
+        invalidate_task_list_cache()
 
 
 @receiver(pre_delete, sender=Task)

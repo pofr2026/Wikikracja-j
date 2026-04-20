@@ -4,6 +4,7 @@ import math
 # Third party imports
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.db import models, transaction
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import Coalesce
@@ -17,6 +18,38 @@ from django.views.generic import CreateView, DetailView, ListView, TemplateView,
 # Local folder imports
 from .forms import TaskForm, TaskStatusForm
 from .models import Task, TaskEvaluation, TaskVote
+
+TASK_LIST_CACHE_TTL = 3600  # 1h — signals handle invalidation on data changes
+
+
+def _task_list_cache_key(user_id):
+    return f"task_list_data_v1_{user_id}"
+
+
+def invalidate_task_list_cache(user_id=None):
+    """Invalidate task list cache. If user_id is None, clear all users' caches."""
+    if user_id:
+        cache.delete(_task_list_cache_key(user_id))
+    else:
+        # Wildcard delete for all users — use cache.delete_pattern if available,
+        # otherwise rely on TTL expiry (Redis supports it via django-redis).
+        try:
+            cache.delete_pattern("task_list_data_v1_*")
+        except AttributeError:
+            pass  # plain RedisCache doesn't support delete_pattern; TTL handles it
+
+
+def _get_pulse_room_ids(user):
+    """Return set of chat room IDs that have unseen messages for user — single batch query."""
+    from chat.models import Room
+    # Rooms with at least one message, minus rooms the user has already seen
+    rooms_with_msgs = Room.objects.filter(
+        messages__isnull=False
+    ).values_list("id", flat=True).distinct()
+    seen_room_ids = set(
+        user.seen_rooms.filter(id__in=rooms_with_msgs).values_list("id", flat=True)
+    )
+    return set(rooms_with_msgs) - seen_room_ids
 
 def _task_sort_context(request):
     sort = request.GET.get('sort', 'date')
@@ -83,6 +116,89 @@ def _assign_priorities(tasks):
         mark(task, "rejected")
 
 
+def _load_task_lists(user):
+    """
+    Fetch and categorise all tasks. Result is cached in Redis per user (TTL=60s).
+    Returns a dict with pre-categorised task lists and per-task user-specific attributes
+    (user_vote_value, chat_room_pulse_class) already set on the objects.
+    """
+    cache_key = _task_list_cache_key(user.id)
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    queryset = (
+        Task.objects.with_metrics()
+        .annotate(chat_msg_count=Count('chat_room__messages', distinct=True))
+        .order_by("-votes_score", "-updated_at")
+    )
+
+    active_tasks = list(queryset.filter(status=Task.Status.ACTIVE))
+    _assign_priorities(active_tasks)
+    rejected_active = [t for t in active_tasks if t.priority_category == "rejected"]
+    active_non_rejected = [t for t in active_tasks if t.priority_category != "rejected"]
+    active_with_owner = [
+        t for t in active_non_rejected
+        if t.assigned_to and ((t.votes_up or 0) - (t.votes_down or 0) >= 2)
+    ]
+    awaiting_tasks = [t for t in active_non_rejected if t not in active_with_owner]
+
+    finished_tasks = list(queryset.exclude(status=Task.Status.ACTIVE))
+    _assign_priorities(finished_tasks)
+    rejected_tasks = [t for t in finished_tasks if t.priority_category == "rejected"]
+    completed_tasks = [t for t in finished_tasks if t.priority_category != "rejected" and t.status == Task.Status.COMPLETED]
+    cancelled_tasks = [t for t in finished_tasks if t.priority_category != "rejected" and t.status == Task.Status.CANCELLED]
+
+    all_tasks = active_tasks + finished_tasks
+
+    # Batch: user votes (1 query)
+    vote_by_task_id = dict(
+        TaskVote.objects.filter(
+            user=user,
+            task_id__in=[t.id for t in all_tasks],
+        ).values_list("task_id", "value")
+    )
+    for t in all_tasks:
+        t.user_vote_value = vote_by_task_id.get(t.id)
+
+    # Batch: unseen chat rooms (2 queries instead of 2N)
+    pulse_room_ids = _get_pulse_room_ids(user)
+    for t in all_tasks:
+        t.chat_room_pulse_class = "chat-room-pulse" if t.chat_room_id in pulse_room_ids else ""
+
+    # My tasks (separate queryset — user-specific, also annotated)
+    my_tasks_qs = list(
+        Task.objects.filter(
+            Q(assigned_to=user) | Q(votes__user=user, votes__value=1)
+        ).filter(status=Task.Status.ACTIVE).distinct()
+        .with_metrics()
+        .annotate(chat_msg_count=Count('chat_room__messages', distinct=True))
+        .order_by("-votes_score", "-updated_at")
+    )
+    my_vote_map = dict(
+        TaskVote.objects.filter(
+            user=user,
+            task_id__in=[t.id for t in my_tasks_qs],
+        ).values_list("task_id", "value")
+    )
+    for t in my_tasks_qs:
+        t.user_vote_value = my_vote_map.get(t.id)
+        t.chat_room_pulse_class = "chat-room-pulse" if t.chat_room_id in pulse_room_ids else ""
+
+    result = {
+        "active_with_owner": active_with_owner,
+        "awaiting_tasks": awaiting_tasks,
+        "completed_tasks": completed_tasks,
+        "rejected_tasks": rejected_tasks,
+        "rejected_active": rejected_active,
+        "cancelled_tasks": cancelled_tasks,
+        "my_tasks_own": [t for t in my_tasks_qs if t.assigned_to_id == user.id],
+        "my_tasks_supporting": [t for t in my_tasks_qs if t.assigned_to_id != user.id],
+    }
+    cache.set(cache_key, result, TASK_LIST_CACHE_TTL)
+    return result
+
+
 class TaskListView(LoginRequiredMixin, TemplateView):
     template_name = "tasks/task_list.html"
 
@@ -90,70 +206,16 @@ class TaskListView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         sort, order, tab = _task_sort_context(self.request)
 
-        queryset = (
-            Task.objects.with_metrics()
-            .annotate(chat_msg_count=Count('chat_room__messages', distinct=True))
-            .order_by("-votes_score", "-updated_at")
-        )
-
-        active_tasks = list(queryset.filter(status=Task.Status.ACTIVE))
-        _assign_priorities(active_tasks)
-        rejected_active = [task for task in active_tasks if task.priority_category == "rejected"]
-        active_non_rejected = [task for task in active_tasks if task.priority_category != "rejected"]
-        active_with_owner = [task for task in active_non_rejected if task.assigned_to and ((task.votes_up or 0) - (task.votes_down or 0) >= 2)]
-        awaiting_tasks = [task for task in active_non_rejected if task not in active_with_owner]
-        finished_tasks = list(queryset.exclude(status=Task.Status.ACTIVE))
-        _assign_priorities(finished_tasks)
-        rejected_tasks = [task for task in finished_tasks if task.priority_category == "rejected"]
-        completed_tasks = [task for task in finished_tasks if task.priority_category != "rejected" and task.status == Task.Status.COMPLETED]
-        cancelled_tasks = [task for task in finished_tasks if task.priority_category != "rejected" and task.status == Task.Status.CANCELLED]
-
-        all_tasks = active_tasks + finished_tasks
-        if self.request.user.is_authenticated:
-            user_votes = TaskVote.objects.filter(
-                user=self.request.user,
-                task_id__in=[task.id for task in all_tasks],
-            ).values_list("task_id", "value")
-            vote_by_task_id = dict(user_votes)
-            for task in all_tasks:
-                task.user_vote_value = vote_by_task_id.get(task.id)
-
-        # Add chat room pulse class for tasks with unseen messages
-        if self.request.user.is_authenticated:
-            for task in all_tasks:
-                task.chat_room_pulse_class = task.get_chat_room_pulse_class(self.request.user)
-
-        my_tasks_own = []
-        my_tasks_supporting = []
-        if self.request.user.is_authenticated:
-            my_tasks_qs = list(
-                Task.objects.filter(
-                    Q(assigned_to=self.request.user) |
-                    Q(votes__user=self.request.user, votes__value=1)
-                ).filter(status=Task.Status.ACTIVE).distinct()
-                .with_metrics()
-                .annotate(chat_msg_count=Count('chat_room__messages', distinct=True))
-                .order_by("-votes_score", "-updated_at")
-            )
-            my_vote_map = dict(TaskVote.objects.filter(
-                user=self.request.user,
-                task_id__in=[t.id for t in my_tasks_qs],
-            ).values_list("task_id", "value"))
-            for task in my_tasks_qs:
-                task.user_vote_value = my_vote_map.get(task.id)
-                task.chat_room_pulse_class = task.get_chat_room_pulse_class(self.request.user)
-            user_id = self.request.user.id
-            my_tasks_own = [t for t in my_tasks_qs if t.assigned_to_id == user_id]
-            my_tasks_supporting = [t for t in my_tasks_qs if t.assigned_to_id != user_id]
+        data = _load_task_lists(self.request.user)
 
         context.update({
-            "active_tasks": _apply_task_sort(active_with_owner, sort, order),
-            "awaiting_tasks": _apply_task_sort(awaiting_tasks, sort, order),
-            "finished_completed": _apply_task_sort(completed_tasks, sort, order),
-            "finished_rejected": _apply_task_sort(rejected_tasks + rejected_active, sort, order),
-            "finished_cancelled": _apply_task_sort(cancelled_tasks, sort, order),
-            "my_tasks_own": _apply_task_sort(my_tasks_own, sort, order),
-            "my_tasks_supporting": _apply_task_sort(my_tasks_supporting, sort, order),
+            "active_tasks": _apply_task_sort(data["active_with_owner"], sort, order),
+            "awaiting_tasks": _apply_task_sort(data["awaiting_tasks"], sort, order),
+            "finished_completed": _apply_task_sort(data["completed_tasks"], sort, order),
+            "finished_rejected": _apply_task_sort(data["rejected_tasks"] + data["rejected_active"], sort, order),
+            "finished_cancelled": _apply_task_sort(data["cancelled_tasks"], sort, order),
+            "my_tasks_own": _apply_task_sort(data["my_tasks_own"], sort, order),
+            "my_tasks_supporting": _apply_task_sort(data["my_tasks_supporting"], sort, order),
             "current_tab": tab,
             "current_sort": sort,
             "current_order": order,

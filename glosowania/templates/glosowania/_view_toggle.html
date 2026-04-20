@@ -3,7 +3,6 @@
   Wymaga z kontekstu: current_sort, current_order
 {% endcomment %}
 
-{% with opp_order=current_order|yesno:"asc,desc,desc" %}
 <div class="proposals-toolbar">
 
   {# ── Dodaj — całkiem po lewej ── #}
@@ -19,7 +18,7 @@
 
     {# Najnowsze #}
     {% if current_sort == 'date' %}
-      <a href="?sort=date&order={{ opp_order }}" class="sort-btn active">
+      <a href="?sort=date&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}" class="sort-btn active">
         <i class="fas fa-clock-rotate-left fa-fw"></i>
         {% trans 'Najnowsze' %}
         <i class="fas fa-arrow-{% if current_order == 'asc' %}up{% else %}down{% endif %} sort-arrow"></i>
@@ -32,7 +31,7 @@
 
     {# Podpisy #}
     {% if current_sort == 'podpisy' %}
-      <a href="?sort=podpisy&order={{ opp_order }}" class="sort-btn active">
+      <a href="?sort=podpisy&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}" class="sort-btn active">
         <i class="fas fa-pen-nib fa-fw"></i>
         {% trans 'Podpisy' %}
         <i class="fas fa-arrow-{% if current_order == 'asc' %}up{% else %}down{% endif %} sort-arrow"></i>
@@ -45,7 +44,7 @@
 
     {# Buzz #}
     {% if current_sort == 'buzz' %}
-      <a href="?sort=buzz&order={{ opp_order }}" class="sort-btn active">
+      <a href="?sort=buzz&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}" class="sort-btn active">
         <i class="fas fa-fire fa-fw"></i>
         {% trans 'Buzz' %}
         <i class="fas fa-arrow-{% if current_order == 'asc' %}up{% else %}down{% endif %} sort-arrow"></i>
@@ -69,4 +68,3 @@
   </div>
 
 </div>
-{% endwith %}
